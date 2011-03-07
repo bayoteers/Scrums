@@ -1,0 +1,109 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "Create new sprint" 
+%]
+
+<script scripttype="text/javascript">
+function cancel()
+{
+	window.location = "page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]";	
+}
+
+function checkvalues()
+{
+        var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
+        var nominalschedule = window.document.forms['newsprint'].elements['nominalschedule'].value;
+	if(sprintname == '')
+	{
+		alert("Sprint must have name.");
+		return false;
+	}
+	if(sprintname.match(/^\S/) == null)
+	{
+		alert("Sprint name can not start with whitespace");
+		return false;
+	}
+	if(nominalschedule.match(/^\d{4}\.\d{1,2}\.\d{1,2}$/) == null)
+	{
+		alert("Schedule must be given as ready date in form 'yyyy-mm-dd'");
+		return false;
+	}
+
+	return true;
+}
+
+function askconfirm()
+{
+	return confirm("Are you sure you want to permanently delete sprint '[% sprintname %]' \nOperation can not be undone");
+}
+</script>
+
+<form method="post" name="newsprint" action="page.cgi">
+<input type="hidden" name="id" value="scrums/teambugs.html"/>
+<input type="hidden" name="teamid" value="[% teamid %]"/>
+<input type="hidden" name="sprintid" value="[% sprintid %]"/>
+[% IF editsprint %]
+<input type="hidden" name="editsprint" value="true"/>
+[% ELSE %]
+<input type="hidden" name="newsprint" value="true"/>
+[% END %]
+
+<!-- <input type="hidden" name="userid" value="[% ownerid %]"/> -->
+<table>
+  <tr>
+	<td><b>Sprint name:</b></td>
+	<td><input type="text" name="sprintname" value="[% sprintname %]"></td>
+	<td colspan="2">&nbsp</td>
+  </tr>
+  <tr>
+	<td><b>Nominal schedule:</b></td>
+	<td><input type="text" name="nominalschedule" value="[% nominalschedule %]"></td>
+	<td colspan="2">&nbsp</td>
+  </tr>
+  <tr>
+	<td><b>Description:</b></td>
+	<td><input type="text" name="description" value="[% description %]"></td>
+	<td colspan="2">&nbsp</td>
+  </tr>
+
+  <tr>
+	<td>&nbsp</td>
+	<td colspan="3">
+		<input type="button" value="Cancel" onclick="cancel()"/>
+		[% submittext = (editsprint != "" ? "Save" : "Create") %]
+		<input type="submit" value="[% submittext %]" onclick="return checkvalues()"/>
+	</td>
+  </tr>
+  <tr>
+	[% IF sprintid %]
+	<td colspan="4"><a href="page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]&deletesprint=[% sprintid %]" onclick='return askconfirm()'>[delete sprint]</a></td>
+	[% ELSE %]
+	<td colspan="4">&nbsp</td>
+	[% END %]
+  </tr>
+
+</table>
+</form>
+
+<p>
+

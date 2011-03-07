@@ -1,0 +1,93 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is YOUR NAME
+  # Portions created by the Initial Developer are Copyright (C) 2010 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "Releases" 
+    style_urls = ['skins/standard/admin.css']
+%]
+
+<style>
+<!--
+.future_use {
+    font-size: smaller;
+    font-style: italic;
+    color: #aaa;
+}
+-->
+</style>
+
+<table>
+[% IF releaselist.size > 0 %]
+  <tr>
+    <th colspan="3">Releases</th>
+  </tr>
+  <tr>
+    <th>Name</th>
+    <th colspan="2">Milestone</th>
+    <th class="future_use">Algorithm</th>
+    <th class="future_use">Original cap.</th>
+    <th class="future_use">Remaining cap.</th>
+  </tr>
+[% FOREACH release IN releaselist %]
+
+<tr>
+<td>
+<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]">
+[% release.name %]
+</a>
+</td>
+<td>[% release.target_milestone_begin %]</td>
+<td>[% release.target_milestone_end %]</td>
+<td class="future_use">
+[% IF release.capacity_algorithm %]
+[% release.capacity_algorithm %]
+[% ELSE %]
+none
+[% END %]
+</td>
+<td class="future_use">
+[% IF release.original_capacity %]
+[% release.original_capacity %]
+[% ELSE %]
+none
+[% END %]
+</td>
+<td class="future_use">
+[% IF release.remaining_capacity %]
+[% release.remaining_capacity %]
+[% ELSE %]
+none
+[% END %]
+</td>
+</tr>
+
+[% END %]
+[% ELSE %]
+<tr><td>Zero releases!</td></tr>
+[% END %]
+</table>
+
+[% class = user.in_group('admin') ? "" : "forbidden" %]
+<table><tr><td class="admin_links"> 
+<dl><dt class="[%class%]">
+<a href="page.cgi?id=scrums/newrelease.html">new release</a>
+</dt></dl></td></tr></table>
+[% PROCESS global/footer.html.tmpl %]

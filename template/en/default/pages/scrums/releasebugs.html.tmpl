@@ -1,0 +1,372 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "Bugs in release" 
+    style_urls = ['skins/standard/admin.css']
+%]
+
+
+<script type="text/JavaScript" src="extensions/Scrums/web/js/mtmpl.js"></script>
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.4.4.min.js"></script>
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.10.custom.min.js"></script>
+<!-- <script type="text/javascript" src="extensions/Scrums/web/js/scrums.js"></script>-->
+
+    <style>
+
+    #demo1, #demo2, #sortable1, #sortable2, #sortable3 { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #eee; padding: 5px; width: 560px;}
+    #demo1 li, #demo2 li, #sortable1 li, #sortable2 li, #sortable3 li { margin: 5px; padding: 5px; font-size: 1em; width: 540px; }
+    .number { background: #eee; color: #000000; border: 1px solid #dddddd;  }
+
+    </style>
+    <script>
+
+function switch_lists(ui, lists)
+{
+
+    to_list_ul_id = '#' + ui.item.parent().attr('id');
+    old_position = parseInt(ui.item.find('span.number').text() - 1);
+    old_vis_position = parseInt(ui.item.attr('bug_order_nr'));
+
+    to_list = undefined;
+    from_list = undefined;
+
+    new_position = -1;
+    for (var l = 0; l < lists.length; l++)
+    {
+        list = lists[l];
+//remove
+        if (list.ul_id != to_list_ul_id && list.ul_id != from_list_ul_id)
+        {
+            // this list isn't affected
+            continue;
+        }
+        if (list.ul_id == to_list_ul_id)
+        {
+            to_list = list;
+        }
+        if (list.ul_id == from_list_ul_id)
+        {
+            from_list = list;
+        }
+    }
+
+    $(to_list.ul_id).find('li').each(function (i)
+    {
+        if (to_list.visible.length == to_list.offset + i)
+        {
+            if (to_list.visible.length > 0)
+            {
+                // new value is plus one from the prev last
+                to_list.visible.push(to_list.visible[to_list.visible.length - 1] + 1)
+            } else
+            {
+                // first item in the list
+                to_list.visible.push(0);
+            }
+            //alert('list '+to_list.list.length);
+        }
+        order = to_list.visible[to_list.offset + i];
+        if ($(this).attr('id') == ui.item.attr('id'))
+        {
+            new_position = order; 
+            
+            to_list.list.splice(new_position, 0, from_list.list[old_position]);
+
+            from_list.list.splice(old_position, 1);
+            from_list.visible.splice(old_vis_position, 1);
+            //alert(to_list.visible.length);
+
+            vis_position = to_list.offset + i;
+            return false;
+        }
+    });
+    //FIXME nicer way to handle changes (than recreating the lists)!
+    to_list.visible = -1;
+    from_list.visible = -1;
+    update_lists(to_list);
+    update_lists(from_list);
+
+}
+
+    $(function() {
+        // DEMO
+        //$( "#sortable1, #sortable2, #demo1, #demo2"  ).sortable({
+        $( "#sortable1, #sortable2" ).sortable({
+            connectWith: ".connectedSortable",
+            start: function(event, ui)
+                    {
+                    
+                        from_list_ul_id = '#' + ui.item.parent().attr('id');
+                    },
+            stop: function(event, ui) {
+                switch_lists(ui, [ordered_bugs, unordered_bugs]);
+
+;}
+        }).disableSelection();
+    });
+    </script>
+
+
+  <script>
+
+  function update_lists(bugs_list, move_pos, data)
+  {
+    if (data != undefined)
+    {
+        bugs_list.list = data;
+        //deep copy
+        bugs_list.original_list = $.extend(true, [], data);
+        bugs_list.visible = -1;
+    }
+
+    if (bugs_list.visible == -1)
+    {
+        // show all
+        bugs_list.visible = [];
+        for (var i = 0; i < bugs_list.list.length; i++)
+        {
+            bugs_list.visible.push(i);
+        }
+    }
+
+    if (move_pos == undefined)
+    {
+        move_pos = 0;
+    }
+    bugs_list.offset += move_pos;
+
+    if (bugs_list.offset < 0)
+    {
+        bugs_list.offset = bugs_list.visible.length - (bugs_list.visible.length % offset_step);
+    }
+    if (bugs_list.offset >= bugs_list.visible.length)
+    {
+        bugs_list.offset = 0;
+    }
+
+
+    html = "";
+    //for(var i = bugs_list.offset; i < bugs_list.list.length; i++) {
+    for(var i = bugs_list.offset; i < bugs_list.visible.length; i++) {
+        if (i > bugs_list.offset + offset_step - 1)
+        {
+            break;
+        }
+        html += parseTemplate($("#BugLiTmpl").html(), { bug: bugs_list.list[bugs_list.visible[i]], counter: (bugs_list.visible[i] + 1)});
+    }
+
+    $(bugs_list.ul_id).html(html);
+    
+  }
+
+
+(function ($) {
+  // custom css expression for a case-insensitive contains()
+  jQuery.expr[':'].Contains = function(a,i,m){
+      return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase())>=0;
+  };
+
+
+ function listFilter(header, list, bugs_list) { // header is any element, list is an unordered list
+    // create and add the filter form to the header
+    var form = $("<form>").attr({"class":"filterform","action":"#"}),
+        input = $("<input>").attr({"class":"filterinput","type":"text"});
+    $(form).append(input).appendTo(header);
+
+    $(input)
+      .change( function () {
+        var filter = $(this).val();
+        if(filter) {
+          bugs_list.visible = [];
+          for (var i = 0; i < bugs_list.list.length; i++)
+          {
+            // search against desc and bug id
+            if (bugs_list.list[i][3].toLowerCase().match("^" + filter.toLowerCase()) == filter.toLowerCase() || bugs_list.list[i][0].match("^" + filter) == filter)
+            {
+                //filtered_bugs.list.push(bugs_list.list[i]);
+                bugs_list.visible.push(i);
+            }
+          }
+          // this finds all links in a list that contain the input,
+          // and hide the ones not containing the input while showing the ones that do
+          //$(list).find("a:not(:Contains(" + filter + "))").parent().hide();
+          //$(list).find("a:Contains(" + filter + ")").parent().show();
+          //update_lists("#sortable2", filtered_bugs);
+        } else
+        {
+          //show all
+          bugs_list.visible = -1;
+        }
+          //$(list).find("li").show();
+        // reset offset when doing live search
+        bugs_list.offset = 0;
+        update_lists(bugs_list);
+        return false;
+      })
+    .keyup( function () {
+        // fire the above change event after every letter
+        $(this).change();
+    });
+  }
+
+
+
+  //ondomready
+  $(function () {
+    $.post('page.cgi?id=scrums/release_ajax.html', {action: 'fetch', releaseid: [% release.id %]}, function (data) { update_lists(ordered_bugs, 0, data[0]); update_lists(unordered_bugs, 0, data[1]) }, 'json');
+    //update_lists(ordered_bugs);
+    listFilter($("#headers2"), $(unordered_bugs.ul_id), unordered_bugs);
+    listFilter($("#headers"), $(ordered_bugs.ul_id), ordered_bugs);
+
+    // DEMO
+//    update_lists(demo1);
+//    update_lists(demo2);
+//    listFilter($("#headers3"), $(demo1.ul_id), demo1);
+//    listFilter($("#headers4"), $(demo2.ul_id), demo2);
+  });
+}(jQuery));
+
+function listObject(ul_id)
+{
+    this.ul_id = ul_id;
+    this.list = [];
+    this.orginal_list = [];
+    this.visible = -1;
+    this.offset = 0
+}
+
+var offset_step = 10;
+var from_list_ul_id = '';
+
+var ordered_bugs = new listObject("#sortable1");
+var unordered_bugs = new listObject("#sortable2");
+
+// DEMO
+//var demo1 = new listObject("#demo1");
+//var demo2 = new listObject("#demo2");
+
+//FIXME
+function ugly_save()
+{
+    //var original_list = ordered_bugs.original_list;
+    var list_out = [];
+    for (var i = 0; i < ordered_bugs.original_list.length; i++)
+    {
+        list_out.push(ordered_bugs.original_list[i][0]);
+    }
+    var list = [];
+    msg = '';
+    for(var i = 0; i < ordered_bugs.list.length; i++) {
+        bug_id = ordered_bugs.list[i][0];
+        list.push(bug_id);
+        var moving = true;
+        for (var k = 0; k < list_out.length; k++)
+        {
+            if (list_out[k] == bug_id)
+            {
+                //alert(list_out[k]);
+                list_out.splice(k, 1);
+                break;
+            }
+        }
+        //msg += " "+ordered_bugs.list[i][0];
+        //alert(ordered_bugs.list[i][0]);
+    }
+
+    $.post('page.cgi?id=scrums/release_ajax.html', {action: 'set', list: list, list_out: list_out }, function (data) {  }, 'json');
+// alert(msg);
+}
+
+  </script>
+
+<script id="BugLiTmpl" type="text/html">
+    <li class="ui-state-default" id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span ><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #></span></li>
+</script>
+
+<link rel="stylesheet" href="extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
+
+<div class="demo">
+
+<table>
+    <tr>
+        <th>
+            <h1 id="headers">Priority Order</h1>
+            <input type='button' value='previous' OnClick='update_lists(ordered_bugs, -offset_step);'/>
+            <input type='button' value='next' OnClick='update_lists(ordered_bugs, offset_step);'/> 
+            <input type='button' value='save' OnClick='ugly_save();'/> 
+        </th>
+        <th>
+            <h1 id="headers2">Unordered </h1>
+            <input type='button' value='previous' OnClick='update_lists(unordered_bugs, -offset_step);'/>
+            <select onChange='offset_step = parseInt($(this).val()); update_lists(ordered_bugs); update_lists(unordered_bugs);'>
+                <option value='10'>10</option>
+                <option value='20'>20</option>
+                <option value='30'>30</option>
+            </select>
+            <input type='button' value='next' OnClick='update_lists(unordered_bugs, offset_step);'/> 
+        </th>
+    </tr>
+    <tr>
+        <td valign='top'>
+        <ul id="sortable1" class="connectedSortable">
+           <!-- <li class="ui-state-default" id="tble1__0">666 nomove</li> -->
+        </ul>
+    </td>
+    <td>
+
+        <ul id="sortable2" class="connectedSortable">
+
+            <li class="ui-state-highlight">Loading bugs</li>
+        </ul>
+    </td>
+    </tr>
+<!-- DEMO -->
+<!--
+    <tr>
+        <th>
+            <h1 id="headers3">Demo 1 Order</h1>
+            <input type='button' value='previous' OnClick='update_lists(demo1, -offset_step);'/>
+            <input type='button' value='next' OnClick='update_lists(demo1, offset_step);'/> 
+        </th>
+        <th>
+            <h1 id="headers4">Demo 2 Order</h1>
+            <input type='button' value='previous' OnClick='update_lists(demo2, -offset_step);'/>
+            <input type='button' value='next' OnClick='update_lists(demo2, offset_step);'/> 
+        </th>
+    </tr>
+    <tr>
+        <td valign='top'>
+        <ul id="demo1" class="connectedSortable">
+        </ul>
+    </td>
+    <td>
+
+        <ul id="demo2" class="connectedSortable">
+        </ul>
+    </td>
+    </tr>
+-->
+</table>
+
+</div>
+
+[% PROCESS global/footer.html.tmpl %]

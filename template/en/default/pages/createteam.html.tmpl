@@ -1,0 +1,190 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "Team" 
+%]
+
+<script scripttype="text/javascript">
+function searchperson()
+{
+	window.open('page.cgi?id=searchperson.html&formname=addmember&submit=true', '_blanck', 'directories=no,location=no,height=400');
+	return false;
+}
+</script>
+
+<br>
+
+[% IF error %]
+Error msg: [% error %]
+[% ELSE %]
+
+[% IF teamisnew %]
+Team created!
+[% END %]
+
+[% owner = team.owner_user() %]
+<!-- <table border="true"> -->
+<table>
+<tr>
+<td><b>Team name:</b></td>
+<td colspan="2">[% team.name %]</td>
+<td>
+[% IF (user.in_group('admin')) %]
+<a href="page.cgi?id=newteam.html&editteam='true'&teamid=[% team.id %]&teamname=[% team.name() %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&ownerid=[% owner.id() %]">[edit team]
+[% ELSE %]
+&nbsp
+[% END %]
+</td>
+</tr>
+<tr>
+<td><b>Owner:</b></td>
+<td colspan="2">[% owner.name() %]</td>
+<td>&nbsp</td>
+</tr>
+<tr>
+<td>&nbsp</td>
+<td colspan="2">[% owner.login() %]</td>
+<td>&nbsp</td>
+</tr>
+
+<tr>
+<td colspan="4">&nbsp</td>
+</tr>
+
+[% components = team.components() %]
+[% IF components.size() > 0 %]
+<tr>
+<td><b>Responsibility:</b></td>
+<td>Sub-component</td>
+<td colspan="2">Product</td>
+</tr>
+
+[% FOREACH subcomponent IN components %]
+<tr>
+<td>&nbsp</td>
+<td>[% subcomponent.name() %]</td>
+<td>[% subcomponent.product().name() %]</td>
+[% IF user.in_group('editcomponents') || (user.get_products_by_permission('editcomponents').size) %]
+<td><a href="page.cgi?id=componentteam.html&compid=[% subcomponent.id() %]&compname=[% subcomponent.name() %]&productname=[% subcomponent.product().name() %]">[edit]</a></td>
+[% ELSE %]
+<td>&nbsp</td>
+[% END %]
+</tr>
+[% END %]
+
+[% ELSE %]
+<tr>
+<td><b>Responsibility:</b></td>
+<td colspan="3">
+Not responsible for sub-components<br>
+
+</td>
+</tr>
+[% END %]
+
+<tr>
+<td colspan="3">&nbsp</td>
+[% IF user.in_group('editcomponents') || (user.get_products_by_permission('editcomponents').size) %]
+<td><a href="editcomponents.cgi">[add sub-component]</a></td>
+[% ELSE %]
+<td>&nbsp</td>
+[% END %]
+</tr>
+
+<tr>
+<td><b>Weekly velocity:</b></td>
+<td>[% team.weekly_velocity_value %]</td>
+<td>[% team.weekly_velocity_start %]</td>
+<td>[% team.weekly_velocity_end %]</td>
+</tr>
+
+<tr>
+<td colspan="4">&nbsp</td>
+</tr>
+
+<tr>
+<td><b>Members:</b></td>
+<td colspan="3">
+
+<p>
+[% members = team.members() %]
+[% IF members.size() > 0 %]
+<table>
+  <tr>
+    <th>User name</th>
+  </tr>
+[% FOREACH member IN members %]
+<tr>
+<td>
+[% member.name() %]
+</td>
+<td>
+
+[% IF user.in_group('editcomponents') || (user.get_products_by_permission('editcomponents').size) %]
+<a href="page.cgi?id=createteam.html&userid=[% member.id() %]&teamid=[% team.id() %]&username=[% member.name() %]&userlogin=[% member.login() %]">
+[remove]
+</a>
+[% ELSE %]
+&nbsp
+[% END %]
+</td>
+
+</tr>
+[% END %]
+</table>
+[% ELSE %]
+Team has no members.
+[% END %]
+</p>
+
+<p>
+
+[% IF (user.in_group('admin')) %]
+<a href="" onclick="return searchperson();">
+add member
+</a>
+[% END %]
+
+</p>
+</td>
+
+</tr>
+</table>
+
+<form name="addmember" method="post" action="page.cgi" onsubmit="alert('submit');">
+<input type="hidden" name="id" value="addintoteam.html"/>
+<input type="hidden" name="teamid" value="[% team.id %]"/>
+<input type="hidden" name="teamname" value="[% team.name %]"/>
+<input type="hidden" name="userid" />
+<input type="hidden" name="userrealname" />
+<input type="hidden" name="userlogin" />
+</form>
+
+<p>
+<a href="page.cgi?id=scrums/teambugs.html&teamid=[% team.id %]">show bugs in team</a>
+</p>
+
+<a href="page.cgi?id=allteams.html">teams main page</a>
+[% END %]
+
+
+

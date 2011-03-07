@@ -1,0 +1,205 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "Bugs for team" 
+    style_urls = ['skins/standard/admin.css']
+%]
+
+<script type="text/javascript">
+
+
+function end_drag() {
+//	alert('This is the end');
+/*
+	var Dom = YAHOO.util.Dom;
+	var tbl1=Dom.get("tble1");
+	var muuttunut = false;
+
+        var items = tbl1.getElementsByTagName("tr"); 
+	for (i=2;i<items.length;i=i+1) { 
+	    var ref = "tble1_" + (i-1);
+//		alert("id: " + items[i].id + " ref: " + ref);	
+  	    if(items[i].id != ref) {	
+		muuttunut = true;
+		break;
+            }
+	} 
+	alert("muuttunut: "+muuttunut); */
+}
+
+
+function toggle_sprint_visibility(sprint_id) {
+	var str1 = "sprint" + sprint_id;
+	var elem1_id = str1 + "visible";
+	toggle_visibility(elem1_id);
+	var elem2_id = str1 + "invisible";
+	toggle_visibility(elem2_id);
+	var elem3_id = str1 + "info";
+	toggle_visibility(elem3_id);
+	var elem4_id = str1 + "bugs";
+	toggle_visibility(elem4_id);
+}
+
+function toggle_visibility(id) {
+    var e = document.getElementById(id);
+    if(e.style.display == 'none')
+	e.style.display = 'block';
+    else
+	e.style.display = 'none';
+};
+
+//alert('lataus');
+
+</script>
+
+<script type="text/javascript" src="js/yui/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="js/yui/animation/animation-min.js"></script>
+<script type="text/javascript" src="js/yui/dragdrop/dragdrop-min.js"></script>
+<script type="text/javascript" src="js/lib/getElementsByClassName-1.0.1.js"></script>
+<script type="text/javascript" src="js/draggableApp.js"></script>
+
+<script type="text/javascript" src="extensions/Scrums/web/js/scrums.js"></script>
+
+<link rel="stylesheet" type="text/css" href="js/draggable.css" />
+
+<style>
+.testi
+{
+  background-color: #D1E6FF;
+}
+
+table.scheduling_area {
+    border: 1px solid gray;
+    max-width: 1000px;
+}
+
+table.scheduling_area th {
+    white-space: nowrap;
+}
+
+table.scheduling_area td.buttons {
+    text-align: center;
+}
+
+table.scheduling_area input {
+    width: 120px;
+}
+
+</style>
+
+<input type="hidden" id="sprintno" value="[% team_sprints_array.size() %]"/>
+<br>
+<b>Team '[% team.name %]' bugs</b><br>
+<br>
+<table class="scheduling_area"><tr><td>
+
+[% FOREACH team_sprint IN team_sprints_array %]
+
+[% sprint = team_sprint.sprint %]
+
+<b>
+<div id="sprint[% sprint.id() %]invisible">
+<a href="" onclick="toggle_sprint_visibility('[% sprint.id() %]'); return false;">[+] &nbsp [% sprint.name() %]</a>
+</div>
+<div id="sprint[% sprint.id() %]visible" style="display: none;">
+<a href="" onclick="toggle_sprint_visibility('[% sprint.id() %]'); return false;">[-] &nbsp [% sprint.name() %]</a> &nbsp 
+<a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% sprint.id() %]&status=[% sprint.status() %]&sprintname=[% sprint.name() %]&nominalschedule=[% sprint.nominal_schedule() %]&description=[% sprint.description() %]&editsprint=true">[edit]</a>
+</b>
+
+<table id="sprint[% sprint.id() %]info" style="display: none;">
+<tr><th>Status</th><th>Nominal Schedule</th><th>Description</th><tr>
+<tr><td>[% sprint.status() %]</td><td>[% sprint.nominal_schedule() %]</td><td>[% sprint.description() %]</td></tr>
+</table>
+<br>
+
+<table class="draggable_box" id="sprint[% sprint.id() %]bugs" style="display: none;">
+<tr><th>Sprint bugs</th><th colspan="3">&nbsp</th></tr>
+  <tr>
+    <th>Id</th>
+    <th>Status</th>
+    <th>Severity</th>
+    <th>Desc</th>
+  </tr>
+
+[% bugs = team_sprint.bugs %]
+
+
+[% FOREACH bug IN bugs %]
+  <tr class="draggable_item" id="tble_[% sprint.id() %]_[% laskuri %]">
+    <td><a href="show_bug.cgi?id=[% bug.0 %]">[% bug.0 %]</a></td>
+    <td>[% bug.1 %]</td>
+    <td>[% bug.2 %]</td>
+    <td>[% bug.3 %]</td>
+  </tr>
+[% END %]
+
+</table>
+
+
+</div>
+
+<br>
+[% END %]
+
+
+<br><br>
+<table class="draggable_box" id="tble2">
+  <tr>
+    <th colspan="4">Unprioritised bugs</th>
+  </tr>
+  <tr>
+    <th>Id</th>
+    <th>Status</th>
+    <th>Severity</th>
+    <th>Desc</th>
+  </tr>
+[% laskuri = 0 %]
+[% FOREACH bug IN unprioritised_bugs %]
+[% laskuri = laskuri + 1 %]
+<tr class="draggable_item" id="tble2_[% laskuri %]">
+<td>
+<a href="show_bug.cgi?id=[% bug.0 %]">
+[% bug.0 %]
+</a>
+</td>
+<td>[% bug.1 %]</td>
+<td>[% bug.2 %]</td>
+<td>[% bug.3 %]</td>
+</tr>
+
+[% END %]
+</table>
+</td></tr><tr><td>&nbsp
+</td></tr><tr><td class="buttons">
+<input type="button" value="Cancel">&nbsp<input type="button" value="Save" onClick="saveTeamOrderData();">
+</td></tr></table> <!-- scheduling_area -->
+<p>
+<a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">add sprint</a>
+</p>
+<p>
+<a href="page.cgi?id=createteam.html&teamid=[% team.id %]">back</a>
+</p>
+<p>
+<a href="page.cgi?id=allteams.html">teams main page</a>
+</p>
+
+[% PROCESS global/footer.html.tmpl %]

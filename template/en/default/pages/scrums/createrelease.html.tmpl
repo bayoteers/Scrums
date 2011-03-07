@@ -1,0 +1,153 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is YOUR NAME
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "Release" 
+%]
+
+<script scripttype="text/javascript">
+function askconfirm(releasename, flagtypename)
+{
+	return confirm("Are you sure you want to remove flag type '" + flagtypename + "' from release '" + releasename + "'");
+}
+</script>
+
+<style>
+<!--
+.future_use {
+    font-size: smaller;
+    font-style: italic;
+    color: #aaa;
+}
+
+.line_header {
+    font-weight: bold;
+}
+-->
+</style>
+
+<br>
+
+[% IF error %]
+Error msg: [% error %]
+[% ELSE %]
+
+[% IF releaseisnew %]
+Release created!
+[% END %]
+
+<!-- <table border="true"> -->
+<table>
+<tr>
+<th>&nbsp</th>
+<th>Release</th>
+<tr>
+<td class="line_header">Name:</td>
+<td colspan="2">[% release.name %]</td>
+<td>
+</tr><tr>
+<td class="line_header">Milestone:</td>
+<td colspan="2">[% release.target_milestone_begin %] - [% release.target_milestone_end %]</td>
+</tr><tr class="future_use">
+<td class="line_header">Algorithm:</td>
+<td colspan="2">[% release.capacity_algorithm %]</td>
+</tr><tr class="future_use">
+<td class="line_header">Original capacity:</td>
+<td colspan="2">[% release.original_capacity %]</td>
+</tr><tr class="future_use">
+<td class="line_header">Remaining capacity:</td>
+<td colspan="2">[% release.remaining_capacity %]</td>
+</tr><tr>
+[% IF (user.in_group('release_managers')) %]
+<a href="page.cgi?id=scrums/newrelease.html&editrelease='true'&releaseid=[% release.id %]&releasename=[% release.name %]&mr_begin=[% release.target_milestone_begin %]&
+	mr_end=[% release.target_milestone_end %]&algorithm=[% release.capacity_algorithm %]&original=[% release.original_capacity %]&remaining=[% release.remaining_capacity %]">
+	[edit release]</a>
+[% ELSE %]
+&nbsp
+[% END %]
+</td>
+</tr>
+</table>
+
+<br><br>
+<b>Flagtypes for release:</b>
+<table>
+[% IF flagtypelist.size > 0 %]
+
+[% FOREACH flagtype IN flagtypelist %]
+<tr>
+<td>&nbsp</td>
+<td width="150">
+[% IF (user.in_group('release_managers')) %]
+<a href="editflagtypes.cgi?action=edit&id=[% flagtype.id %]">[% flagtype.name %]</a>
+[% ELSE %]
+[% flagtype.name %]
+[% END %]
+</td>
+<td>
+<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&removeflagtype=[% flagtype.id %]" onclick="return askconfirm('[% release.name %]', '[% flagtype.name %]');">[remove]</a>
+</td>
+</tr>
+[% END %]
+
+[% ELSE %]
+<tr>
+<td colspan="3">
+No flagtypes for release<br>
+</td>
+</tr>
+[% END %]
+
+[% IF addflagtype %]
+<tr>
+<td colspan="3">
+<form method=post action="page.cgi">
+<input type="hidden" name="id" value="scrums/createrelease.html"/>
+<input type="hidden" name="releaseid" value="[% release.id %]"/>
+<select name="newflagtype">
+[% FOREACH flagtype IN allflagtypes %]
+<option value=[% flagtype.id %]>[% flagtype.name %]</option>
+[% END %]
+</select>
+<input type=submit value="Add"/>
+<form>
+</td>
+</tr>
+[% ELSE %]
+<tr>
+<td colspan="3">
+<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&addflagtype=true">[add flagtype]</a>
+</td>
+</tr>
+[% END %]
+
+</table>
+<p>
+<a href="page.cgi?id=scrums/releasebugs.html&releaseid=[% release.id %]">show bugs in release</a>
+</p>
+
+<p>
+<a href="page.cgi?id=scrums/allreleases.html">releases main page</a>
+</p>
+[% END %]
+
+
+

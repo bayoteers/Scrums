@@ -1,0 +1,15 @@
+[%# Note that error messages should generally be indented four spaces, like
+  # below, because when Bugzilla translates an error message into plain
+  # text, it takes four spaces off the beginning of the lines. 
+  #
+  # Note also that I prefixed my error name with "scrums", the name of my
+  # extension, so that I wouldn't conflict with other error names in
+  # Bugzilla or other extensions.
+  #%]
+[% IF error == "scrums_estimated_time_required" %]
+   [% title = "Original estimate required" %]
+   You have to specify original estimate while closing task or feature.
+[% ELSIF error == "scrums_actual_time_required" %]
+   [% title = "Actual estimate required" %]
+   You have to specify actual hours worked while closing task or feature.
+[% END %]

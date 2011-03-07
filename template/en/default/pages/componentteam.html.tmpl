@@ -1,0 +1,120 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is YOUR NAME
+  # Portions created by the Initial Developer are Copyright (C) 2010 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "User's teams" 
+%]
+
+<script scripttype="text/javascript">
+function outofcomponent(teamname)
+{
+	if( confirm("Do you want to remove team '" + teamname + "' from sub-component '[% compname %]'?") )
+	{
+		window.document.forms['teams'].elements['addteam'].value="";
+		window.document.forms['teams'].elements['remteam'].value=teamname;
+		window.document.forms['teams'].submit();
+	}
+	return false;
+}
+</script>
+
+<table>
+<tr>
+<td>
+<b>Sub-component:</b>
+</td>
+<td>
+<b>[% compname %]&nbsp (Product: [% productname %])</b>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>Assigned team for sub-component:</b>
+</td>
+<td>
+[% IF componentteam %]
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Owner</th>
+    <th>&nbsp</th>
+  </tr>
+
+[% team = componentteam %]
+
+<tr>
+<td>
+<a href="page.cgi?id=createteam.html&teamid=[% team.id %]">
+[% team.name %]
+</a>
+</td>
+<td>
+<a href="page.cgi?id=createteam.html&teamid=[% team.id %]">
+[% team.owner_user().name() %]
+</a>
+</td>
+<td>
+<a href="page.cgi?id=createteam.html&teamid=[% team.id %]">
+<[% team.owner_user().login() %]>
+</a>
+</td>
+<td>
+<a href="" onclick="return outofcomponent('[% team.name %]');">
+[delete]
+</a>
+</td>
+</tr>
+</table>
+[% ELSE %]
+Any team has not been assigned for sub-component.
+[% END %]
+</td>
+</tr>
+<tr>
+<td colspan="2">
+
+<form name="teams" action="page.cgi?" method="GET">
+<input type="hidden" name="id" value="componentteam.html"/>
+<input type="hidden" name="compid" value="[% compid %]"/>
+<input type="hidden" name="compname" value="[% compname %]"/>
+<input type="hidden" name="productname" value="[% productname %]"/>
+[% IF componentteamlist.size > 0 %]
+[% team = componentteamlist.first %]
+<input type="hidden" name="teamid" value="[% team.id %]"/>
+[% ELSE %]
+<input type="hidden" name="teamid" value=""/>
+[% END %]
+<input type="hidden" name="remteam" value=""/>
+<b>Assign team for sub-component:</b> <select name="addteam">
+[% FOREACH team IN allteams %]
+<option value="[% team.id %]">[% team.name %]</option>
+[% END %]
+</select>
+&nbsp&nbsp
+<input type="submit" value="Assign team"/>
+</form>
+</td>
+</tr>
+</table>
+<a href="page.cgi?id=allteams.html">teams main page</a><br>
+<br>
+[% PROCESS global/footer.html.tmpl %]
