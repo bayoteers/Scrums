@@ -19,7 +19,6 @@
 # Contributor(s):
 #   Visa Korhonen <visa.korhonen@symbio.com>
 
-
 use strict;
 
 package Bugzilla::Extension::Scrums::Sprint;
@@ -31,43 +30,42 @@ package Bugzilla::Extension::Scrums::Sprint;
 use base qw(Bugzilla::Object);
 
 ##### Constants
-# 
+#
 
 ###############################
 ####    Initialization     ####
 ###############################
 
-use constant DB_TABLE => 'scrums_sprints';
+use constant DB_TABLE   => 'scrums_sprints';
 use constant LIST_ORDER => 'nominal_schedule';
 
 use constant DB_COLUMNS => qw(
-    id
-    team_id
-    name
-    nominal_schedule
-    status
-    is_active
-    description
-);
+  id
+  team_id
+  name
+  nominal_schedule
+  status
+  is_active
+  description
+  );
 
 use constant REQUIRED_CREATE_FIELDS => qw(
-    team_id
-    name
-    nominal_schedule
-    status
-    is_active
-);
+  team_id
+  name
+  nominal_schedule
+  status
+  is_active
+  );
 
 use constant UPDATE_COLUMNS => qw(
-    name
-    nominal_schedule
-    status
-    is_active
-    description
-);
+  name
+  nominal_schedule
+  status
+  is_active
+  description
+  );
 
-use constant VALIDATORS => {
-};
+use constant VALIDATORS => {};
 
 ###############################
 ####     Constructors     #####
@@ -91,10 +89,11 @@ use constant VALIDATORS => {
 ####       Methods         ####
 ###############################
 
-sub get_bugs              { 
+sub get_bugs {
     my $self = shift;
-    my $dbh = Bugzilla->dbh;
-    my ($sprint_bugs) = $dbh->selectall_arrayref('select
+    my $dbh  = Bugzilla->dbh;
+    my ($sprint_bugs) = $dbh->selectall_arrayref(
+        'select
 	b.bug_id,
         b.bug_status,
         b.bug_severity,
@@ -107,35 +106,35 @@ sub get_bugs              {
     where
 	sbm.sprint_id = ?
     order by
-	bo.team', undef, $self->id);
+	bo.team', undef, $self->id
+    );
     return $sprint_bugs;
 }
 
-sub set_name              { $_[0]->set('name', $_[1]); }
-sub set_nominal_schedule  { $_[0]->set('nominal_schedule', $_[1]); }
-sub set_status            { $_[0]->set('status', $_[1]); }
-sub set_is_active         { $_[0]->set('is_active', $_[1]); }
-sub set_description       { $_[0]->set('description', $_[1]); }
+sub set_name             { $_[0]->set('name',             $_[1]); }
+sub set_nominal_schedule { $_[0]->set('nominal_schedule', $_[1]); }
+sub set_status           { $_[0]->set('status',           $_[1]); }
+sub set_is_active        { $_[0]->set('is_active',        $_[1]); }
+sub set_description      { $_[0]->set('description',      $_[1]); }
 
 ###############################
 ####      Accessors        ####
 ###############################
 
-sub name                  { return $_[0]->{'name'}; }
-sub status                { return $_[0]->{'status'}; }
-sub is_active             { return $_[0]->{'is_active'}; }
-sub description           { return $_[0]->{'description'}; }
+sub name        { return $_[0]->{'name'}; }
+sub status      { return $_[0]->{'status'}; }
+sub is_active   { return $_[0]->{'is_active'}; }
+sub description { return $_[0]->{'description'}; }
 
-sub nominal_schedule      { 
+sub nominal_schedule {
     my $str_with_dashes = $_[0]->{'nominal_schedule'};
-    my $str_with_dots = $str_with_dashes;
-    if($str_with_dashes ne "") {
-        if($str_with_dashes =~ /^(\d{4})-(\d{1,2})-(\d{1,2})/)
-        {
+    my $str_with_dots   = $str_with_dashes;
+    if ($str_with_dashes ne "") {
+        if ($str_with_dashes =~ /^(\d{4})-(\d{1,2})-(\d{1,2})/) {
             $str_with_dots = "$1.$2.$3";
         }
     }
-    return $str_with_dots; 
+    return $str_with_dots;
 }
 
 1;

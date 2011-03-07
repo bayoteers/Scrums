@@ -255,28 +255,28 @@ sub db_schema_abstract_schema {
                                      };
 
     $schema->{'scrums_sprint_bug_map'} = {
-                                      FIELDS => [
-                                                  bug_id => {
-                                                              TYPE       => 'INT3',
-                                                              NOTNULL    => 1,
-                                                              REFERENCES => {
-                                                                              TABLE  => 'bugs',
-                                                                              COLUMN => 'bug_id',
-                                                                              DELETE => 'CASCADE'
-                                                                            }
-                                                            },
-                                                  sprint_id => {
-                                                               TYPE       => 'INT2',
-                                                               NOTNULL    => 1,
-                                                               REFERENCES => {
-                                                                               TABLE  => 'scrums_sprints',
-                                                                               COLUMN => 'id',
-                                                                               DELETE => 'CASCADE'
-                                                                             }
-                                                             },
-                                                ]
-                                    };
-                                          
+                                           FIELDS => [
+                                                       bug_id => {
+                                                                   TYPE       => 'INT3',
+                                                                   NOTNULL    => 1,
+                                                                   REFERENCES => {
+                                                                                   TABLE  => 'bugs',
+                                                                                   COLUMN => 'bug_id',
+                                                                                   DELETE => 'CASCADE'
+                                                                                 }
+                                                                 },
+                                                       sprint_id => {
+                                                                      TYPE       => 'INT2',
+                                                                      NOTNULL    => 1,
+                                                                      REFERENCES => {
+                                                                                      TABLE  => 'scrums_sprints',
+                                                                                      COLUMN => 'id',
+                                                                                      DELETE => 'CASCADE'
+                                                                                    }
+                                                                    },
+                                                     ]
+                                         };
+
 }
 
 sub install_update_db {
@@ -338,10 +338,10 @@ sub page_before_template {
         show_team_and_sprints($vars);
     }
     if ($page eq 'scrums/newsprint.html') {
-# TODO
-#        if (not Bugzilla->user->in_group('admin')) {
-#            ThrowUserError('auth_failure', { group => "admin", action => "add", object => "team" });
-#        }
+        # TODO
+        #        if (not Bugzilla->user->in_group('admin')) {
+        #            ThrowUserError('auth_failure', { group => "admin", action => "add", object => "team" });
+        #        }
         edit_sprint($vars);
     }
 
@@ -363,9 +363,9 @@ sub page_before_template {
         my $cgi    = Bugzilla->cgi;
         my $action = $cgi->param('action');
         if ($action eq "orderteambugs") {
-            $vars->{'error'} = "orderteambugs"
-        } else
-        {
+            $vars->{'error'} = "orderteambugs";
+        }
+        else {
             return handle_release_bug_data($vars);
         }
     }

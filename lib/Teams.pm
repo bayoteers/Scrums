@@ -29,23 +29,22 @@ use Bugzilla::Util qw(trick_taint);
 use strict;
 use base qw(Exporter);
 our @EXPORT = qw(
-    show_all_teams
-    show_create_team
-    user_teams
-    add_into_team
-    component_team
-    search_person
-    edit_team
-    show_team_and_sprints
-    edit_sprint
-    create_sprint
-);
+  show_all_teams
+  show_create_team
+  user_teams
+  add_into_team
+  component_team
+  search_person
+  edit_team
+  show_team_and_sprints
+  edit_sprint
+  create_sprint
+  );
 
-# This file can be loaded by your extension via 
+# This file can be loaded by your extension via
 # "use Bugzilla::Extension::PMO::Util". You can put functions
 # used by your extension in here. (Make sure you also list them in
 # @EXPORT.)
-
 
 sub show_all_teams($) {
     my ($vars) = @_;
@@ -80,23 +79,22 @@ sub _delete_team {
 sub show_create_team {
     my ($vars) = @_;
 
-    my $error      = "";
+    my $error   = "";
     my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('teamid');
     if ($team_id ne "") {
         if ($team_id =~ /^([0-9]+)$/) {
             $team_id = $1;    # $data now untainted
-            my $team = Bugzilla::Extension::Scrums::Team->new($team_id);            
+            my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
             if ($cgi->param('editteam') ne "") {
 
                 my $team_name  = $cgi->param('name');
                 my $team_owner = $cgi->param('userid');
                 if ($team_owner =~ /^([0-9]+)$/) {
-                    $team_owner = $1;    # $data now untainted
-                    $error  = _update_team($team, $team_name, $team_owner);
+                    $team_owner = $1;                                        # $data now untainted
+                    $error = _update_team($team, $team_name, $team_owner);
                 }
-                else
-                {
+                else {
                     $error .= "Illegal team owner";
                 }
             }
@@ -138,7 +136,7 @@ sub _new_team {
 
     my $cgi = Bugzilla->cgi;
 
-    my $name  = $cgi->param('name');
+    my $name     = $cgi->param('name');
     my $owner_id = $cgi->param('userid');
 
     my $error = "";
@@ -159,7 +157,7 @@ sub _new_team {
     }
 
     if ($name and $owner_id) {
-        my $team = Bugzilla::Extension::Scrums::Team->create({name => $name, owner => $owner_id});
+        my $team = Bugzilla::Extension::Scrums::Team->create({ name => $name, owner => $owner_id });
         _show_existing_team($vars, $team);
     }
     else {
@@ -197,10 +195,10 @@ sub user_teams {
             }
 
             my $user_team_ids = Bugzilla::Extension::Scrums::Team->team_memberships_of_user($user_id);
-            my $user_teams = Bugzilla::Extension::Scrums::Team->new_from_list(@{$user_team_ids});
+            my $user_teams    = Bugzilla::Extension::Scrums::Team->new_from_list(@{$user_team_ids});
             $vars->{'userteamlist'} = $user_teams;
 
-            $vars->{'allteams'} = [Bugzilla::Extension::Scrums::Team->get_all()];
+            $vars->{'allteams'}  = [ Bugzilla::Extension::Scrums::Team->get_all() ];
             $vars->{'userid'}    = $user_id;
             $vars->{'username'}  = $cgi->param('username');
             $vars->{'userlogin'} = $cgi->param('userlogin');
@@ -277,8 +275,8 @@ sub component_team {
 
             $vars->{'componentteam'} = Bugzilla::Extension::Scrums::Team->team_of_component($comp_id);
 
-            my ($all_teams) = [Bugzilla::Extension::Scrums::Team->get_all()];
-            @{$all_teams} = sort {lc($a->id) cmp lc($b->id)} @{$all_teams};
+            my ($all_teams) = [ Bugzilla::Extension::Scrums::Team->get_all() ];
+            @{$all_teams} = sort { lc($a->id) cmp lc($b->id) } @{$all_teams};
             $vars->{'allteams'}    = $all_teams;
             $vars->{'compid'}      = $cgi->param('compid');
             $vars->{'compname'}    = $cgi->param('compname');
@@ -367,20 +365,20 @@ sub edit_team {
     $vars->{'ownerid'}   = $cgi->param('ownerid');
 }
 
-# Show team bugs is a whole, which consists of team, sprints of team and 
+# Show team bugs is a whole, which consists of team, sprints of team and
 # list of bugs (ids) that belong to sprints
 sub _show_team_bugs {
     my ($vars) = @_;
 
     my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('teamid');
-    my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
-    $vars->{'team'} = $team;
+    my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
+    $vars->{'team'}               = $team;
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
 
-#    $vars->{'sprints'} = [Bugzilla::Extension::Scrums::Sprint->get_all()];
-    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({team_id => $team_id});
-#    $vars->{'sprints'} = $sprints;
+    #    $vars->{'sprints'} = [Bugzilla::Extension::Scrums::Sprint->get_all()];
+    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id });
+    #    $vars->{'sprints'} = $sprints;
 
     my %sprint_bug_map;
     my @team_sprints_array;
@@ -388,43 +386,43 @@ sub _show_team_bugs {
         my $spr_bugs = $sprint->get_bugs();
         my %team_sprint;
         %team_sprint->{'sprint'} = $sprint;
-        %team_sprint->{'bugs'} = $spr_bugs;
+        %team_sprint->{'bugs'}   = $spr_bugs;
         push @team_sprints_array, \%team_sprint;
-    }    
-    $vars->{'team_sprints_array'} = \@team_sprints_array;    
+    }
+    $vars->{'team_sprints_array'} = \@team_sprints_array;
 }
 
 sub edit_sprint {
     my ($vars) = @_;
 
-# TODO
-#    if (not Bugzilla->user->in_group('release_managers')) {
-#        ThrowUserError('auth_failure', { group => "release_managers", action => "edit", object => "release" });
-#    }
+    # TODO
+    #    if (not Bugzilla->user->in_group('release_managers')) {
+    #        ThrowUserError('auth_failure', { group => "release_managers", action => "edit", object => "release" });
+    #    }
 
     my $cgi = Bugzilla->cgi;
-    $vars->{'editsprint'}  = $cgi->param('editsprint');
-    $vars->{'teamid'}    = $cgi->param('teamid');
-    $vars->{'sprintid'}    = $cgi->param('sprintid');
-    $vars->{'sprintname'}    = $cgi->param('sprintname');
-    $vars->{'nominalschedule'}  = $cgi->param('nominalschedule');
-    $vars->{'description'}  = $cgi->param('description');
+    $vars->{'editsprint'}      = $cgi->param('editsprint');
+    $vars->{'teamid'}          = $cgi->param('teamid');
+    $vars->{'sprintid'}        = $cgi->param('sprintid');
+    $vars->{'sprintname'}      = $cgi->param('sprintname');
+    $vars->{'nominalschedule'} = $cgi->param('nominalschedule');
+    $vars->{'description'}     = $cgi->param('description');
 }
 
 sub show_team_and_sprints {
     my ($vars) = @_;
 
-    my $error   = "";
-    my $cgi     = Bugzilla->cgi;
+    my $error     = "";
+    my $cgi       = Bugzilla->cgi;
     my $sprint_id = $cgi->param('sprintid');
     if ($cgi->param('newsprint') ne "") {
-        _new_sprint($vars);          
+        _new_sprint($vars);
     }
     elsif ($cgi->param('editsprint') ne "") {
         if ($sprint_id ne "") {
             if ($sprint_id =~ /^([0-9]+)$/) {
-                $sprint_id = $1;    # $data now untainted
-                $error  = _update_sprint($vars, $sprint_id);
+                $sprint_id = $1;                              # $data now untainted
+                $error = _update_sprint($vars, $sprint_id);
             }
             else {
                 $error = "Invalid sprint id";
@@ -434,9 +432,9 @@ sub show_team_and_sprints {
     elsif ($cgi->param('deletesprint') ne "") {
         $sprint_id = $cgi->param('deletesprint');
         if ($sprint_id =~ /^([0-9]+)$/) {
-            $sprint_id = $1;    # $data now untainted
+            $sprint_id = $1;                                  # $data now untainted
             my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
-            $sprint->remove_from_db();    
+            $sprint->remove_from_db();
         }
     }
     _show_team_bugs($vars);
@@ -445,17 +443,18 @@ sub show_team_and_sprints {
 sub _new_sprint {
     my ($vars) = @_;
 
-    my $cgi = Bugzilla->cgi;
-    my $error = "";
-    my $teamid  = $cgi->param('teamid');
-    my $name  = $cgi->param('sprintname');
+    my $cgi             = Bugzilla->cgi;
+    my $error           = "";
+    my $teamid          = $cgi->param('teamid');
+    my $name            = $cgi->param('sprintname');
     my $nominalschedule = $cgi->param('nominalschedule');
-    my $description = $cgi->param('description');
+    my $description     = $cgi->param('description');
 
     ($error, $teamid, $name, $nominalschedule, $description) = _sanitise_sprint_data($teamid, $name, $nominalschedule, $description);
 
     if ($teamid and $name and $nominalschedule) {
-        my $sprint = Bugzilla::Extension::Scrums::Sprint->create({team_id => $teamid, status => "NEW", name => $name, nominal_schedule => $nominalschedule, description => $description, is_active => 1});
+        my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
+                     { team_id => $teamid, status => "NEW", name => $name, nominal_schedule => $nominalschedule, description => $description, is_active => 1 });
     }
     else {
         ThrowUserError($error);
@@ -466,12 +465,12 @@ sub _new_sprint {
 sub _update_sprint {
     my ($vars, $sprint_id) = @_;
 
-    my $cgi = Bugzilla->cgi;
-    my $error = "";
-    my $teamid  = $cgi->param('teamid');
-    my $name  = $cgi->param('sprintname');
+    my $cgi             = Bugzilla->cgi;
+    my $error           = "";
+    my $teamid          = $cgi->param('teamid');
+    my $name            = $cgi->param('sprintname');
     my $nominalschedule = $cgi->param('nominalschedule');
-    my $description = $cgi->param('description');
+    my $description     = $cgi->param('description');
 
     ($error, $teamid, $name, $nominalschedule, $description) = _sanitise_sprint_data($teamid, $name, $nominalschedule, $description);
 
@@ -496,16 +495,16 @@ sub _sanitise_sprint_data {
         $teamid = $1;    # $data now untainted
     }
     else {
-         $error .= "Illegal team id. ";
+        $error .= "Illegal team id. ";
         $teamid = "";
     }
 
     if ($name =~ /^(\S.*)/) {
-        $name = $1;    # $data now untainted
+        $name = $1;      # $data now untainted
     }
     else {
         $error .= "Illegal name. ";
-        $name  = "";
+        $name = "";
     }
 
     if ($nominalschedule =~ /^(\d{4}\.\d{1,2}\.\d{1,2})/) {
@@ -517,7 +516,7 @@ sub _sanitise_sprint_data {
     }
 
     if ($description =~ /(.*)/) {
-        $description = $1;    # $data now untainted
+        $description = $1;        # $data now untainted
     }
     else {
         $error .= "Illegal description. ";
@@ -528,8 +527,8 @@ sub _sanitise_sprint_data {
 }
 
 sub _get_team_sprints {
-    my ($vars, $team_id) = @_;        
-    $vars->{'sprints'} = Bugzilla::Extension::Scrums::Sprint->match({team_id => $team_id});
+    my ($vars, $team_id) = @_;
+    $vars->{'sprints'} = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id });
 }
 
 sub _update_team {

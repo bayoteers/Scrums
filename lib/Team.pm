@@ -38,32 +38,29 @@ use constant MAX_TEAM_NAME_SIZE => 64;
 ####    Initialization     ####
 ###############################
 
-use constant DB_TABLE => 'scrums_team';
+use constant DB_TABLE   => 'scrums_team';
 use constant LIST_ORDER => 'name';
 
 use constant DB_COLUMNS => qw(
-    id
-    name
-    owner
-    weekly_velocity_value
-    weekly_velocity_start
-    weekly_velocity_end
-);
+  id
+  name
+  owner
+  weekly_velocity_value
+  weekly_velocity_start
+  weekly_velocity_end
+  );
 
 use constant REQUIRED_CREATE_FIELDS => qw(
-    name
-    owner
-);
+  name
+  owner
+  );
 
 use constant UPDATE_COLUMNS => qw(
-    name
-    owner
-);
+  name
+  owner
+  );
 
-
-use constant VALIDATORS => {
-    name        => \&_check_name,
-};
+use constant VALIDATORS => { name => \&_check_name, };
 
 ###############################
 ####     Constructors     #####
@@ -71,12 +68,12 @@ use constant VALIDATORS => {
 # This is necessary method only because transaction handling is needed for multiple tables
 sub remove_from_db {
     my $self = shift;
-    my $dbh = Bugzilla->dbh;
+    my $dbh  = Bugzilla->dbh;
 
     $dbh->bz_start_transaction();
 
     my $team_id = $self->id;
-    Bugzilla->dbh->do('delete from scrums_teammember where teamid = ?', undef, $team_id);
+    Bugzilla->dbh->do('delete from scrums_teammember where teamid = ?',    undef, $team_id);
     Bugzilla->dbh->do('delete from scrums_componentteam where teamid = ?', undef, $team_id);
 
     $self->SUPER::remove_from_db();
@@ -91,18 +88,18 @@ sub remove_from_db {
 sub _check_name {
     my ($invocant, $name) = @_;
 
-# TODO define user error
+    # TODO define user error
     $name = trim($name);
     $name || ThrowUserError('team_name_not_specified');
 
     if (length($name) > MAX_TEAM_NAME_SIZE) {
-# TODO define user error
-        ThrowUserError('team_name_too_long', {'name' => $name});
+        # TODO define user error
+        ThrowUserError('team_name_too_long', { 'name' => $name });
     }
 
-    my $team = new Bugzilla::Extension::Scrums::Team({name => $name});
+    my $team = new Bugzilla::Extension::Scrums::Team({ name => $name });
     if ($team && (!ref $invocant || $team->id != $invocant->id)) {
-# TODO define user error
+        # TODO define user error
         ThrowUserError("team_already_exists", { name => $team->name });
     }
     return $name;
@@ -112,44 +109,44 @@ sub _check_name {
 ####       Methods         ####
 ###############################
 
-sub set_name                    { $_[0]->set('name', $_[1]); }
-sub set_owner                   { $_[0]->set('owner', $_[1]); }
+sub set_name  { $_[0]->set('name',  $_[1]); }
+sub set_owner { $_[0]->set('owner', $_[1]); }
 
-sub set_component   {
+sub set_component {
     my ($self, $component_id) = @_;
     my $team_id = $self->id;
     # Method can be used only when component had no previous team assigned.
     Bugzilla->dbh->do('INSERT INTO scrums_componentteam (component_id, teamid) VALUES (?, ?)', undef, $component_id, $team_id);
 }
 
-sub update_component   {
+sub update_component {
     my ($self, $component_id) = @_;
     my $team_id = $self->id;
-    # Method can be used only when component had previous team assigned. 
+    # Method can be used only when component had previous team assigned.
     Bugzilla->dbh->do('UPDATE scrums_componentteam SET component_id = ? WHERE teamid = ?', undef, $component_id, $team_id);
 }
 
-sub remove_component   {
+sub remove_component {
     my ($invocant, $component_id) = @_;
     Bugzilla->dbh->do('DELETE FROM scrums_componentteam WHERE component_id = ?', undef, $component_id);
 }
 
-sub set_member   {
+sub set_member {
     my ($self, $member_id) = @_;
     my $team_id = $self->id;
 
-    my $team_member_ids = Bugzilla->dbh->selectcol_arrayref(
-        'SELECT userid FROM scrums_teammember WHERE teamid = ? AND userid = ?', undef, $self->id, $member_id);
+    my $team_member_ids =
+      Bugzilla->dbh->selectcol_arrayref('SELECT userid FROM scrums_teammember WHERE teamid = ? AND userid = ?', undef, $self->id, $member_id);
     # User can not belong to same team several times
     if (scalar @{$team_member_ids} > 0) {
-# TODO define user error
+        # TODO define user error
         ThrowUserError("user_already_member_of_team", { name => $self->name });
     }
     # Team can have many members. Member can belong to many teams.
     Bugzilla->dbh->do('INSERT INTO scrums_teammember (teamid, userid) VALUES (?, ?)', undef, $team_id, $member_id);
 }
 
-sub remove_member   {
+sub remove_member {
     my ($self, $member_id) = @_;
     my $team_id = $self->id;
     Bugzilla->dbh->do('DELETE FROM scrums_teammember WHERE userid = ? AND teamid = ?', undef, $member_id, $team_id);
@@ -164,23 +161,22 @@ sub team_memberships_of_user {
 sub team_of_component {
     my ($self, $component_id) = @_;
     my ($team_id) = Bugzilla->dbh->selectrow_array('SELECT teamid FROM scrums_componentteam WHERE component_id = ?', undef, $component_id);
-    if(!$team_id || $team_id == 0) {
+    if (!$team_id || $team_id == 0) {
         return;
     }
     my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
     return $team;
 }
 
-
 ###############################
 ####      Accessors        ####
 ###############################
 
-sub name                        { return $_[0]->{'name'}; }
-sub owner                       { return $_[0]->{'owner'}; }
-sub weekly_velocity_value       { return $_[0]->{'weekly_velocity_value'}; }
-sub weekly_velocity_start       { return $_[0]->{'weekly_velocity_start'}; }
-sub weekly_velocity_end         { return $_[0]->{'weekly_velocity_end'}; }
+sub name                  { return $_[0]->{'name'}; }
+sub owner                 { return $_[0]->{'owner'}; }
+sub weekly_velocity_value { return $_[0]->{'weekly_velocity_value'}; }
+sub weekly_velocity_start { return $_[0]->{'weekly_velocity_start'}; }
+sub weekly_velocity_end   { return $_[0]->{'weekly_velocity_end'}; }
 
 sub owner_user {
     my ($self) = @_;
@@ -191,10 +187,9 @@ sub members {
     my $self = shift;
     return $self->{'members'} if exists $self->{'members'};
     return [] if $self->{'error'};
-    
+
     my $dbh = Bugzilla->dbh;
-    my $team_member_ids = $dbh->selectcol_arrayref(
-        'SELECT userid FROM scrums_teammember WHERE teamid = ?', undef, $self->id);
+    my $team_member_ids = $dbh->selectcol_arrayref('SELECT userid FROM scrums_teammember WHERE teamid = ?', undef, $self->id);
     $self->{'members'} = Bugzilla::User->new_from_list($team_member_ids);
     return $self->{'members'};
 }
@@ -203,10 +198,9 @@ sub components {
     my $self = shift;
     return $self->{'components'} if exists $self->{'components'};
     return [] if $self->{'error'};
-    
+
     my $dbh = Bugzilla->dbh;
-    my $component_ids = $dbh->selectcol_arrayref(
-        'SELECT component_id FROM scrums_componentteam WHERE teamid = ?', undef, $self->id);
+    my $component_ids = $dbh->selectcol_arrayref('SELECT component_id FROM scrums_componentteam WHERE teamid = ?', undef, $self->id);
     $self->{'components'} = Bugzilla::Component->new_from_list($component_ids);
     return $self->{'components'};
 }
@@ -214,28 +208,28 @@ sub components {
 sub all_teams {
     my ($self, $sort) = @_;
 
-    my ($team_list) = [Bugzilla::Extension::Scrums::Team->get_all];
+    my ($team_list) = [ Bugzilla::Extension::Scrums::Team->get_all ];
 
-    if($sort == 1) {
-        @{$team_list} = sort {lc($a->name) cmp lc($b->name)} @{$team_list};
+    if ($sort == 1) {
+        @{$team_list} = sort { lc($a->name) cmp lc($b->name) } @{$team_list};
     }
-    elsif($sort == 2) {
-        @{$team_list} = sort {lc($b->name) cmp lc($a->name)} @{$team_list};
-    }         
-    elsif($sort == 3) {
-        @{$team_list} = sort {lc($a->owner_user->name) cmp lc($b->owner_user->name)} @{$team_list};
-    }         
-    elsif($sort == 4) {
-        @{$team_list} = sort {lc($b->owner_user->name) cmp lc($a->owner_user->name)} @{$team_list};
-    }        
-    elsif($sort == 5) {
-        @{$team_list} = sort {lc($a->owner_user->login) cmp lc($b->owner_user->login)} @{$team_list};
-    }                  
-    elsif($sort == 6) {
-        @{$team_list} = sort {lc($b->owner_user->login) cmp lc($a->owner_user->login)} @{$team_list};
-    }  
+    elsif ($sort == 2) {
+        @{$team_list} = sort { lc($b->name) cmp lc($a->name) } @{$team_list};
+    }
+    elsif ($sort == 3) {
+        @{$team_list} = sort { lc($a->owner_user->name) cmp lc($b->owner_user->name) } @{$team_list};
+    }
+    elsif ($sort == 4) {
+        @{$team_list} = sort { lc($b->owner_user->name) cmp lc($a->owner_user->name) } @{$team_list};
+    }
+    elsif ($sort == 5) {
+        @{$team_list} = sort { lc($a->owner_user->login) cmp lc($b->owner_user->login) } @{$team_list};
+    }
+    elsif ($sort == 6) {
+        @{$team_list} = sort { lc($b->owner_user->login) cmp lc($a->owner_user->login) } @{$team_list};
+    }
     else {
-        @{$team_list} = sort {lc($a->id) cmp lc($b->id)} @{$team_list};
+        @{$team_list} = sort { lc($a->id) cmp lc($b->id) } @{$team_list};
     }
 
     return $team_list;
@@ -243,8 +237,9 @@ sub all_teams {
 
 sub unprioritised_bugs {
     my $self = shift;
-    my $dbh = Bugzilla->dbh;
-    my ($unscheduled_bugs) = $dbh->selectall_arrayref('select
+    my $dbh  = Bugzilla->dbh;
+    my ($unscheduled_bugs) = $dbh->selectall_arrayref(
+        'select
 	b.bug_id,
 	b.bug_status,
         b.bug_severity,
@@ -260,7 +255,8 @@ sub unprioritised_bugs {
 	bs.is_open = 1 and
         not exists (select null from scrums_sprint_bug_map sbm inner join scrums_sprints spr on sbm.sprint_id = spr.id where b.bug_id = sbm.bug_id and spr.team_id = ?) 
     order by
-	bug_id', undef, $self->id, $self->id);
+	bug_id', undef, $self->id, $self->id
+    );
     return $unscheduled_bugs;
 }
 
@@ -268,12 +264,12 @@ sub unprioritised_bugs {
 #    my $self = shift;
 #    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({team_id => $self->id});
 #    for my $sprint ($sprints) {
-#    }    
+#    }
 #}
 
 sub mysort {
 
- lc($a->owner_user->name) cmp lc($b->owner_user->name);
+    lc($a->owner_user->name) cmp lc($b->owner_user->name);
 
 }
 
