@@ -62,13 +62,13 @@ sub show_all_teams($) {
     my $team_list;
     $team_list = Bugzilla::Extension::Scrums::Team->all_teams($sort);
 
-    $vars->{'sort'} = $sort;
-
+    $vars->{'sort'}     = $sort;
     $vars->{'teamlist'} = $team_list;
 }
 
 sub _delete_team {
     my ($team_id) = @_;
+
     if ($team_id =~ /^([0-9]+)$/) {
         $team_id = $1;    # $data now untainted
         my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
@@ -82,6 +82,7 @@ sub show_create_team {
     my $error   = "";
     my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('teamid');
+
     if ($team_id ne "") {
         if ($team_id =~ /^([0-9]+)$/) {
             $team_id = $1;    # $data now untainted
@@ -116,6 +117,7 @@ sub _show_existing_team {
     my $cgi = Bugzilla->cgi;
 
     my $user_id = $cgi->param('userid');
+
     if ($user_id ne "") {
         if ($user_id =~ /^([0-9]+)$/) {
             $user_id = $1;    # $data now untainted
@@ -163,6 +165,7 @@ sub _new_team {
     else {
         $vars->{'error'} = $error;
     }
+
     $vars->{'teamisnew'} = "true";
 }
 
@@ -171,6 +174,7 @@ sub user_teams {
 
     my $cgi     = Bugzilla->cgi;
     my $user_id = $cgi->param('userid');
+
     if ($user_id ne "") {
         if ($user_id =~ /^([0-9]+)$/) {
             $user_id = $1;    # $data now untainted
@@ -246,6 +250,7 @@ sub component_team {
 
     my $cgi     = Bugzilla->cgi;
     my $comp_id = $cgi->param('compid');
+
     if ($comp_id ne "") {
         if ($comp_id =~ /^([0-9]+)$/) {
             $comp_id = $1;    # $data now untainted
@@ -349,6 +354,7 @@ sub search_person {
         $vars->{'query'} = $query;
         $vars->{'users'} = $dbh->selectall_arrayref($query, { 'Slice' => {} }, @bindValues);
     }
+
     $vars->{'formname'} = $cgi->param('formname');
     $vars->{'submit'}   = $cgi->param('submit');
 }
@@ -382,6 +388,7 @@ sub _show_team_bugs {
 
     my %sprint_bug_map;
     my @team_sprints_array;
+
     for my $sprint (@{$sprints}) {
         my $spr_bugs = $sprint->get_bugs();
         my %team_sprint;
@@ -437,6 +444,7 @@ sub show_team_and_sprints {
             $sprint->remove_from_db();
         }
     }
+
     _show_team_bugs($vars);
 }
 
@@ -528,6 +536,7 @@ sub _sanitise_sprint_data {
 
 sub _get_team_sprints {
     my ($vars, $team_id) = @_;
+
     $vars->{'sprints'} = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id });
 }
 
@@ -556,6 +565,7 @@ sub _update_team {
         $team->set_owner($owner);
         $team->update();
     }
+
     return $error;
 }
 

@@ -72,7 +72,8 @@ use constant VALIDATORS => { name => \&_check_name, };
 # This is necessary method only because transaction handling is needed for multiple tables
 sub remove_from_db {
     my $self = shift;
-    my $dbh  = Bugzilla->dbh;
+
+    my $dbh = Bugzilla->dbh;
 
     $dbh->bz_start_transaction();
 
@@ -120,12 +121,14 @@ sub set_remaining_capacity     { $_[0]->set('capacity_algorithm',     $_[1]); }
 
 sub set_flag_type {
     my ($self, $type_id) = @_;
+
     my $release_id = $self->id;
     Bugzilla->dbh->do('INSERT INTO scrums_flagtype_release_map (flagtype_id, release_id) VALUES (?, ?)', undef, $type_id, $release_id);
 }
 
 sub remove_flag_type {
     my ($self, $type_id) = @_;
+
     my $release_id = $self->id;
     Bugzilla->dbh->do('DELETE FROM scrums_flagtype_release_map WHERE flagtype_id = ? AND release_id = ?', undef, $type_id, $release_id);
 }
@@ -143,6 +146,7 @@ sub remaining_capacity     { return $_[0]->{'remaining_capacity'}; }
 
 sub flag_types {
     my $self = shift;
+
     return $self->{'flag_types'} if exists $self->{'flag_types'};
     return [] if $self->{'error'};
 
@@ -154,7 +158,8 @@ sub flag_types {
 
 sub scheduled_bugs {
     my $self = shift;
-    my $dbh  = Bugzilla->dbh;
+
+    my $dbh = Bugzilla->dbh;
     my ($scheduled_bugs) = $dbh->selectall_arrayref(
         'select
 	b.bug_id,
@@ -179,7 +184,8 @@ sub scheduled_bugs {
 
 sub unprioritised_bugs {
     my $self = shift;
-    my $dbh  = Bugzilla->dbh;
+
+    my $dbh = Bugzilla->dbh;
     my ($unprioritised_bugs) = $dbh->selectall_arrayref(
         'select
 	b.bug_id,

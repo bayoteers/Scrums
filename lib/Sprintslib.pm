@@ -24,39 +24,40 @@ package Bugzilla::Extension::Scrums::Sprintslib;
 use lib qw(./extensions/Scrums/lib);
 
 use Bugzilla::Extension::Scrums::Bugorder;
-use Bugzilla::FlagType;
 
+use Bugzilla::FlagType;
+use Bugzilla::Error;
 use Bugzilla::Util qw(trick_taint);
 
 use XML::Simple;
 
 use strict;
 use base qw(Exporter);
-use Bugzilla::Error;
 
-# This file can be loaded by your extension via 
+# This file can be loaded by your extension via
 # "use Bugzilla::Extension::Scruns::Releases". You can put functions
 # used by your extension in here. (Make sure you also list them in
 # @EXPORT.)
 our @EXPORT = qw(
-team_bug_order
-);
+  team_bug_order
+  );
 
 sub team_bug_order {
     my ($team_id, @all_team_sprints_and_unprioritised_in) = @_;
 
-    my %sprints_hash;  
+    my %sprints_hash;
     my %team_order_hash;
-    _get_sprints_hash(\%sprints_hash, $team_id);
 
+    _get_sprints_hash(\%sprints_hash, $team_id);
     _get_team_order_hash(\%team_order_hash, $team_id);
 
     foreach my $sprint (@all_team_sprints_and_unprioritised_in) {
-        my $sprint_id = $sprint->{id};	
-	if($sprint_id == -1) {
-	    process_unprioritised_in($sprint);
-	}
-	else {
+        my $sprint_id = $sprint->{id};
+
+        if ($sprint_id == -1) {
+            process_unprioritised_in($sprint);
+        }
+        else {
             process_sprint($sprint, \%sprints_hash);
         }
     }
@@ -65,76 +66,77 @@ sub team_bug_order {
 }
 
 sub process_sprint() {
-    my $sprint = shift;
-    my $sprints_hash = shift;
+    my ($sprint, $sprints_hash) = @_;
 
     # print "Processing sprint\n";
     my $sprint_id = $sprint->{id};
-    my @bugs = @{$sprint->{bugs}};
+    my @bugs      = @{ $sprint->{bugs} };
+
     foreach my $bug (@bugs) {
-	my $old_sprint = $sprints_hash->{$bug};
-	if($old_sprint == $sprint_id) {
-	    # print "(Sprint is unchanged)\n";
-	}
-	elsif($old_sprint == 0) {
+        my $old_sprint = $sprints_hash->{$bug};
+
+        if ($old_sprint == $sprint_id) {
+            # print "(Sprint is unchanged)\n";
+        }
+        elsif ($old_sprint == 0) {
             Bugzilla->dbh->do('INSERT INTO scrums_sprint_bug_map (bug_id, sprint_id) values (?, ?)', undef, $bug, $sprint_id);
         }
-	else {
+        else {
             Bugzilla->dbh->do('UPDATE scrums_sprint_bug_map set sprint_id=? where bug_id=?', undef, $sprint_id, $bug);
-	}
+        }
     }
 }
 
 sub process_unprioritised_in() {
-    # print "Processing unprioritised\n";
+    my ($unprioritised_in) = @_
 
-    my $unprioritised_in = shift;
-    my @bugs = @{$unprioritised_in->{bugs}};
+      # print "Processing unprioritised\n";
+      my @bugs = @{ $unprioritised_in->{bugs} };
+
     foreach my $bug (@bugs) {
-        Bugzilla->dbh->do('DELETE from scrums_sprint_bug_map where bug_id=?', undef, $bug); 
+        Bugzilla->dbh->do('DELETE from scrums_sprint_bug_map where bug_id=?',         undef, $bug);
         Bugzilla->dbh->do('UPDATE scrums_bug_order set team = NULL where bug_id = ?', undef, $bug);
     }
 }
 
 sub process_team_orders() {
-    my $ref = shift;
-    my $team_order_hash = shift;
+    my ($ref, $team_order_hash) = @_;
 
     my @all_team_sprints_and_unprioritised_in = @{$ref};
 
     my $counter = 1;
+
     foreach my $sprint (@all_team_sprints_and_unprioritised_in) {
-        my $sprint_id = $sprint->{id};	
+        my $sprint_id = $sprint->{id};
         # This means, that table is sprint and not unprioritised_in
-	if($sprint_id != -1) {
-            my @bugs = @{$sprint->{bugs}};
+        if ($sprint_id != -1) {
+            my @bugs = @{ $sprint->{bugs} };
+
             foreach my $bug (@bugs) {
-	        my $old_team_order = $team_order_hash->{$bug};
+                my $old_team_order = $team_order_hash->{$bug};
                 if (!exists $team_order_hash->{$bug}) {
                     Bugzilla->dbh->do('INSERT INTO scrums_bug_order (bug_id, team) values (?, ?)', undef, $bug, $counter);
-	        }
-	        elsif($counter != $old_team_order)
-	        {
+                }
+                elsif ($counter != $old_team_order) {
                     Bugzilla->dbh->do('UPDATE scrums_bug_order set team=? where bug_id=?', undef, $counter, $bug);
-	        }
-	        else
-	        {
-		    # Team order for bug ($bug) is unchanged ($old_team_order)
-	        }
-	        $counter = $counter + 1;
-	    }
+                }
+                else {
+                    # Team order for bug ($bug) is unchanged ($old_team_order)
+                }
+                $counter = $counter + 1;
+            }
         }
         # Unprioritised_in must be handled separately
         # Table scrums_bug_order is however updated for unprioritised_in at the same time as scrums_sprint_bug_map, because order in table is irrelevant.
     }
 }
 
-
 sub _get_sprints_hash {
     my ($sprints_hash, $team_id) = @_;
 
     my $dbh = Bugzilla->dbh;
-    my $sth = $dbh->prepare("select
+    my $sth = $dbh->prepare(
+        "select
 	b.bug_id as bug_id,
 	spr.id as sprint
     from 
@@ -146,7 +148,8 @@ sub _get_sprints_hash {
     inner join 
 	scrums_sprints spr on sbm.sprint_id = spr.id
     where 
-	sct.teamid = ?");
+	sct.teamid = ?"
+                           );
     trick_taint($team_id);
     $sth->execute($team_id);
 
@@ -157,16 +160,17 @@ sub _get_sprints_hash {
 }
 
 # First part of union contains team bugs, that are scheduled. All scheduled bugs
-# have bug order. 
-# Second part of union contains bugs, that are both possible to schedule and 
+# have bug order.
+# Second part of union contains bugs, that are both possible to schedule and
 # contain bug order in database (bug order is in this case null, because bugs are unprioritised)
 # Bug is possible to schedule, when it is unprioritised and open.
-# Some of such bugs contains bug order in database and some don't. 
+# Some of such bugs contains bug order in database and some don't.
 sub _get_team_order_hash {
     my ($team_order_hash, $team_id) = @_;
 
     my $dbh = Bugzilla->dbh;
-    my $sth = $dbh->prepare("(select 
+    my $sth = $dbh->prepare(
+        "(select 
 	b.bug_id as bug_id,
 	bo.team as team
     from 
@@ -194,9 +198,11 @@ sub _get_team_order_hash {
 	bs.is_open = 1 and
         not exists (select null from scrums_sprint_bug_map sbm inner join scrums_sprints spr on sbm.sprint_id = spr.id where b.bug_id = sbm.bug_id and spr.team_id = ?))
     order by 
-	team, bug_id");
+	team, bug_id"
+                           );
     trick_taint($team_id);
     $sth->execute($team_id, $team_id, $team_id);
+
     while (my $row = $sth->fetchrow_arrayref) {
         my ($bug_id, $team_order) = @$row;
         $team_order_hash->{$bug_id} = $team_order;

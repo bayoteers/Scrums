@@ -26,22 +26,20 @@ use strict;
 use constant NAME => 'Scrums';
 
 use constant REQUIRED_MODULES => [
-  {
-    package => 'libxml-simple-perl',
-    module  => 'XML::Simple',
-    version => 2.18,
-  },
+    {
+       package => 'libxml-simple-perl',
+       module  => 'XML::Simple',
+       version => 2.18,
+    },
 
-  {
-    package => 'libjson-perl',
-    module  => 'JSON',
-    version => 2.21,
-  },
-
+    {
+       package => 'libjson-perl',
+       module  => 'JSON',
+       version => 2.21,
+    },
 
 ];
 
-use constant OPTIONAL_MODULES => [
-];
+use constant OPTIONAL_MODULES => [];
 
 __PACKAGE__->NAME;

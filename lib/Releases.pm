@@ -53,6 +53,7 @@ sub all_releases {
 
     my $cgi            = Bugzilla->cgi;
     my $delete_release = $cgi->param('deleterelease');
+
     if ($delete_release ne "") {
         if (not Bugzilla->user->in_group('release_managers')) {
             ThrowUserError('auth_failure', { group => "release_managers", action => "delete", object => "release" });
@@ -82,6 +83,7 @@ sub create_release {
 
     my $cgi        = Bugzilla->cgi;
     my $release_id = $cgi->param('releaseid');
+
     if ($release_id ne "") {
         if ($release_id =~ /^([0-9]+)$/) {
             $release_id = $1;    # $data now untainted
@@ -130,7 +132,6 @@ sub _show_existing_release {
     $vars->{'release'}      = $release;
     $vars->{'flagtypelist'} = $release->flag_types;
     $vars->{'allflagtypes'} = Bugzilla::FlagType::match({ is_active => 1, target_type => 'bug' });
-
 }
 
 sub edit_release {
@@ -164,6 +165,7 @@ sub show_release_bugs {
 
 # This method is failure because XMLin can not be used without parameter forcearray=> in place
 # Using 'forcearray' on the other hand produces different structure of in-memory object.
+
 sub donotuse_release_bug_order {
     my ($vars) = @_;
 
@@ -175,11 +177,13 @@ sub donotuse_release_bug_order {
     my @bug_lists_array = $ordered_bugs_document->{'bug'};
     my $bug_list_ref    = $bug_lists_array[0];
     my @bug_id_array    = keys %{$bug_list_ref};
+
     for my $bug_id (@bug_id_array) {
         my $child_tag_hash_ref = $bug_list_ref->{$bug_id};
         if (defined $child_tag_hash_ref && ref($child_tag_hash_ref)) {
             my $priority  = $child_tag_hash_ref->{'releasepriority'};
             my $bug_order = Bugzilla::Extension::Scrums::Bugorder->new($bug_id);
+
             if (defined $bug_order && ref($bug_order)) {
                 $bug_order->set_release_order($priority);
                 $bug_order->update();
@@ -195,7 +199,6 @@ sub donotuse_release_bug_order {
 }
 
 sub handle_release_bug_data {
-
     my ($vars) = @_;
 
     my $cgi    = Bugzilla->cgi;
@@ -227,14 +230,14 @@ sub handle_release_bug_data {
 
         #$vars->{'json_text'} = to_json([@list]);
         $vars->{'json_text'} = to_json([$msg]);
-
     }
 }
 
 sub _set_bug_release_order() {
-    my $bug_id    = @_[0];
-    my $order_nr  = @_[1];
+    my ($bug_id, $order_nr) = @_;
+
     my $bug_order = Bugzilla::Extension::Scrums::Bugorder->new($bug_id);
+
     if (defined $bug_order && ref($bug_order)) {
         $bug_order->set_release_order($order_nr);
         $bug_order->update();
@@ -248,6 +251,7 @@ sub _set_bug_release_order() {
 # Reason is that resulting in-memory object tree, that results from parsing is inconsistent without parameter.
 # In situation, when there is only one child tag like one bug for example, parsing result would become different
 # from what it becomes in situation where there are several tags.
+
 sub release_bug_order {
     my ($vars) = @_;
 
@@ -269,6 +273,7 @@ sub release_bug_order {
         my $release_priority = @{ $child_tags_ref->{'releasepriority'} }[0];
 
         my $bug_order = Bugzilla::Extension::Scrums::Bugorder->new($bug_id);
+
         if (defined $bug_order && ref($bug_order)) {
             $bug_order->set_release_order($release_priority);
             $bug_order->update();
@@ -280,7 +285,6 @@ sub release_bug_order {
 }
 
 sub _new_release {
-
     my ($vars) = @_;
 
     my $cgi = Bugzilla->cgi;
@@ -301,7 +305,6 @@ sub _new_release {
       _sanitize($release_name, $mr_begin, $mr_end, $algorithm, $original, $remaining);
 
     if ($release_name) {
-
         my $release = Bugzilla::Extension::Scrums::Release->create({ name => $release_name });
 
         if ($mr_begin and $mr_end) {
@@ -313,7 +316,8 @@ sub _new_release {
     else {
         $vars->{'error'} = $error;
     }
-    $vars->{'releaseisnew'} = "true";
+
+    $vars->{'releaseisnew'} = 'true';
 }
 
 sub _update_release {
@@ -333,11 +337,13 @@ sub _update_release {
         $release->set_remaining_capacity($remaining);
         $release->update();
     }
+
     return $error;
 }
 
 sub _add_flagtype {
     my ($release, $type_id) = @_;
+
     if ($type_id =~ /^([0-9]+)$/) {
         $type_id = $1;    # $data now untainted
         $release->set_flag_type($type_id);
@@ -346,6 +352,7 @@ sub _add_flagtype {
 
 sub _remove_flagtype {
     my ($release, $type_id) = @_;
+
     if ($type_id =~ /^([0-9]+)$/) {
         $type_id = $1;    # $data now untainted
         $release->remove_flag_type($type_id);
@@ -403,6 +410,7 @@ sub _sanitize {
         $error .= "Illegal remaining capacity value.";
         $remaining = "";
     }
+
     return ($error, $release_name, $mr_begin, $mr_end, $algorithm, $original, $remaining);
 }
 

@@ -68,7 +68,8 @@ use constant VALIDATORS => { name => \&_check_name, };
 # This is necessary method only because transaction handling is needed for multiple tables
 sub remove_from_db {
     my $self = shift;
-    my $dbh  = Bugzilla->dbh;
+
+    my $dbh = Bugzilla->dbh;
 
     $dbh->bz_start_transaction();
 
@@ -102,6 +103,7 @@ sub _check_name {
         # TODO define user error
         ThrowUserError("team_already_exists", { name => $team->name });
     }
+
     return $name;
 }
 
@@ -114,57 +116,72 @@ sub set_owner { $_[0]->set('owner', $_[1]); }
 
 sub set_component {
     my ($self, $component_id) = @_;
+
     my $team_id = $self->id;
+
     # Method can be used only when component had no previous team assigned.
     Bugzilla->dbh->do('INSERT INTO scrums_componentteam (component_id, teamid) VALUES (?, ?)', undef, $component_id, $team_id);
 }
 
 sub update_component {
     my ($self, $component_id) = @_;
+
     my $team_id = $self->id;
+
     # Method can be used only when component had previous team assigned.
     Bugzilla->dbh->do('UPDATE scrums_componentteam SET component_id = ? WHERE teamid = ?', undef, $component_id, $team_id);
 }
 
 sub remove_component {
     my ($invocant, $component_id) = @_;
+
     Bugzilla->dbh->do('DELETE FROM scrums_componentteam WHERE component_id = ?', undef, $component_id);
 }
 
 sub set_member {
     my ($self, $member_id) = @_;
-    my $team_id = $self->id;
 
+    my $team_id = $self->id;
     my $team_member_ids =
       Bugzilla->dbh->selectcol_arrayref('SELECT userid FROM scrums_teammember WHERE teamid = ? AND userid = ?', undef, $self->id, $member_id);
+
     # User can not belong to same team several times
     if (scalar @{$team_member_ids} > 0) {
         # TODO define user error
         ThrowUserError("user_already_member_of_team", { name => $self->name });
     }
+
     # Team can have many members. Member can belong to many teams.
     Bugzilla->dbh->do('INSERT INTO scrums_teammember (teamid, userid) VALUES (?, ?)', undef, $team_id, $member_id);
 }
 
 sub remove_member {
     my ($self, $member_id) = @_;
+
     my $team_id = $self->id;
+
     Bugzilla->dbh->do('DELETE FROM scrums_teammember WHERE userid = ? AND teamid = ?', undef, $member_id, $team_id);
 }
 
 sub team_memberships_of_user {
     my ($self, $user_id) = @_;
+
     my $user_team_ids = Bugzilla->dbh->selectall_arrayref('SELECT teamid FROM scrums_teammember WHERE userid = ?', undef, $user_id);
+
     return $user_team_ids;
 }
 
 sub team_of_component {
     my ($self, $component_id) = @_;
+
     my ($team_id) = Bugzilla->dbh->selectrow_array('SELECT teamid FROM scrums_componentteam WHERE component_id = ?', undef, $component_id);
+
     if (!$team_id || $team_id == 0) {
         return;
     }
+
     my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+
     return $team;
 }
 
@@ -180,11 +197,13 @@ sub weekly_velocity_end   { return $_[0]->{'weekly_velocity_end'}; }
 
 sub owner_user {
     my ($self) = @_;
+
     return Bugzilla::User->new($self->owner);
 }
 
 sub members {
     my $self = shift;
+
     return $self->{'members'} if exists $self->{'members'};
     return [] if $self->{'error'};
 
@@ -196,6 +215,7 @@ sub members {
 
 sub components {
     my $self = shift;
+
     return $self->{'components'} if exists $self->{'components'};
     return [] if $self->{'error'};
 
@@ -237,7 +257,9 @@ sub all_teams {
 
 sub unprioritised_bugs {
     my $self = shift;
-    my $dbh  = Bugzilla->dbh;
+
+    my $dbh = Bugzilla->dbh;
+
     my ($unscheduled_bugs) = $dbh->selectall_arrayref(
         'select
 	b.bug_id,
@@ -257,6 +279,7 @@ sub unprioritised_bugs {
     order by
 	bug_id', undef, $self->id, $self->id
     );
+
     return $unscheduled_bugs;
 }
 
@@ -268,9 +291,7 @@ sub unprioritised_bugs {
 #}
 
 sub mysort {
-
     lc($a->owner_user->name) cmp lc($b->owner_user->name);
-
 }
 
 1;

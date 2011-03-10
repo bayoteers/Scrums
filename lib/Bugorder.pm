@@ -23,14 +23,7 @@ use strict;
 
 package Bugzilla::Extension::Scrums::Bugorder;
 
-#use Bugzilla::Constants;
-#use Bugzilla::Util;
-#use Bugzilla::Error;
-
 use base qw(Bugzilla::Object);
-
-##### Constants
-#
 
 ###############################
 ####    Initialization     ####
@@ -62,15 +55,6 @@ use constant VALIDATORS => {};
 ###############################
 ####     Constructors     #####
 ###############################
-# This is necessary method only when transaction handling is needed for multiple tables
-#sub remove_from_db {
-#    my $self = shift;
-#    my $dbh = Bugzilla->dbh;
-#    $dbh->bz_start_transaction();
-#    $self->SUPER::remove_from_db();
-#
-#    $dbh->bz_commit_transaction();
-#}
 
 ###############################
 ####      Validators       ####
