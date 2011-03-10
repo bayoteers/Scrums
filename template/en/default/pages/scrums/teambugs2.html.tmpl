@@ -1,0 +1,183 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "Bugs in team" 
+    style_urls = ['skins/standard/admin.css']
+%]
+
+
+<script type="text/JavaScript" src="extensions/Scrums/web/js/mtmpl.js"></script>
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.4.4.min.js"></script>
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.10.custom.min.js"></script>
+<script type="text/javascript" src="extensions/Scrums/web/js/fakker.js"></script>
+<!-- <script type="text/javascript" src="extensions/Scrums/web/js/scrums.js"></script>-->
+
+    <style>
+
+    #demo1, #demo2, #sortable1, #sortable2, .sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #eee; padding: 5px; width: 560px;}
+    #demo1 li, #demo2 li, #sortable1 li, #sortable2 li, .sortable li { margin: 5px; padding: 5px; font-size: 1em; width: 540px; }
+    .number { background: #eee; color: #000000; border: 1px solid #dddddd;  }
+
+    </style>
+<script id="BugLiTmpl" type="text/html">
+    <li class="ui-state-default" id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span ><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #></span></li>
+</script>
+
+<script id="ListTmpl" type="text/html">
+    <h1 id="<#= list.h_id #>"><#= list.name #></h1>
+    <p>
+    <input type='button' value='previous' OnClick='move_list_left(<#= list.id #>);'/>
+
+    <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=<#= list.id #> %]&status=<#= list._status #>&sprintname=<#= list.name #>&nominalschedule=<#= list.nominal_schedule #>&description=<#= list.description #>&editsprint=true">[edit]</a>
+
+    <input type='button' value='previous' OnClick='move_list_right(<#= list.id #>);'/>
+    </p>
+
+    <ul id="<#= list.ul_id #>" class="connectedSortable sortable">
+    </ul>
+    <br />
+</script>
+
+    <script>
+
+var unordered_bugs = new listObject("sortable2", "headers2");
+
+/*
+for (var i = 0; i < [% team_sprints_array.size() %]; i++)
+{
+    sprint_lists.push(new listObject('#sprint_list_' + i, '#sprint_header_' + i, ));
+}
+*/
+
+function save_all()
+{
+    var data_lists = [];
+    data_lists['-1'] = [];
+    for (var i = 0; i < unordered_bugs.list.length; i++)
+    {
+        var found = false;
+        for (var k = 0; k < unordered_bugs.original_list.length; k++)
+        {
+            if (unordered_bugs.original_list[k][0] == unordered_bugs.list[i][0])
+            {
+                found = true;
+                break;
+            }
+            if (!found)
+            {
+                // this bug is new in unordered list
+                data_lists['-1'].push(unordered_bugs.list[i][0])
+            }
+        }
+    }
+    save(sprint_lists, 'team', [% team.id %], data_lists);
+}
+
+// data from backend
+var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 %]"],[% END %]];
+var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %],[% bug.1 %],[% bug.2 %],[% bug.3 %]],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() %]"],[% END %]};
+
+//    init('team', [% release.id %], [ordered_bugs, unordered_bugs]);
+var sprint_lists = [];
+$(document).ready(function() {
+
+    var html = '';
+    for (id in sprint_list_data)
+    {
+        // last argument is the name
+        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0]);
+        html += parseTemplate($('#ListTmpl').html(), { list: list });
+        // last argument is the bug list
+        update_lists(list, 0, sprint_list_data[id][1]);
+        // extra stuff for sprint
+        list._status = sprint_list_data[id][2]
+        list.nominal_schedule = sprint_list_data[id][3]
+        list.description = sprint_list_data[id][4]
+        sprint_lists.push(list);
+
+    }
+    $('#sprints').html(html);
+    update_lists(unordered_bugs, 0, unordered_list_data);
+    var all_lists = sprint_lists;
+    all_lists.push(unordered_bugs);
+    bind_sortable_lists(all_lists);
+});
+
+function move_list_left(list_id)
+{
+    move_list(list_id, -offset_step);
+}
+function move_list_right(list_id)
+{
+    move_list(list_id, offset_step);
+}
+
+function move_list(list_id, step)
+{
+    for (var i = 0; i< sprint_lists.length; i++)
+    {
+        if (sprint_lists[i].id == list_id)
+        {
+            update_lists(sprint_lists[i], step);
+            break;
+        }
+    }
+}
+
+
+
+//new listOb
+//new listObject('#sprint_list_' + [% sprint.id() %], '#sprint_header_' + [% sprint.id() %], [% sprint.id() %]);
+</script>
+
+<link rel="stylesheet" href="extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
+
+<div class="demo">
+<input type='button' value='save' OnClick='save_all();'/> 
+<a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">add sprint</a>
+
+<table>
+    <tr>
+        <th valign='top' id='sprints'>
+        </th>
+    <th valign='top'>
+        <h1 id="headers2">Unordered </h1>
+        <p>
+        <input type='button' value='previous' OnClick='update_lists(unordered_bugs, -offset_step);'/>
+        <select onChange='offset_step = parseInt($(this).val()); update_lists(ordered_bugs); update_lists(unordered_bugs);'>
+            <option value='10'>10</option>
+            <option value='20'>20</option>
+            <option value='30'>30</option>
+        </select>
+        <input type='button' value='next' OnClick='update_lists(unordered_bugs, offset_step);'/> 
+        </p>
+
+        <ul id="sortable2" class="connectedSortable">
+            <li class="ui-state-highlight">Loading bugs</li>
+        </ul>
+    </th>
+    </tr>
+</table>
+
+</div>
+
+[% PROCESS global/footer.html.tmpl %]

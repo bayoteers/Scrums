@@ -334,7 +334,7 @@ sub page_before_template {
         }
         edit_team($vars);
     }
-    if ($page eq 'scrums/teambugs.html') {
+    if ($page eq 'scrums/teambugs2.html') {
         show_team_and_sprints($vars);
     }
     if ($page eq 'scrums/newsprint.html') {
