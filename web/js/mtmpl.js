@@ -1,5 +1,5 @@
-var _tmplCache = {}                                                                                                         
-this.parseTemplate = function(str, data) {                                                                                  
+var _tmplCache = {}
+this.parseTemplate = function(str, data) {
     /// <summary>                                                                                                           
     /// Client side template parser that uses &lt;#= #&gt; and &lt;# code #&gt; expressions.                                
     /// and # # code blocks for template expansion.                                                                         
@@ -13,29 +13,19 @@ this.parseTemplate = function(str, data) {
     /// that object's properties are visible as variables.                                                                  
     /// </param>                                                                                                            
     /// <returns type="string" />                                                                                           
-    var err = "";                                                                                                           
-    try {                                                                                                                   
-        var func = _tmplCache[str];                                                                                         
-        if (!func) {                                                                                                        
-            var strFunc =                                                                                                   
-            "var p=[],print=function(){p.push.apply(p,arguments);};" +                                                      
-                        "with(obj){p.push('" +                                                                              
-                                                                                                                            
-            str.replace(/[\r\t\n]/g, " ")                                                                                   
-               .replace(/'(?=[^#]*#>)/g, "\t")                                                                              
-               .split("'").join("\\'")                                                                                      
-               .split("\t").join("'")                                                                                       
-               .replace(/<#=(.+?)#>/g, "',$1,'")                                                                            
-               .split("<#").join("');")                                                                                     
-               .split("#>").join("p.push('")                                                                                
-               + "');}return p.join('');";                                                                                  
-                                                                                                                            
+    var err = "";
+    try {
+        var func = _tmplCache[str];
+        if (!func) {
+            var strFunc = "var p=[],print=function(){p.push.apply(p,arguments);};" + "with(obj){p.push('" + str.replace(/[\r\t\n]/g, " ").replace(/'(?=[^#]*#>)/g, "\t").split("'").join("\\'").split("\t").join("'").replace(/<#=(.+?)#>/g, "',$1,'").split("<#").join("');").split("#>").join("p.push('") + "');}return p.join('');";
             //alert(strFunc);                                                                                               
-            func = new Function("obj", strFunc);                                                                            
-            _tmplCache[str] = func;                                                                                         
-        }                                                                                                                   
-        return func(data);                                                                                                  
-    } catch (e) { err = e.message; }                                                                                        
-    return "< # ERROR: " + err + " # >";                                                                                    
+            func = new Function("obj", strFunc);
+            _tmplCache[str] = func;
+        }
+        return func(data);
+    } catch (e) {
+        err = e.message;
+    }
+    return "< # ERROR: " + err + " # >";
     //return "< # ERROR: " + err.htmlEncode() + " # >";                                                                     
 }
