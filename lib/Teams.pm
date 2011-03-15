@@ -422,6 +422,7 @@ sub show_team_and_sprints {
     my $error     = "";
     my $cgi       = Bugzilla->cgi;
     my $sprint_id = $cgi->param('sprintid');
+
     if ($cgi->param('newsprint') ne "") {
         _new_sprint($vars);
     }

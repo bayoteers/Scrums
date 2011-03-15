@@ -25,11 +25,9 @@
 %]
 
 
-<script type="text/JavaScript" src="extensions/Scrums/web/js/mtmpl.js"></script>
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.4.4.min.js"></script>
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.10.custom.min.js"></script>
-<script type="text/javascript" src="extensions/Scrums/web/js/fakker.js"></script>
-<!-- <script type="text/javascript" src="extensions/Scrums/web/js/scrums.js"></script>-->
+<script type="text/javascript" src="extensions/Scrums/web/js/scrums.js"></script>
 
     <style>
 
@@ -59,6 +57,24 @@
 
     <script>
 
+//function sJSON(arr) {
+//    var query = $(arr).serializeArray();
+//    json = {};
+//
+//    for (i in query) {
+//    json[query[i].name] = query[i].value
+//    } 
+//    return json;
+//}
+//    var json = {};
+//    jQuery.map($(str).serializeArray(), function(n, i){
+//    json[n['name']] = n['value'];
+//    });
+//    return json;
+//}
+
+//Simply use as $('form').serializeJSON();
+
 var unordered_bugs = new listObject("sortable2", "headers2");
 
 /*
@@ -70,26 +86,36 @@ for (var i = 0; i < [% team_sprints_array.size() %]; i++)
 
 function save_all()
 {
-    var data_lists = [];
-    data_lists['-1'] = [];
-    for (var i = 0; i < unordered_bugs.list.length; i++)
-    {
-        var found = false;
-        for (var k = 0; k < unordered_bugs.original_list.length; k++)
-        {
-            if (unordered_bugs.original_list[k][0] == unordered_bugs.list[i][0])
-            {
-                found = true;
-                break;
-            }
-            if (!found)
-            {
-                // this bug is new in unordered list
-                data_lists['-1'].push(unordered_bugs.list[i][0])
-            }
-        }
-    }
+    // need to use Object instead of Array when ajaxing an associative array
+    var data_lists = new Array();
+    //var list_id = String(-1);
+    //data_lists[0] = [-1, [1,2,3,4,5]];
+    //data_lists.push([-1, [6]]);
+    //data_lists = [-1, [6]];
+//    var v = 0;
+//    for (var i = 0; i < unordered_bugs.list.length; i++)
+//    {
+//        var found = false;
+//        for (var k = 0; k < unordered_bugs.original_list.length; k++)
+//        {
+//            if (unordered_bugs.original_list[k][0] == unordered_bugs.list[i][0])
+//            {
+//                found = true;
+//                break;
+//            }
+//        }
+//            if (found != true)
+//            {
+//                // this bug is new in unordered list
+//                //alert(found);
+//                data_lists[0][1].push(unordered_bugs.list[i][0]);
+//                //data_lists[list_id].push(unordered_bugs.list[i][0])
+//                v++;
+//            }
+//
+//    }
     save(sprint_lists, 'team', [% team.id %], data_lists);
+    unordered_bugs.original_list = $.extend(true, [], unordered_bugs.list);
 }
 
 // data from backend
@@ -117,7 +143,7 @@ $(document).ready(function() {
     }
     $('#sprints').html(html);
     update_lists(unordered_bugs, 0, unordered_list_data);
-    var all_lists = sprint_lists;
+    var all_lists = $.extend(true, [], sprint_lists);
     all_lists.push(unordered_bugs);
     bind_sortable_lists(all_lists);
 });
