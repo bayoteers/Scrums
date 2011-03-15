@@ -29,7 +29,7 @@ use Bugzilla::FlagType;
 use Bugzilla::Error;
 use Bugzilla::Util qw(trick_taint);
 
-use XML::Simple;
+use JSON::XS;
 
 use strict;
 use base qw(Exporter);
@@ -39,8 +39,30 @@ use base qw(Exporter);
 # used by your extension in here. (Make sure you also list them in
 # @EXPORT.)
 our @EXPORT = qw(
-  team_bug_order
+  update_bug_order_from_json
   );
+#
+# Important!
+# Data needs to be in exact format:
+#
+# [ { "id" : -1, "bugs" : [-1,1,2,3,4,5, -1,6] }, { "id" : 18, "bugs" : [10,11,12] } ]
+#
+
+sub update_bug_order_from_json {
+    my ($team_id, $data) = @_;
+
+    my $json = new JSON::XS;
+    if ($data =~ /(.*)/) {
+        $data = $1;        # $data now untainted
+    }
+    my $content = $json->allow_nonref->utf8->relaxed->decode($data);
+#    if ($content =~ /(.*)/) {
+#        $content = $1;        # $data now untainted
+#    }
+#    trick_taint($content);
+    my @all_team_sprints_and_unprioritised_in = @{$content};
+    team_bug_order($team_id, @all_team_sprints_and_unprioritised_in);
+}
 
 sub team_bug_order {
     my ($team_id, @all_team_sprints_and_unprioritised_in) = @_;
@@ -88,10 +110,10 @@ sub process_sprint() {
 }
 
 sub process_unprioritised_in() {
-    my ($unprioritised_in) = @_
+    my ($unprioritised_in) = @_;
 
-      # print "Processing unprioritised\n";
-      my @bugs = @{ $unprioritised_in->{bugs} };
+    # print "Processing unprioritised\n";
+    my @bugs = @{ $unprioritised_in->{bugs} };
 
     foreach my $bug (@bugs) {
         Bugzilla->dbh->do('DELETE from scrums_sprint_bug_map where bug_id=?',         undef, $bug);

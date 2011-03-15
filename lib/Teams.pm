@@ -23,6 +23,7 @@ package Bugzilla::Extension::Scrums::Teams;
 
 use Bugzilla::Extension::Scrums::Team;
 use Bugzilla::Extension::Scrums::Sprint;
+use Bugzilla::Extension::Scrums::Sprintslib;
 
 use Bugzilla::Util qw(trick_taint);
 
@@ -39,6 +40,7 @@ our @EXPORT = qw(
   show_team_and_sprints
   edit_sprint
   create_sprint
+  update_team_bugs
   );
 
 # This file can be loaded by your extension via
@@ -447,6 +449,13 @@ sub show_team_and_sprints {
     }
 
     _show_team_bugs($vars);
+}
+
+sub update_team_bugs {
+    my $cgi       = Bugzilla->cgi;
+    my $team_id = $cgi->param('obj_id');
+    my $data = $cgi->param('data');
+    update_bug_order_from_json($team_id, $data);
 }
 
 sub _new_sprint {
