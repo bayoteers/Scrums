@@ -336,13 +336,19 @@ function save(lists, schema, obj_id, data_lists) {
 //var json_text = JSON.stringify([[1], [2], [3]], null);
 //   alert (JSON.stringify([[1], [2], [3]]));
     json_text = '2';
+    var data = createJson(data_lists);
     $.post('page.cgi?id=scrums/ajax.html', {
         schema: schema,
         action: 'set',
         obj_id: obj_id,
-        //data: JSON.stringify({'1': [2, 3], '2': [4, 5], '6': [6, 7]})
         data: JSON.stringify(data_lists)
     }, function() {}, 'json');
+}
+
+function createJson(data_lists)
+{
+    var testvar = '[ { "id" : -1, "bugs" : [-1,1,2,3,4,5, -1,6] }, { "id" : 18, "bugs" : [10,11,12] } ]';
+    return testvar;
 }
 
 // le template engine

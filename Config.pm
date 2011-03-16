@@ -38,6 +38,11 @@ use constant REQUIRED_MODULES => [
        version => 2.21,
     },
 
+    {
+       package => 'libjson-xs-perl',
+       module  => 'JSON::XS',
+       version => 2.2,
+    },
 ];
 
 use constant OPTIONAL_MODULES => [];
