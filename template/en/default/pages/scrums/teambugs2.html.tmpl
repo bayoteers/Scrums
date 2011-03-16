@@ -87,33 +87,27 @@ for (var i = 0; i < [% team_sprints_array.size() %]; i++)
 function save_all()
 {
     // need to use Object instead of Array when ajaxing an associative array
-    var data_lists = new Array();
-    //var list_id = String(-1);
-    //data_lists[0] = [-1, [1,2,3,4,5]];
-    //data_lists.push([-1, [6]]);
-    //data_lists = [-1, [6]];
-//    var v = 0;
-//    for (var i = 0; i < unordered_bugs.list.length; i++)
-//    {
-//        var found = false;
-//        for (var k = 0; k < unordered_bugs.original_list.length; k++)
-//        {
-//            if (unordered_bugs.original_list[k][0] == unordered_bugs.list[i][0])
-//            {
-//                found = true;
-//                break;
-//            }
-//        }
-//            if (found != true)
-//            {
-//                // this bug is new in unordered list
-//                //alert(found);
-//                data_lists[0][1].push(unordered_bugs.list[i][0]);
-//                //data_lists[list_id].push(unordered_bugs.list[i][0])
-//                v++;
-//            }
-//
-//    }
+    var data_lists = new Object();
+    var list_id = String(-1);
+    data_lists[list_id] = [];
+    for (var i = 0; i < unordered_bugs.list.length; i++)
+    {
+        var found = false;
+        for (var k = 0; k < unordered_bugs.original_list.length; k++)
+        {
+            if (unordered_bugs.original_list[k][0] == unordered_bugs.list[i][0])
+            {
+                found = true;
+                break;
+            }
+        }
+            if (found != true)
+            {
+                // this bug is new in unordered list
+                data_lists[list_id].push(unordered_bugs.list[i][0])
+            }
+
+    }
     save(sprint_lists, 'team', [% team.id %], data_lists);
     unordered_bugs.original_list = $.extend(true, [], unordered_bugs.list);
 }

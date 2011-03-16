@@ -341,47 +341,13 @@ sub page_before_template {
     if ($page eq "scrums/ajax.html")
     {
 
-        # example for reading ajax data
-        #my %data = $cgi->param('data[]');
         use JSON;
         my $cgi       = Bugzilla->cgi;
-        my $dd =    $cgi->param('data');
-        my %data     = from_json($cgi->param('data'));
-        #my @data     = $cgi->param('data[]');
+        my %data = %{ from_json ($cgi->param('data')) };
+
         open (MYFILE, '> /tmp/bz.debug');
-#        print MYFILE ": b".$dd."ca\n";
-#        print MYFILE ": b".$data{'1'}."a\n";
-
-while ( my ($k,$v) = each %data ) {     print MYFILE "$k => $v\n"; }
-
-foreach my $key (keys %data)
-{
-  # do whatever you want with $key and $value here ...
-  my $value = $data{$key};
-  print MYFILE "key  $key val $value\n";
-}
-
-#        for my $val (%data)
-#{
-#        print MYFILE ": "."a\n";
-#}
-#        for my $val (@data)
-#        #for (my $i = 0; $i < @data; $i++)
-#        {
-#            print MYFILE "order:a \n";
-#            #my @bug_list = $data[$i];
-#            #my @bug_list = $data{$val};
-#            #my $list_id = $bug_list[0];
-##            #my ($list_id, @bug_list) = $data[$i];
-##            #my @bug_list = $data[$i][1];
-##            print MYFILE "order: ".$list_id." a ".@bug_list."\n";
-##
-##            for (my $order = 1; $order < @bug_list; $order++)
-##            {
-##                print MYFILE "order: ".($order)." bug_id: ".$bug_list[$order]."\n";
-##            }
-#        }
-#        close (MYFILE);
+        while ( my ($k,$v) = each %data ) {     print MYFILE "$k => $v\n"; }
+        close (MYFILE);
     }
 
 

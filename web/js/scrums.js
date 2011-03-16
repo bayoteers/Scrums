@@ -326,10 +326,10 @@ function save(lists, schema, obj_id, data_lists) {
     for (var i = 0; i < lists.length; i++) {
         var list = lists[i];
         var list_id = list.id;
-        data_lists.push([list_id]);
+        data_lists[list_id] = [];
         for (var k = 0; k < list.list.length; k++) {
-            data_lists[data_lists.length - 1].push(list.list[k][0]);
-            //data_lists[list_id].push(list.list[k][0]);
+            //data_lists[data_lists.length - 1].push(list.list[k][0]);
+            data_lists[list_id].push(list.list[k][0]);
         }
     }
         
@@ -340,12 +340,8 @@ function save(lists, schema, obj_id, data_lists) {
         schema: schema,
         action: 'set',
         obj_id: obj_id,
-        //data: [[1, 2, 3, 4 ,5],[2,3,4]]
-        //data: $
-        data: JSON.stringify({'1': [2, 3], '2': [4, 5], '6': [6, 7]})
-        //data: JSON.stringify([[1], [2], [3]])
-        //data: sJSON([[1], [2], [3]])
-        //data: data_lists
+        //data: JSON.stringify({'1': [2, 3], '2': [4, 5], '6': [6, 7]})
+        data: JSON.stringify(data_lists)
     }, function() {}, 'json');
 }
 
