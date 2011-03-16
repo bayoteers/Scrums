@@ -452,9 +452,9 @@ sub show_team_and_sprints {
 }
 
 sub update_team_bugs {
-    my $cgi       = Bugzilla->cgi;
+    my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('obj_id');
-    my $data = $cgi->param('data');
+    my $data    = $cgi->param('data');
     update_bug_order_from_json($team_id, $data);
 }
 

@@ -53,13 +53,13 @@ sub update_bug_order_from_json {
 
     my $json = new JSON::XS;
     if ($data =~ /(.*)/) {
-        $data = $1;        # $data now untainted
+        $data = $1;    # $data now untainted
     }
     my $content = $json->allow_nonref->utf8->relaxed->decode($data);
-#    if ($content =~ /(.*)/) {
-#        $content = $1;        # $data now untainted
-#    }
-#    trick_taint($content);
+    #    if ($content =~ /(.*)/) {
+    #        $content = $1;        # $data now untainted
+    #    }
+    #    trick_taint($content);
     my @all_team_sprints_and_unprioritised_in = @{$content};
     team_bug_order($team_id, @all_team_sprints_and_unprioritised_in);
 }

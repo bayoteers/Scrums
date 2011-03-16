@@ -338,20 +338,9 @@ sub page_before_template {
         show_team_and_sprints($vars);
     }
 
-    if ($page eq "scrums/ajax.html")
-    {
-
-        # example for reading ajax data
-        use JSON;
-        my $cgi       = Bugzilla->cgi;
-        my %data = %{ from_json ($cgi->param('data')) };
-
-        open (MYFILE, '> /tmp/bz.debug');
-        while ( my ($k,$v) = each %data ) {     print MYFILE "$k => $v\n"; }
-        close (MYFILE);
-       #update_team_bugs();
+    if ($page eq "scrums/ajax.html") {
+        update_team_bugs();
     }
-
 
     if ($page eq 'scrums/newsprint.html') {
         # TODO
