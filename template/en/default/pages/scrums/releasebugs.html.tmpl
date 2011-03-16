@@ -34,6 +34,13 @@ var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Bu
 var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]"],[% END %]];
 var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]"],[% END %]];
 
+function save_all()
+{
+    save([ordered_bugs], 'release', [% release.id %]);
+    //save_lists([ordered_bugs], unordered_bugs, 'release', [% release.id %]);
+}
+
+
 var all_lists = [];
 
 $(document).ready(function() {
@@ -48,6 +55,10 @@ $(document).ready(function() {
 
 
 </script>
+
+<h1>Release "[% release.name %]"  bugs</h1>
+<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]">back to release</a>
+<input type='button' value='save' OnClick='save_all();'/> 
 
 <table>
     <tr>
