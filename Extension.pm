@@ -341,6 +341,7 @@ sub page_before_template {
     if ($page eq "scrums/ajax.html")
     {
 
+        # example for reading ajax data
         use JSON;
         my $cgi       = Bugzilla->cgi;
         my %data = %{ from_json ($cgi->param('data')) };
@@ -348,8 +349,7 @@ sub page_before_template {
         open (MYFILE, '> /tmp/bz.debug');
         while ( my ($k,$v) = each %data ) {     print MYFILE "$k => $v\n"; }
         close (MYFILE);
-        # example for reading ajax data
-        #update_team_bugs();
+       #update_team_bugs();
     }
 
 

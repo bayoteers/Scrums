@@ -182,6 +182,8 @@ function bind_sortable_lists(lists) {
     ids = [];
     for (var i = 0; i < lists.length; i++) {
         ids.push("#" + lists[i].ul_id);
+        // enable live search
+        list_filter($("#" + lists[i].h_id), $("#" + lists[i].ul_id), lists[i]);
     }
     ids_str = ids.join(", ")
     $(ids_str).sortable({
@@ -233,7 +235,7 @@ function update_lists(bugs_list, move_pos, data) {
     $("#" + bugs_list.ul_id).html(html);
 }
 
-function listFilter(header, list, bugs_list) { // header is any element, list is an unordered list
+function list_filter(header, list, bugs_list) { // header is any element, list is an unordered list
     // create and add the filter form to the header
     var form = $("<form>").attr({
         "class": "filterform",
@@ -243,28 +245,22 @@ function listFilter(header, list, bugs_list) { // header is any element, list is
             "class": "filterinput",
             "type": "text"
         });
-    $(form).append(input).appendTo("#" + header);
+    $(form).append(input).appendTo(header);
     $(input).change(function() {
         var filter = $(this).val();
         if (filter) {
             bugs_list.visible = [];
             for (var i = 0; i < bugs_list.list.length; i++) {
                 // search against desc and bug id
-                if (bugs_list.list[i][3].toLowerCase().match("^" + filter.toLowerCase()) == filter.toLowerCase() || bugs_list.list[i][0].match("^" + filter) == filter) {
+                if (bugs_list.list[i][3].toLowerCase().match("^" + filter.toLowerCase()) == filter.toLowerCase() || String(bugs_list.list[i][0]).match("^" + filter) == filter) {
                     //filtered_bugs.list.push(bugs_list.list[i]);
                     bugs_list.visible.push(i);
                 }
             }
-            // this finds all links in a list that contain the input,
-            // and hide the ones not containing the input while showing the ones that do
-            //$(list).find("a:not(:Contains(" + filter + "))").parent().hide();
-            //$(list).find("a:Contains(" + filter + ")").parent().show();
-            //update_lists("#sortable2", filtered_bugs);
         } else {
             //show all
             bugs_list.visible = -1;
         }
-        //$(list).find("li").show();
         // reset offset when doing live search
         bugs_list.offset = 0;
         update_lists(bugs_list);
@@ -273,26 +269,7 @@ function listFilter(header, list, bugs_list) { // header is any element, list is
         // fire the above change event after every letter
         $(this).change();
     });
-}(function($) {
-    // custom css expression for a case-insensitive contains()
-    //  jQuery.expr[':'].Contains = function(a,i,m){
-    //     return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase())>=0;
-    //};
-/*
-  //ondomready
-  $(function () {
-    $.post('page.cgi?id=scrums/release_ajax.html', {action: 'fetch', releaseid: [% release.id %]}, function (data) { update_lists(ordered_bugs, 0, data[0]); update_lists(unordered_bugs, 0, data[1]) }, 'json');
-    //update_lists(ordered_bugs);
-    listFilter($("#headers2"), $(unordered_bugs.ul_id), unordered_bugs);
-    listFilter($("#headers"), $(ordered_bugs.ul_id), ordered_bugs);
-
-    // DEMO
-//    update_lists(demo1);
-//    update_lists(demo2);
-//    listFilter($("#headers3"), $(demo1.ul_id), demo1);
-//    listFilter($("#headers4"), $(demo2.ul_id), demo2);
-  }); */
-}(jQuery));
+}
 
 function init(schema, obj_id, lists) {
     // DEMO
@@ -319,6 +296,29 @@ function init(schema, obj_id, lists) {
     //    listFilter($("#headers4"), $(demo2.ul_id), demo2);
 }
 
+function move_list_left(list_id)
+{
+    move_list(list_id, -offset_step);
+}
+function move_list_right(list_id)
+{
+    move_list(list_id, offset_step);
+}
+
+function move_list(list_id, step)
+{
+    for (var i = 0; i< all_lists.length; i++)
+    {
+        if (all_lists[i].id == list_id)
+        {
+            update_lists(all_lists[i], step);
+            break;
+        }
+    }
+}
+
+
+
 function save(lists, schema, obj_id, data_lists) {
     if (data_lists == undefined) {
         var data_lists = new Object();
@@ -328,13 +328,10 @@ function save(lists, schema, obj_id, data_lists) {
         var list_id = list.id;
         data_lists[list_id] = [];
         for (var k = 0; k < list.list.length; k++) {
-            //data_lists[data_lists.length - 1].push(list.list[k][0]);
             data_lists[list_id].push(list.list[k][0]);
         }
     }
         
-//var json_text = JSON.stringify([[1], [2], [3]], null);
-//   alert (JSON.stringify([[1], [2], [3]]));
     json_text = '2';
     var data = createJson(data_lists);
     $.post('page.cgi?id=scrums/ajax.html', {
@@ -343,6 +340,34 @@ function save(lists, schema, obj_id, data_lists) {
         obj_id: obj_id,
         data: JSON.stringify(data_lists)
     }, function() {}, 'json');
+}
+
+function save_lists(ordered_lists, unordered_list, schema, obj_id)
+{
+    // need to use Object instead of Array when ajaxing an associative array
+    var data_lists = new Object();
+    var list_id = String(-1);
+    data_lists[list_id] = [];
+    for (var i = 0; i < unordered_list.list.length; i++)
+    {
+        var found = false;
+        for (var k = 0; k < unordered_list.original_list.length; k++)
+        {
+            if (unordered_list.original_list[k][0] == unordered_list.list[i][0])
+            {
+                found = true;
+                break;
+            }
+        }
+            if (found != true)
+            {
+                // this bug is new in unordered list
+                data_lists[list_id].push(unordered_list.list[i][0])
+            }
+
+    }
+    save(ordered_lists, schema, obj_id, data_lists);
+    unordered_list.original_list = $.extend(true, [], unordered_list.list);
 }
 
 function createJson(data_lists)
