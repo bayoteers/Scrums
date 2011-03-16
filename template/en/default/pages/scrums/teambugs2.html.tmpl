@@ -113,8 +113,9 @@ function save_all()
 }
 
 // data from backend
-var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 %]"],[% END %]];
-var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %],[% bug.1 %],[% bug.2 %],[% bug.3 %]],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() %]"],[% END %]};
+var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]"],[% END %]];
+var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %],[% bug.1 %],[% bug.2 %], "[% bug.3 | replace( '"', '\"' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+
 
 //    init('team', [% release.id %], [ordered_bugs, unordered_bugs]);
 var sprint_lists = [];
