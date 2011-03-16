@@ -1,0 +1,32 @@
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.4.4.min.js"></script>
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.10.custom.min.js"></script>
+
+<script type="text/javascript" src="extensions/Scrums/web/js/scrums.js"></script>
+<link rel="stylesheet" href="extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
+
+    <style>
+
+    .sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #eee; padding: 5px; width: 560px; text-align: left; }
+    .sortable li { margin: 5px; padding: 5px; font-size: 1em; width: 540px; }
+    .number { background: #eee; color: #000000; border: 1px solid #dddddd;  }
+
+    </style>
+<script id="BugLiTmpl" type="text/html">
+    <li class="ui-state-default" id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span ><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #></span></li>
+</script>
+
+<script id="ListTmpl" type="text/html">
+    <h1 id="<#= list.h_id #>"><#= list.name #></h1>
+    <p>
+    <input type='button' value='previous' OnClick='move_list_left("<#= list.id #>");'/>
+
+    <#= extra_middle #>
+
+    <input type='button' value='next' OnClick='move_list_right("<#= list.id #>");'/>
+    </p>
+
+    <ul id="<#= list.ul_id #>" class="connectedSortable sortable">
+    </ul>
+    <br />
+</script>
+

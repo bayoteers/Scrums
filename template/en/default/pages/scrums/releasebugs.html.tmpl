@@ -24,102 +24,39 @@
     style_urls = ['skins/standard/admin.css']
 %]
 
+[% PROCESS global/lists.html.tmpl %]
 
-<script type="text/JavaScript" src="extensions/Scrums/web/js/mtmpl.js"></script>
-<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.4.4.min.js"></script>
-<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.10.custom.min.js"></script>
-<script type="text/javascript" src="extensions/Scrums/web/js/fakker.js"></script>
-<!-- <script type="text/javascript" src="extensions/Scrums/web/js/scrums.js"></script>-->
+<script>
 
-    <style>
+var ordered_bugs = new listObject("sortable1", "headers", '0', 'Bug Order');
+var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Bugs');
 
-    #demo1, #demo2, #sortable1, #sortable2, #sortable3 { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #eee; padding: 5px; width: 560px;}
-    #demo1 li, #demo2 li, #sortable1 li, #sortable2 li, #sortable3 li { margin: 5px; padding: 5px; font-size: 1em; width: 540px; }
-    .number { background: #eee; color: #000000; border: 1px solid #dddddd;  }
+var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]"],[% END %]];
+var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]"],[% END %]];
 
-    </style>
-    <script>
+var all_lists = [];
 
-var ordered_bugs = new listObject("#sortable1", "#headers");
-var unordered_bugs = new listObject("#sortable2", "#headers2");
-
-(function ($) {
-  //ondomready
-    init('release', [% release.id %], [ordered_bugs, unordered_bugs]);
-}(jQuery));
+$(document).ready(function() {
+    $('#left').html(html = parseTemplate($('#ListTmpl').html(), { list: ordered_bugs, extra_middle: '' }));
+    $('#right').html(html = parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
+    update_lists(unordered_bugs, 0, unordered_list_data);
+    update_lists(ordered_bugs, 0, ordered_list_data);
+    all_lists.push(unordered_bugs);
+    all_lists.push(ordered_bugs);
+    bind_sortable_lists(all_lists);
+});
 
 
-  </script>
-
-<script id="BugLiTmpl" type="text/html">
-    <li class="ui-state-default" id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span ><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #></span></li>
 </script>
-
-<link rel="stylesheet" href="extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
-
-<div class="demo">
 
 <table>
     <tr>
-        <th>
-            <h1 id="headers">Priority Order</h1>
-            <input type='button' value='previous' OnClick='update_lists(ordered_bugs, -offset_step);'/>
-            <input type='button' value='next' OnClick='update_lists(ordered_bugs, offset_step);'/> 
-            <input type='button' value='save' OnClick='ugly_save();'/> 
+        <th valign='top' id='left'>
         </th>
-        <th>
-            <h1 id="headers2">Unordered </h1>
-            <input type='button' value='previous' OnClick='update_lists(unordered_bugs, -offset_step);'/>
-            <select onChange='offset_step = parseInt($(this).val()); update_lists(ordered_bugs); update_lists(unordered_bugs);'>
-                <option value='10'>10</option>
-                <option value='20'>20</option>
-                <option value='30'>30</option>
-            </select>
-            <input type='button' value='next' OnClick='update_lists(unordered_bugs, offset_step);'/> 
+        <th valign='top' id='right'>
         </th>
     </tr>
-    <tr>
-        <td valign='top'>
-        <ul id="sortable1" class="connectedSortable">
-           <!-- <li class="ui-state-default" id="tble1__0">666 nomove</li> -->
-        </ul>
-    </td>
-    <td>
-
-        <ul id="sortable2" class="connectedSortable">
-
-            <li class="ui-state-highlight">Loading bugs</li>
-        </ul>
-    </td>
-    </tr>
-<!-- DEMO -->
-<!--
-    <tr>
-        <th>
-            <h1 id="headers3">Demo 1 Order</h1>
-            <input type='button' value='previous' OnClick='update_lists(demo1, -offset_step);'/>
-            <input type='button' value='next' OnClick='update_lists(demo1, offset_step);'/> 
-        </th>
-        <th>
-            <h1 id="headers4">Demo 2 Order</h1>
-            <input type='button' value='previous' OnClick='update_lists(demo2, -offset_step);'/>
-            <input type='button' value='next' OnClick='update_lists(demo2, offset_step);'/> 
-        </th>
-    </tr>
-    <tr>
-        <td valign='top'>
-        <ul id="demo1" class="connectedSortable">
-        </ul>
-    </td>
-    <td>
-
-        <ul id="demo2" class="connectedSortable">
-        </ul>
-    </td>
-    </tr>
--->
 </table>
 
-</div>
 
 [% PROCESS global/footer.html.tmpl %]

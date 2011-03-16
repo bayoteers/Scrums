@@ -159,8 +159,8 @@ sub show_release_bugs {
     my $release_id = $cgi->param('releaseid');
     my $release    = Bugzilla::Extension::Scrums::Release->new($release_id);
     $vars->{'release'} = $release;
-    #$vars->{'scheduled_bugs'} = $release->scheduled_bugs();
-    #$vars->{'unprioritised_bugs'} = $release->unprioritised_bugs();
+    $vars->{'scheduled_bugs'} = $release->scheduled_bugs();
+    $vars->{'unprioritised_bugs'} = $release->unprioritised_bugs();
 }
 
 # This method is failure because XMLin can not be used without parameter forcearray=> in place
