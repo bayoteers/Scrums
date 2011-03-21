@@ -56,16 +56,13 @@ sub update_bug_order_from_json {
         $data = $1;    # $data now untainted
     }
     my $content = $json->allow_nonref->utf8->relaxed->decode($data);
-    #    if ($content =~ /(.*)/) {
-    #        $content = $1;        # $data now untainted
-    #    }
-    #    trick_taint($content);
-    my @all_team_sprints_and_unprioritised_in = @{$content};
-    team_bug_order($team_id, @all_team_sprints_and_unprioritised_in);
+
+    my %all_team_sprints_and_unprioritised_in = %{$content};
+    team_bug_order($team_id, $content);
 }
 
 sub team_bug_order {
-    my ($team_id, @all_team_sprints_and_unprioritised_in) = @_;
+    my ($team_id, $all_team_sprints_and_unprioritised_in) = @_;
 
     my %sprints_hash;
     my %team_order_hash;
@@ -73,28 +70,27 @@ sub team_bug_order {
     _get_sprints_hash(\%sprints_hash, $team_id);
     _get_team_order_hash(\%team_order_hash, $team_id);
 
-    foreach my $sprint (@all_team_sprints_and_unprioritised_in) {
-        my $sprint_id = $sprint->{id};
+    my @sprint_id_array = keys %{$all_team_sprints_and_unprioritised_in};
+    for my $sprint_id (@sprint_id_array)
+    {
+        my $bugs = $all_team_sprints_and_unprioritised_in->{$sprint_id};
 
         if ($sprint_id == -1) {
-            process_unprioritised_in($sprint);
+            process_unprioritised_in($bugs);
         }
         else {
-            process_sprint($sprint, \%sprints_hash);
+            process_sprint($sprint_id, $bugs, \%sprints_hash);
         }
     }
 
-    process_team_orders(\@all_team_sprints_and_unprioritised_in, \%team_order_hash);
+    process_team_orders($all_team_sprints_and_unprioritised_in, \%team_order_hash);
 }
 
 sub process_sprint() {
-    my ($sprint, $sprints_hash) = @_;
+    my ($sprint_id, $bugs, $sprints_hash) = @_;
 
     # print "Processing sprint\n";
-    my $sprint_id = $sprint->{id};
-    my @bugs      = @{ $sprint->{bugs} };
-
-    foreach my $bug (@bugs) {
+    foreach my $bug (@{$bugs}) {
         my $old_sprint = $sprints_hash->{$bug};
 
         if ($old_sprint == $sprint_id) {
@@ -112,10 +108,7 @@ sub process_sprint() {
 sub process_unprioritised_in() {
     my ($unprioritised_in) = @_;
 
-    # print "Processing unprioritised\n";
-    my @bugs = @{ $unprioritised_in->{bugs} };
-
-    foreach my $bug (@bugs) {
+    foreach my $bug (@{$unprioritised_in}) {
         Bugzilla->dbh->do('DELETE from scrums_sprint_bug_map where bug_id=?',         undef, $bug);
         Bugzilla->dbh->do('UPDATE scrums_bug_order set team = NULL where bug_id = ?', undef, $bug);
     }
@@ -124,17 +117,19 @@ sub process_unprioritised_in() {
 sub process_team_orders() {
     my ($ref, $team_order_hash) = @_;
 
-    my @all_team_sprints_and_unprioritised_in = @{$ref};
+    my %all_team_sprints_and_unprioritised_in = %{$ref};
 
     my $counter = 1;
 
-    foreach my $sprint (@all_team_sprints_and_unprioritised_in) {
-        my $sprint_id = $sprint->{id};
+    my @sprint_id_array = keys %all_team_sprints_and_unprioritised_in;
+    for my $sprint_id (@sprint_id_array)
+    {
+        my $bugs = $all_team_sprints_and_unprioritised_in{$sprint_id};
+
+
         # This means, that table is sprint and not unprioritised_in
         if ($sprint_id != -1) {
-            my @bugs = @{ $sprint->{bugs} };
-
-            foreach my $bug (@bugs) {
+            foreach my $bug (@{$bugs}) {
                 my $old_team_order = $team_order_hash->{$bug};
                 if (!exists $team_order_hash->{$bug}) {
                     Bugzilla->dbh->do('INSERT INTO scrums_bug_order (bug_id, team) values (?, ?)', undef, $bug, $counter);
