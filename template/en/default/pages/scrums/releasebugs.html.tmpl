@@ -36,8 +36,8 @@ var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"
 
 function save_all()
 {
-    save([ordered_bugs], 'release', [% release.id %]);
-    //save_lists([ordered_bugs], unordered_bugs, 'release', [% release.id %]);
+    //save([ordered_bugs], 'release', [% release.id %]);
+    save_lists([ordered_bugs], unordered_bugs, 'release', [% release.id %]);
 }
 
 
