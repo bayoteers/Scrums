@@ -212,23 +212,28 @@ sub handle_release_bug_data {
         $vars->{'json_text'} = to_json([ $release->scheduled_bugs(), $release->unprioritised_bugs() ]);
     }
     elsif ($action eq 'set') {
-        my $msg      = "";
-        my @names    = $cgi->param;
-        my @list     = $cgi->param('list[]');
-        my @list_out = $cgi->param('list_out[]');
+        my $msg = "set";
+        my $release_id = $cgi->param('obj_id');
+        my $data    = $cgi->param('data');
 
-        for (my $order_nr = 0 ; $order_nr < @list ; $order_nr++) {
-            my $bug_id = $list[$order_nr];
-            _set_bug_release_order($bug_id, $order_nr + 1);
+        my $json = new JSON::XS;
+        if ($data =~ /(.*)/) {
+            $data = $1;    # $data now untainted
+        }
+        my $content = $json->allow_nonref->utf8->relaxed->decode($data);
+        my $ordered_list     = $content->{"0"};        
+        my $counter = 1;
+        for my $bug_id (@{$ordered_list}) {
+            _set_bug_release_order($bug_id, $counter);
+            $msg = $msg . "bug:" . $bug_id . "," . "order:" . $counter . ";"; # DEBUG
+            $counter = $counter + 1;
+        }
+        my $unprioritised_list     = $content->{"-1"};        
+        for my $unprioritised_bug_id (@{$unprioritised_list}) {
+            _set_bug_release_order($unprioritised_bug_id, "NULL");
+            $msg = $msg . "unprioritised bug:" . $unprioritised_bug_id . ";"; # DEBUG
         }
 
-        for (my $order_nr = 0 ; $order_nr < @list_out ; $order_nr++) {
-            my $bug_id = $list_out[$order_nr];
-            $msg = $msg . "$bug_id a";
-            _set_bug_release_order($bug_id, "NULL");
-        }
-
-        #$vars->{'json_text'} = to_json([@list]);
         $vars->{'json_text'} = to_json([$msg]);
     }
 }
