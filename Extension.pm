@@ -339,7 +339,14 @@ sub page_before_template {
     }
 
     if ($page eq "scrums/ajax.html") {
-        update_team_bugs();
+        my $cgi    = Bugzilla->cgi;
+        my $schema = $cgi->param('schema');
+        if ($schema eq "release") {
+           handle_release_bug_data($vars);
+        }
+        else {
+            update_team_bugs();
+        }
     }
 
     if ($page eq 'scrums/newsprint.html') {
