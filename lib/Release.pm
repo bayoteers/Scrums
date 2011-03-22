@@ -196,9 +196,11 @@ sub unprioritised_bugs {
 	scrums_flagtype_release_map rfm
 	inner join flags f on rfm.flagtype_id = f.type_id
 	inner join bugs b on f.bug_id = b.bug_id
+        inner join bug_status bs on b.bug_status = bs.value
     where
 	not exists (select null from scrums_bug_order bo where f.bug_id = bo.bug_id and bo.rlease > 0) and
 	f.status = "+" and
+	bs.is_open = 1 and
 	rfm.release_id = ?', undef, $self->id
     );
     return $unprioritised_bugs;
