@@ -62,6 +62,16 @@ $(document).ready(function() {
         html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: edit_link });
         $(html).appendTo($('#sprints'));
         update_lists(list, 0, sprint_list_data[id][1]);
+
+        // expand collapse
+        //$("#"+list.ul_id).hide();
+        //toggle the componenet with class msg_body
+        var ul_id = list.ul_id;
+        $("#" + list.h_id).click(function()
+        {
+            $(this).nextAll(".sortable:first").slideToggle(500);
+        });
+
         sprint_lists.push(list);
 
     }
@@ -71,6 +81,8 @@ $(document).ready(function() {
     all_lists = $.extend(true, [], sprint_lists);
     all_lists.push(unordered_bugs);
     bind_sortable_lists(all_lists);
+
+
 });
 
 
