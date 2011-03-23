@@ -17,6 +17,7 @@
 
 <script id="ListTmpl" type="text/html">
     <h1 id="<#= list.h_id #>"><#= list.name #></h1>
+    <div class='content'>
     <p>
     <input type='button' value='previous' OnClick='move_list_left("<#= list.id #>");'/>
 
@@ -27,6 +28,7 @@
 
     <ul id="<#= list.ul_id #>" class="connectedSortable sortable">
     </ul>
+    </div>
     <br />
 </script>
 
