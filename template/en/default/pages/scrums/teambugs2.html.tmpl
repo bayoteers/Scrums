@@ -59,13 +59,14 @@ $(document).ready(function() {
         list.description = sprint_list_data[id][4]
 
         var edit_link = '<a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid='+list.id+'&status='+list._status+'&sprintname='+list.name+'&nominalschedule='+list.nominal_schedule +'&description='+list.description+'&editsprint=true">[edit]</a>';
-        html += parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: edit_link });
+        html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: edit_link });
+        $(html).appendTo($('#sprints'));
         update_lists(list, 0, sprint_list_data[id][1]);
         sprint_lists.push(list);
 
     }
-    $('#sprints').html(html);
-    $('#unordered').html(html = parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
+    //$('#sprints').html(html);
+    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
     update_lists(unordered_bugs, 0, unordered_list_data);
     all_lists = $.extend(true, [], sprint_lists);
     all_lists.push(unordered_bugs);

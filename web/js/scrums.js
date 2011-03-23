@@ -219,7 +219,6 @@ function save(lists, schema, obj_id, data_lists) {
     }
         
     json_text = '2';
-    var data = createJson(data_lists);
     $.post('page.cgi?id=scrums/ajax.html', {
         schema: schema,
         action: 'set',
