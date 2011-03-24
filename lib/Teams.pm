@@ -40,6 +40,7 @@ our @EXPORT = qw(
   search_person
   edit_team
   show_team_and_sprints
+  show_backlog_and_items
   edit_sprint
   create_sprint
   update_team_bugs
@@ -429,6 +430,25 @@ sub _show_team_bugs {
     $backlog_container{'bugs'}   = $team_backlog->get_bugs();
     $vars->{'backlog'} = \%backlog_container;
 }
+
+sub show_backlog_and_items {
+    my ($vars) = @_;
+
+    my $cgi     = Bugzilla->cgi;
+    my $team_id = $cgi->param('teamid');
+    my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
+    $vars->{'team'}               = $team;
+    $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
+    $vars->{'unprioritised_tasks'} = $team->unprioritised_tasks();
+
+    my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
+    my $team_backlog = @$backlogs[0];
+    my %backlog_container;
+    $backlog_container{'sprint'} = $team_backlog;
+    $backlog_container{'bugs'}   = $team_backlog->get_bugs();
+    $vars->{'backlog'} = \%backlog_container;
+}
+
 
 sub edit_sprint {
     my ($vars) = @_;

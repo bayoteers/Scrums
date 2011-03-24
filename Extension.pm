@@ -338,10 +338,12 @@ sub page_before_template {
         }
         edit_team($vars);
     }
-    if ($page eq 'scrums/teambugs2.html') {
+    if ($page eq 'scrums/teambugs2.html' || $page eq 'scrums/dailysprint.html') {
         show_team_and_sprints($vars);
     }
-
+    if ($page eq 'scrums/backlogplanning.html') {
+        show_backlog_and_items($vars);
+    }
     if ($page eq "scrums/ajax.html") {
         my $cgi    = Bugzilla->cgi;
         my $schema = $cgi->param('schema');
