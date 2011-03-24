@@ -197,6 +197,7 @@ sub db_schema_abstract_schema {
                                                 status           => { TYPE => 'varchar(20)',  NOTNULL => 1 },
                                                 is_active        => { TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE' },
                                                 description => { TYPE => 'varchar(255)' },
+                                                scrums_sprints   => { TYPE => 'INT2',      NOTNULL => 1, DEFAULT => '1' },
                                               ]
                                   };
 
@@ -287,6 +288,9 @@ sub install_update_db {
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_value", WV_VALUE_DEFINITION, undef);
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_start", WV_START_DEFINITION, undef);
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_end",   WV_END_DEFINITION,   undef);
+
+    use constant SPRINT_TYPE_DEFINITION => { TYPE => 'INT2',      NOTNULL => 1, DEFAULT => '1' };
+    Bugzilla->dbh->bz_add_column("scrums_sprints", "item_type", SPRINT_TYPE_DEFINITION, undef);
 }
 
 sub page_before_template {
@@ -345,7 +349,7 @@ sub page_before_template {
            handle_release_bug_data($vars);
         }
         else {
-            update_team_bugs();
+            update_team_bugs($vars);
         }
     }
 

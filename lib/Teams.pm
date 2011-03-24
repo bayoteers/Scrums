@@ -27,6 +27,8 @@ use Bugzilla::Extension::Scrums::Sprintslib;
 
 use Bugzilla::Util qw(trick_taint);
 
+use Bugzilla::Error;
+
 use strict;
 use base qw(Exporter);
 our @EXPORT = qw(
@@ -74,6 +76,22 @@ sub _delete_team {
     if ($team_id =~ /^([0-9]+)$/) {
         $team_id = $1;    # $data now untainted
         my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+
+        my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 1, is_active => 1 });
+        if(scalar @{$sprints} > 0) {
+            # TODO define user error
+            ThrowUserError('team_has_active_sprint', {});
+        }
+
+        my $components = $team->components();
+        if(scalar @{$components} > 0) {
+            # TODO define user error
+            ThrowUserError('team_has_components', {});
+        }
+        my $backlog_items = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 2 });
+        my $backlog = @$backlog_items[0];
+        $backlog->remove_from_db();
+
         $team->remove_from_db();
     }
 }
@@ -162,6 +180,10 @@ sub _new_team {
 
     if ($name and $owner_id) {
         my $team = Bugzilla::Extension::Scrums::Team->create({ name => $name, owner => $owner_id });
+        my $new_id = $team->id();
+        my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
+                     { team_id => $new_id, status => "NEW", item_type => 2, name => "Product backlog", nominal_schedule => "2000-01-01", 
+                        description => "This is automatically generated static 'sprint' for the purpose of product backlog", is_active => 1 });
         _show_existing_team($vars, $team);
     }
     else {
@@ -385,7 +407,7 @@ sub _show_team_bugs {
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
 
     #    $vars->{'sprints'} = [Bugzilla::Extension::Scrums::Sprint->get_all()];
-    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id });
+    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 1 });
     #    $vars->{'sprints'} = $sprints;
 
     my %sprint_bug_map;
@@ -399,6 +421,10 @@ sub _show_team_bugs {
         push @team_sprints_array, \%team_sprint;
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
+
+    my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
+    my $team_backlog = @$backlogs[0];
+    $vars->{'backlog_bugs'} = $team_backlog->get_bugs();
 }
 
 sub edit_sprint {
@@ -443,8 +469,7 @@ sub show_team_and_sprints {
         $sprint_id = $cgi->param('deletesprint');
         if ($sprint_id =~ /^([0-9]+)$/) {
             $sprint_id = $1;                                  # $data now untainted
-            my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
-            $sprint->remove_from_db();
+            _delete_sprint($vars, $sprint_id);
         }
     }
 
@@ -452,9 +477,19 @@ sub show_team_and_sprints {
 }
 
 sub update_team_bugs {
+    my ($vars) = @_;
+
     my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('obj_id');
     my $data    = $cgi->param('data');
+
+    my $user = Bugzilla->user();
+    my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
+    if (not $team->is_user_team_member($user))
+    {
+        $vars->{'errors'} = 'not_member_of_team';
+    }
+
     update_bug_order_from_json($team_id, $data);
 }
 
@@ -472,7 +507,7 @@ sub _new_sprint {
 
     if ($teamid and $name and $nominalschedule) {
         my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
-                     { team_id => $teamid, status => "NEW", name => $name, nominal_schedule => $nominalschedule, description => $description, is_active => 1 });
+                     { team_id => $teamid, status => "NEW", name => $name, nominal_schedule => $nominalschedule, description => $description, is_active => 1, item_type => 1 });
     }
     else {
         ThrowUserError($error);
@@ -503,6 +538,18 @@ sub _update_sprint {
         ThrowUserError($error);
         $vars->{'error'} = $error;
     }
+}
+
+sub _delete_sprint {
+    my ($vars, $sprint_id) = @_;
+
+    my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    my $sprint_bugs = $sprint->get_bugs();
+    if(scalar @{$sprint_bugs} > 0) {
+        # TODO define user error
+        ThrowUserError('sprint_has_bugs');    
+    }
+    $sprint->remove_from_db();
 }
 
 sub _sanitise_sprint_data {
@@ -544,11 +591,11 @@ sub _sanitise_sprint_data {
     return ($error, $teamid, $name, $nominalschedule, $description);
 }
 
-sub _get_team_sprints {
-    my ($vars, $team_id) = @_;
-
-    $vars->{'sprints'} = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id });
-}
+#sub _get_team_sprints {
+#    my ($vars, $team_id) = @_;
+#
+#    $vars->{'sprints'} = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id });
+#}
 
 sub _update_team {
     my ($team, $name, $owner) = @_;

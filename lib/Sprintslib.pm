@@ -45,7 +45,7 @@ our @EXPORT = qw(
 # Important!
 # Data needs to be in exact format:
 #
-# [ { "id" : -1, "bugs" : [-1,1,2,3,4,5, -1,6] }, { "id" : 18, "bugs" : [10,11,12] } ]
+#  { -1 : [1,2,3,4,5], 18 : [10,11,12] } 
 #
 
 sub update_bug_order_from_json {

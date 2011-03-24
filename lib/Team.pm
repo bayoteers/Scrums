@@ -185,6 +185,22 @@ sub team_of_component {
     return $team;
 }
 
+sub is_user_team_member {
+    my ($self, $user) = @_;
+    my $user_id = $user->id();
+
+    my ($member_id) = Bugzilla->dbh->selectrow_array('SELECT userid FROM scrums_teammember WHERE teamid = ? AND userid = ?', undef, $self->id, $user_id);
+    if ($member_id) {
+        return 1;
+    }
+    my ($owner_id) = Bugzilla->dbh->selectrow_array('SELECT owner FROM scrums_team WHERE id = ? AND owner = ?', undef, $self->id, $user_id);
+    if ($owner_id) {
+        return 1;
+    }    
+
+    return 0;
+}
+
 ###############################
 ####      Accessors        ####
 ###############################
