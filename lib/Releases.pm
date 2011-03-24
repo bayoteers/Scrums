@@ -163,41 +163,6 @@ sub show_release_bugs {
     $vars->{'unprioritised_bugs'} = $release->unprioritised_bugs();
 }
 
-# This method is failure because XMLin can not be used without parameter forcearray=> in place
-# Using 'forcearray' on the other hand produces different structure of in-memory object.
-
-sub donotuse_release_bug_order {
-    my ($vars) = @_;
-
-    my $cgi = Bugzilla->cgi;
-
-    my $content               = $cgi->param('content');
-    my $ordered_bugs_document = XMLin($content);
-
-    my @bug_lists_array = $ordered_bugs_document->{'bug'};
-    my $bug_list_ref    = $bug_lists_array[0];
-    my @bug_id_array    = keys %{$bug_list_ref};
-
-    for my $bug_id (@bug_id_array) {
-        my $child_tag_hash_ref = $bug_list_ref->{$bug_id};
-        if (defined $child_tag_hash_ref && ref($child_tag_hash_ref)) {
-            my $priority  = $child_tag_hash_ref->{'releasepriority'};
-            my $bug_order = Bugzilla::Extension::Scrums::Bugorder->new($bug_id);
-
-            if (defined $bug_order && ref($bug_order)) {
-                $bug_order->set_release_order($priority);
-                $bug_order->update();
-            }
-            else {
-                $bug_order = Bugzilla::Extension::Scrums::Bugorder->create({ bug_id => $bug_id, rlease => $priority });
-            }
-        }
-        else {
-            $vars->{'error'} .= "\nNo child tags where found for bug: " . $bug_id;
-        }
-    }
-}
-
 sub handle_release_bug_data {
     my ($vars) = @_;
 
@@ -252,42 +217,42 @@ sub _set_bug_release_order() {
     }
 }
 
-# Notice that method XMLin is used parameter forcearray=> in place. Parameter must be used as such.
-# Reason is that resulting in-memory object tree, that results from parsing is inconsistent without parameter.
-# In situation, when there is only one child tag like one bug for example, parsing result would become different
-# from what it becomes in situation where there are several tags.
-
-sub release_bug_order {
-    my ($vars) = @_;
-
-    my $cgi = Bugzilla->cgi;
-    #    my $release_id = $cgi->param('releaseid');
-
-    # There was no success in reading request body from XmlHttpRequest. Content
-    # is consequently coded into URL. This is not a problem, because URL is not browser URL.
-    #    my $body = $cgi->var($CGI::ENTITY_BODY);
-    my $content = $cgi->param('content');
-    my $ordered_bugs_document = XMLin($content, forcearray => 1);
-
-    my @bug_tag_data_array    = $ordered_bugs_document->{'bug'};
-    my $bug_content_array_ref = $bug_tag_data_array[0];            # Array has only one element
-    my @bug_content_array     = @{$bug_content_array_ref};
-
-    for my $child_tags_ref (@bug_content_array) {
-        my $bug_id           = @{ $child_tags_ref->{'id'} }[0];
-        my $release_priority = @{ $child_tags_ref->{'releasepriority'} }[0];
-
-        my $bug_order = Bugzilla::Extension::Scrums::Bugorder->new($bug_id);
-
-        if (defined $bug_order && ref($bug_order)) {
-            $bug_order->set_release_order($release_priority);
-            $bug_order->update();
-        }
-        else {
-            $bug_order = Bugzilla::Extension::Scrums::Bugorder->create({ bug_id => $bug_id, rlease => $release_priority });
-        }
-    }
-}
+## Notice that method XMLin is used parameter forcearray=> in place. Parameter must be used as such.
+## Reason is that resulting in-memory object tree, that results from parsing is inconsistent without parameter.
+## In situation, when there is only one child tag like one bug for example, parsing result would become different
+## from what it becomes in situation where there are several tags.
+#
+#sub release_bug_order {
+#    my ($vars) = @_;
+#
+#    my $cgi = Bugzilla->cgi;
+#    #    my $release_id = $cgi->param('releaseid');
+#
+#    # There was no success in reading request body from XmlHttpRequest. Content
+#    # is consequently coded into URL. This is not a problem, because URL is not browser URL.
+#    #    my $body = $cgi->var($CGI::ENTITY_BODY);
+#    my $content = $cgi->param('content');
+#    my $ordered_bugs_document = XMLin($content, forcearray => 1);
+#
+#    my @bug_tag_data_array    = $ordered_bugs_document->{'bug'};
+#    my $bug_content_array_ref = $bug_tag_data_array[0];            # Array has only one element
+#    my @bug_content_array     = @{$bug_content_array_ref};
+#
+#    for my $child_tags_ref (@bug_content_array) {
+#        my $bug_id           = @{ $child_tags_ref->{'id'} }[0];
+#        my $release_priority = @{ $child_tags_ref->{'releasepriority'} }[0];
+#
+#        my $bug_order = Bugzilla::Extension::Scrums::Bugorder->new($bug_id);
+#
+#        if (defined $bug_order && ref($bug_order)) {
+#            $bug_order->set_release_order($release_priority);
+#            $bug_order->update();
+#        }
+#        else {
+#            $bug_order = Bugzilla::Extension::Scrums::Bugorder->create({ bug_id => $bug_id, rlease => $release_priority });
+#        }
+#    }
+#}
 
 sub _new_release {
     my ($vars) = @_;
