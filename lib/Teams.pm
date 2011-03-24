@@ -424,7 +424,10 @@ sub _show_team_bugs {
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
     my $team_backlog = @$backlogs[0];
-    $vars->{'backlog_bugs'} = $team_backlog->get_bugs();
+    my %backlog_container;
+    $backlog_container{'sprint'} = $team_backlog;
+    $backlog_container{'bugs'}   = $team_backlog->get_bugs();
+    $vars->{'backlog'} = \%backlog_container;
 }
 
 sub edit_sprint {
