@@ -131,7 +131,10 @@ function list_filter(header, list, bugs_list) { // header is any element, list i
             "class": "filterinput",
             "type": "text"
         });
-    $(form).append(input).appendTo(header);
+    //var html_obj = $(form).append(input)
+    $(form).append(input).prependTo($(header).next());
+    //$(header).next().after(html_obj);
+    //html_obj.aft.appendTo(header);
     $(input).change(function() {
         var filter = $(this).val();
         if (filter) {
