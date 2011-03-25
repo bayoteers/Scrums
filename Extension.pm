@@ -344,6 +344,9 @@ sub page_before_template {
     if ($page eq 'scrums/backlogplanning.html') {
         show_backlog_and_items($vars);
     }
+    if ($page eq 'scrums/archivedsprints.html') {
+        show_archived_sprints($vars);
+    }
     if ($page eq "scrums/ajax.html") {
         my $cgi    = Bugzilla->cgi;
         my $schema = $cgi->param('schema');

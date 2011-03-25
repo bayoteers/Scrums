@@ -41,6 +41,7 @@ our @EXPORT = qw(
   edit_team
   show_team_and_sprints
   show_backlog_and_items
+  show_archived_sprints
   edit_sprint
   create_sprint
   update_team_bugs
@@ -431,6 +432,23 @@ sub _show_team_bugs {
     $vars->{'backlog'} = \%backlog_container;
 }
 
+sub show_archived_sprints {
+    my ($vars) = @_;
+
+    my $team_id = Bugzilla->cgi->param('teamid');
+    $vars->{'team'}  = Bugzilla::Extension::Scrums::Team->new($team_id);
+    my $archived_sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 0, item_type => 1 });
+    my @team_sprints_array;
+    for my $sprint (@{$archived_sprints}) {
+        my $spr_bugs = $sprint->get_bugs();
+        my %team_sprint;
+        $team_sprint{'sprint'} = $sprint;
+        $team_sprint{'bugs'}   = $spr_bugs;
+        push @team_sprints_array, \%team_sprint;
+    }
+    $vars->{'team_sprints_array'} = \@team_sprints_array;
+}
+
 sub show_backlog_and_items {
     my ($vars) = @_;
 
@@ -493,6 +511,13 @@ sub show_team_and_sprints {
         if ($sprint_id =~ /^([0-9]+)$/) {
             $sprint_id = $1;                                  # $data now untainted
             _delete_sprint($vars, $sprint_id);
+        }
+    }
+    elsif ($cgi->param('archivesprint') ne "") {
+        $sprint_id = $cgi->param('archivesprint');
+        if ($sprint_id =~ /^([0-9]+)$/) {
+            $sprint_id = $1;                                  # $data now untainted
+            _archive_sprint($vars, $sprint_id);
         }
     }
 
@@ -573,6 +598,14 @@ sub _delete_sprint {
         ThrowUserError('sprint_has_bugs');    
     }
     $sprint->remove_from_db();
+}
+
+sub _archive_sprint {
+    my ($vars, $sprint_id) = @_;
+
+    my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    $sprint->set_is_active(0);
+    $sprint->update();
 }
 
 sub _sanitise_sprint_data {

@@ -24,6 +24,35 @@
 %]
 
 <script scripttype="text/javascript">
+function archive()
+{
+ 	var begin = window.document.forms['newsprint'].elements['begin'].value;
+	var end = window.document.forms['newsprint'].elements['end'].value;
+	if(end == "")
+	{
+		alert("End date is empty. Archived sprint must be stopped before archiving.");
+		return false;
+	}
+	if(begin == "")
+	{
+		alert("Sprint start date is empty");
+		return false;
+	}
+
+	if(begin.match(/^\d{4}\.\d{1,2}\.\d{1,2}$/) == null)
+	{
+		alert("Date field: '" + begin + "'. Date field must be given in form 'yyyy.mm.dd'");
+		return false;
+	}
+	if(end.match(/^\d{4}\.\d{1,2}\.\d{1,2}$/) == null)
+	{
+		alert("Date field: '" + end + "'. Date field must be given in form 'yyyy.mm.dd'");
+		return false;
+	}
+
+	return confirm("Are you sure you want to permanently deactivate and archive sprint '[% sprintname %]' \nOperation can not be undone");
+}
+
 function cancel()
 {
 	window.location = "page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]";	
@@ -85,7 +114,11 @@ function askconfirm()
 	<td><input type="text" name="description" value="[% description %]"></td>
 	<td colspan="2">&nbsp</td>
   </tr>
-
+  <tr>
+	<td><b>Actual duration:</b></td>
+	<td><input type="text" name="begin" value="[% begin %]"></td>-<td><input type="text" name="end" value="[% end %]"></td>
+	<td colspan="2">&nbsp</td>
+  </tr>
   <tr>
 	<td>&nbsp</td>
 	<td colspan="3">
@@ -94,6 +127,13 @@ function askconfirm()
 		<input type="submit" value="[% submittext %]" onclick="return checkvalues()"/>
 	</td>
   </tr>
+	[% IF editsprint %]
+  <tr>
+	<td colspan="3">
+		<a href="page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]&archivesprint=[% sprintid %]" onclick='return archive();'>[archive sprint]<a/>
+	</td>
+  </tr>
+	[% END %]
   <tr>
 	[% IF sprintid %]
 	<td colspan="4"><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]&deletesprint=[% sprintid %]" onclick='return askconfirm()'>[delete sprint]</a></td>
