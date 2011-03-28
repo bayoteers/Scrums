@@ -1,0 +1,112 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #  Eero Heino <eero.heino@nokia.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "Bugs in team" 
+    style_urls = ['skins/standard/admin.css']
+%]
+
+
+[% PROCESS global/lists.html.tmpl %]
+
+
+<script>
+
+var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Bugs');
+
+var all_lists = [];
+
+function save_all()
+{
+    save_lists(sprint_lists, unordered_bugs, 'team', [% team.id %]);
+}
+
+// data from backend
+var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]"],[% END %]];
+var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]", "[% bug.3 | replace( '"', '\"' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+
+
+var sprint_lists = [];
+$(document).ready(function() {
+
+    var html = '';
+    for (id in sprint_list_data)
+    {
+        // last argument is the name
+        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0]);
+        // last argument is the bug list
+        // extra stuff for sprint
+        list._status = sprint_list_data[id][2]
+        list.nominal_schedule = sprint_list_data[id][3]
+        list.description = sprint_list_data[id][4]
+
+        var edit_link = '<a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid='+list.id+'&status='+list._status+'&sprintname='+list.name+'&nominalschedule='+list.nominal_schedule +'&description='+list.description+'&editsprint=true">[edit]</a>';
+        html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: edit_link });
+        $(html).appendTo($('#sprints'));
+        update_lists(list, 0, sprint_list_data[id][1]);
+
+        // expand collapse
+        //$("#"+list.ul_id).hide();
+        //toggle the componenet with class msg_body
+        var ul_id = list.ul_id;
+        $("#" + list.h_id).click(function()
+        {
+            $(this).nextAll(".content:first").slideToggle(500);
+        });
+
+        sprint_lists.push(list);
+
+    }
+    //$('#sprints').html(html);
+    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
+    update_lists(unordered_bugs, 0, unordered_list_data);
+    all_lists = $.extend(true, [], sprint_lists);
+    all_lists.push(unordered_bugs);
+    bind_sortable_lists(all_lists);
+
+
+});
+
+
+</script>
+<!--
+        <select onChange='offset_step = parseInt($(this).val()); update_lists(ordered_bugs); update_lists(unordered_bugs);'> -->
+
+[% IF team_sprints_array.0 %]
+<h1>Team "[% team.name %]" current sprint [% team_sprints_array.0.sprint.name() %] [% team_sprints_array.0.sprint.nominal_schedule() %]</h1>
+[% ELSE %]
+<h1>Team "[% team.name %]" doesn't have a sprint currently</h1>
+[% END %]
+<a href="page.cgi?id=createteam.html&teamid=[% team.id %]">back to team</a>
+
+<input type='button' value='save' OnClick='save_all();'/> 
+
+<table>
+    <tr>
+        <th valign='top' id='sprints'>
+        </th>
+        <th valign='top' id='unordered'>
+        </th>
+    </tr>
+</table>
+
+
+[% PROCESS global/footer.html.tmpl %]

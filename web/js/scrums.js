@@ -217,7 +217,7 @@ function move_list(list_id, step)
 
 saveResponse = function() { }
 
-function save(lists, schema, obj_id, data_lists) {
+function save(lists, schema, obj_id, data_lists, call_back) {
     if (data_lists == undefined) {
         var data_lists = new Object();
     }
@@ -229,17 +229,26 @@ function save(lists, schema, obj_id, data_lists) {
             data_lists[list_id].push(list.list[k][0]);
         }
     }
+
+    function cb(data)
+        {
+        alert('jo');
+            if (call_back != undefined)
+            {
+                call_back();
+            }
+        }
+
         
-    json_text = '2';
     $.post('page.cgi?id=scrums/ajax.html', {
         schema: schema,
         action: 'set',
         obj_id: obj_id,
         data: JSON.stringify(data_lists)
-    }, saveResponse, 'json');
+    }, cb        , 'json');
 }
 
-function save_lists(ordered_lists, unordered_list, schema, obj_id)
+function save_lists(ordered_lists, unordered_list, schema, obj_id, call_back)
 {
     // need to use Object instead of Array when ajaxing an associative array
     var data_lists = new Object();
@@ -263,7 +272,7 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id)
             }
 
     }
-    save(ordered_lists, schema, obj_id, data_lists);
+    save(ordered_lists, schema, obj_id, data_lists, call_back);
     unordered_list.original_list = $.extend(true, [], unordered_list.list);
 }
 
