@@ -456,8 +456,7 @@ sub show_backlog_and_items {
     my $team_id = $cgi->param('teamid');
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
     $vars->{'team'}               = $team;
-    $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
-    $vars->{'unprioritised_tasks'} = $team->unprioritised_tasks();
+    $vars->{'unprioritised_items'} = $team->unprioritised_items();
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
     my $team_backlog = @$backlogs[0];
