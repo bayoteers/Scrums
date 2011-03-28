@@ -37,7 +37,8 @@ var all_lists = [];
 
 function save_all()
 {
-    save_lists(sprint_lists, backlog, 'team', [% team.id %]);
+    //save_lists(sprint_lists, backlog, 'team', [% team.id %]);
+    save(all_lists, 'team', [% team.id %]);
 }
 
 // data from backend
