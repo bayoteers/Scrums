@@ -293,13 +293,16 @@ sub unprioritised_bugs {
     my ($unscheduled_bugs) = $dbh->selectall_arrayref(
         'select
 	b.bug_id,
+        p.realname,
 	b.bug_status,
-        b.bug_severity,
-        left(b.short_desc, 40)
+        left(b.short_desc, 40),
+        b.remaining_time
     from 
 	scrums_componentteam sct
     inner join
 	bugs b on b.component_id = sct.component_id
+    inner join 
+        profiles p on p.userid = b.assigned_to
     inner join
 	bug_status bs on b.bug_status = bs.value
     where 
@@ -326,13 +329,16 @@ sub unprioritised_items {
     my ($unscheduled_items) = $dbh->selectall_arrayref(
         'select
 	b.bug_id,
+        p.realname,
 	b.bug_status,
-        b.bug_severity,
-        left(b.short_desc, 40)
+        left(b.short_desc, 40),
+        b.remaining_time
     from 
 	scrums_componentteam sct
     inner join
 	bugs b on b.component_id = sct.component_id
+    inner join 
+        profiles p on p.userid = b.assigned_to
     inner join
 	bug_status bs on b.bug_status = bs.value
     where 

@@ -95,13 +95,15 @@ sub get_bugs {
     my ($sprint_bugs) = $dbh->selectall_arrayref(
         'select
 	b.bug_id,
+        p.realname,
         b.bug_status,
-        b.bug_severity,
         left(b.short_desc, 40),
+        b.remaining_time,
 	bo.team
     from
 	scrums_sprint_bug_map sbm
 	inner join bugs b on sbm.bug_id = b.bug_id
+        inner join profiles p on p.userid = b.assigned_to
 	left join scrums_bug_order bo on sbm.bug_id = bo.bug_id
     where
 	sbm.sprint_id = ?
