@@ -26,7 +26,7 @@
 <script scripttype="text/javascript">
 function searchperson()
 {
-	window.open('page.cgi?id=searchperson.html&formname=addmember&submit=true', '_blanck', 'directories=no,location=no,height=400');
+	window.open('page.cgi?id=searchperson.html&formname=addmember&formfieldprefix=user&submit=true', '_blanck', 'directories=no,location=no,height=400');
 	return false;
 }
 </script>
@@ -42,6 +42,7 @@ Team created!
 [% END %]
 
 [% owner = team.owner_user() %]
+[% scrum_master = team.scrum_master_user() %]
 <!-- <table border="true"> -->
 <table>
 <tr>
@@ -49,7 +50,7 @@ Team created!
 <td colspan="2">[% team.name %]</td>
 <td>
 [% IF (user.in_group('admin')) %]
-<a href="page.cgi?id=newteam.html&editteam='true'&teamid=[% team.id %]&teamname=[% team.name() %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&ownerid=[% owner.id() %]">[edit team]
+<a href="page.cgi?id=newteam.html&editteam='true'&teamid=[% team.id %]&teamname=[% team.name() %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&ownerid=[% owner.id() %]&scrummasterrealname=[% scrum_master.name() %]&scrummasterloginname=[% scrum_master.login() %]&scrummasterid=[% scrum_master.id() %]">[edit team]
 [% ELSE %]
 &nbsp
 [% END %]
@@ -63,6 +64,16 @@ Team created!
 <tr>
 <td>&nbsp</td>
 <td colspan="2">[% owner.login() %]</td>
+<td>&nbsp</td>
+</tr>
+<tr>
+<td><b>Scrum master:</b></td>
+<td colspan="2">[% scrum_master.name() %]</td>
+<td>&nbsp</td>
+</tr>
+<tr>
+<td>&nbsp</td>
+<td colspan="2">[% scrum_master.login() %]</td>
 <td>&nbsp</td>
 </tr>
 

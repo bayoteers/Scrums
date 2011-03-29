@@ -27,9 +27,9 @@
 function select(userid, realname, login)
 {
 	// alert("Select: " + userid + " " + realname + " " + login);
-	window.opener.document.forms['[% formname %]'].elements['userid'].value=userid;
-	window.opener.document.forms['[% formname %]'].elements['userrealname'].value=realname;
-	window.opener.document.forms['[% formname %]'].elements['userlogin'].value=login;
+	window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]id'].value=userid;
+	window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]realname'].value=realname;
+	window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]login'].value=login;
 	// alert("Select");
 	[% IF submit %]
 	// alert('Kutsutaan metodia submit');
@@ -49,6 +49,7 @@ submit: [% submit %] -->
 <input type="hidden" name="id" value="searchperson.html" />
 <input type="hidden" name="action" value="list" />
 <input type="hidden" name="formname" value="[% formname %]" />
+<input type="hidden" name="formfieldprefix" value="[% formfieldprefix %]" />
 <input type="hidden" name="submit" value="[% submit %]" />
 <p><label for="matchvalue">List users with</label>
 <select id="matchvalue" name="matchvalue">

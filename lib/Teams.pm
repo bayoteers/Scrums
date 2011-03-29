@@ -113,9 +113,10 @@ sub show_create_team {
 
                 my $team_name  = $cgi->param('name');
                 my $team_owner = $cgi->param('userid');
+                my $scrum_master = $cgi->param('scrummasterid');
                 if ($team_owner =~ /^([0-9]+)$/) {
                     $team_owner = $1;                                        # $data now untainted
-                    $error = _update_team($team, $team_name, $team_owner);
+                    $error = _update_team($team, $team_name, $team_owner, $scrum_master);
                 }
                 else {
                     $error .= "Illegal team owner";
@@ -162,6 +163,7 @@ sub _new_team {
 
     my $name     = $cgi->param('name');
     my $owner_id = $cgi->param('userid');
+    my $scrum_master = $cgi->param('scrum_master');
 
     my $error = "";
     if ($name =~ /^([-\ \w]+)$/) {
@@ -180,8 +182,15 @@ sub _new_team {
         $owner_id = "";
     }
 
+    if ($scrum_master =~ /^([-\ \w]+)$/) {
+        $scrum_master = $1;    # $data now untainted
+    }
+    else {
+        $scrum_master = "";
+    }
+
     if ($name and $owner_id) {
-        my $team = Bugzilla::Extension::Scrums::Team->create({ name => $name, owner => $owner_id });
+        my $team = Bugzilla::Extension::Scrums::Team->create({ name => $name, owner => $owner_id, scrum_master => $scrum_master });
         my $new_id = $team->id();
         my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
                      { team_id => $new_id, status => "NEW", item_type => 2, name => "Product backlog", nominal_schedule => "2000-01-01", 
@@ -382,6 +391,7 @@ sub search_person {
     }
 
     $vars->{'formname'} = $cgi->param('formname');
+    $vars->{'formfieldprefix'} = $cgi->param('formfieldprefix');
     $vars->{'submit'}   = $cgi->param('submit');
 }
 
@@ -395,6 +405,9 @@ sub edit_team {
     $vars->{'realname'}  = $cgi->param('realname');
     $vars->{'loginname'} = $cgi->param('loginname');
     $vars->{'ownerid'}   = $cgi->param('ownerid');
+    $vars->{'scrummasterid'} = $cgi->param('scrummasterid');
+    $vars->{'scrummasterrealname'}  = $cgi->param('scrummasterrealname');
+    $vars->{'scrummasterloginname'} = $cgi->param('scrummasterloginname');
 }
 
 # Show team bugs is a whole, which consists of team, sprints of team and
@@ -653,7 +666,7 @@ sub _sanitise_sprint_data {
 #}
 
 sub _update_team {
-    my ($team, $name, $owner) = @_;
+    my ($team, $name, $owner, $scrum_master) = @_;
 
     my $error = "";
     if ($name =~ /^([-\ \w]+)$/) {
@@ -672,9 +685,17 @@ sub _update_team {
         $owner = "";
     }
 
+    if ($scrum_master =~ /^([0-9]+)$/) {
+        $scrum_master = $1;    # $data now untainted
+    }
+    else {
+        $scrum_master = "";
+    }
+
     if ($error eq "") {
         $team->set_name($name);
         $team->set_owner($owner);
+        $team->set_scrum_master($scrum_master);
         $team->update();
     }
 

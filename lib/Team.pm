@@ -48,6 +48,7 @@ use constant DB_COLUMNS => qw(
   weekly_velocity_value
   weekly_velocity_start
   weekly_velocity_end
+  scrum_master
   );
 
 use constant REQUIRED_CREATE_FIELDS => qw(
@@ -58,6 +59,7 @@ use constant REQUIRED_CREATE_FIELDS => qw(
 use constant UPDATE_COLUMNS => qw(
   name
   owner
+  scrum_master
   );
 
 use constant VALIDATORS => { name => \&_check_name, };
@@ -113,6 +115,7 @@ sub _check_name {
 
 sub set_name  { $_[0]->set('name',  $_[1]); }
 sub set_owner { $_[0]->set('owner', $_[1]); }
+sub set_scrum_master { $_[0]->set('scrum_master', $_[1]); }
 
 sub set_component {
     my ($self, $component_id) = @_;
@@ -207,6 +210,7 @@ sub is_user_team_member {
 
 sub name                  { return $_[0]->{'name'}; }
 sub owner                 { return $_[0]->{'owner'}; }
+sub scrum_master          { return $_[0]->{'scrum_master'}; }
 sub weekly_velocity_value { return $_[0]->{'weekly_velocity_value'}; }
 sub weekly_velocity_start { return $_[0]->{'weekly_velocity_start'}; }
 sub weekly_velocity_end   { return $_[0]->{'weekly_velocity_end'}; }
@@ -215,6 +219,12 @@ sub owner_user {
     my ($self) = @_;
 
     return Bugzilla::User->new($self->owner);
+}
+
+sub scrum_master_user {
+    my ($self) = @_;
+
+    return Bugzilla::User->new($self->scrum_master);
 }
 
 sub members {

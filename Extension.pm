@@ -219,6 +219,14 @@ sub db_schema_abstract_schema {
                                                                         DELETE => 'CASCADE'
                                                                       }
                                                       },
+                                             scrum_master => {
+                                                        TYPE       => 'INT3',
+                                                        REFERENCES => {
+                                                                        TABLE  => 'profiles',
+                                                                        COLUMN => 'userid',
+                                                                        DELETE => 'CASCADE'
+                                                                      }
+                                                      },
                                              weekly_velocity_value => { TYPE => 'decimal(7,2)' },
                                              weekly_velocity_start => { TYPE => 'DATE' },
                                              weekly_velocity_end   => { TYPE => 'DATE' },
@@ -284,13 +292,20 @@ sub install_update_db {
     use constant WV_VALUE_DEFINITION => { TYPE => 'decimal(7,2)' };
     use constant WV_START_DEFINITION => { TYPE => 'DATE' };
     use constant WV_END_DEFINITION   => { TYPE => 'DATE' };
-
+    
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_value", WV_VALUE_DEFINITION, undef);
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_start", WV_START_DEFINITION, undef);
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_end",   WV_END_DEFINITION,   undef);
 
+    Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_end",   WV_END_DEFINITION,   undef);
+
     use constant SPRINT_TYPE_DEFINITION => { TYPE => 'INT2',      NOTNULL => 1, DEFAULT => '1' };
     Bugzilla->dbh->bz_add_column("scrums_sprints", "item_type", SPRINT_TYPE_DEFINITION, undef);
+
+    use constant TEAM_SCRUM_MASTER => { TYPE => 'INT3', REFERENCES => { TABLE  => 'profiles',
+                                                                        COLUMN => 'userid',
+                                                                        DELETE => 'CASCADE' } };
+    Bugzilla->dbh->bz_add_column("scrums_team", "scrum_master", TEAM_SCRUM_MASTER,   undef);
 }
 
 sub page_before_template {
@@ -337,6 +352,9 @@ sub page_before_template {
             ThrowUserError('auth_failure', { group => "admin", action => "add", object => "team" });
         }
         edit_team($vars);
+    }
+    if ($page eq 'scrums/teambugs.html') {
+        show_team_and_sprints($vars);
     }
     if ($page eq 'scrums/teambugs2.html' || $page eq 'scrums/dailysprint.html') {
         show_team_and_sprints($vars);

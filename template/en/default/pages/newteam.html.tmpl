@@ -31,7 +31,13 @@ function cancel()
 
 function searchuser()
 {
-	window.open('page.cgi?id=searchperson.html&formname=newteam', '_blanck', 'directories=no,location=no,height=400');
+	window.open('page.cgi?id=searchperson.html&formname=newteam&formfieldprefix=user', '_blanck', 'directories=no,location=no,height=400');
+	return false;
+}
+
+function searchscrummaster()
+{
+	window.open('page.cgi?id=searchperson.html&formname=newteam&formfieldprefix=scrummaster', '_blanck', 'directories=no,location=no,height=400');
 	return false;
 }
 
@@ -60,6 +66,7 @@ function askconfirm()
 <input type="hidden" name="teamid" value="[% teamid %]"/>
 <input type="hidden" name="editteam" value="[% editteam %]"/>
 <input type="hidden" name="userid" value="[% ownerid %]"/>
+<input type="hidden" name="scrummasterid" value="[% scrummasterid %]"/>
 <table>
   <tr>
 	<td><b>Team name:</b></td>
@@ -76,6 +83,17 @@ function askconfirm()
 	<td><input type="text" name="userrealname" value="[% realname %]" disabled="true"/></td>
 	<td><input type="text" name="userlogin"value="[% loginname %]" disabled="true"/></td>
 	<td><input type="button" value="Search user" onclick="searchuser()"/>
+  </tr>
+  <tr>
+	<td><b>Scrum master:</b></td>
+	<td>Real name</td>
+	<td colspan="2">Login</td>
+  </tr>
+  <tr>
+	<td>&nbsp</td>
+	<td><input type="text" name="scrummasterrealname" value="[% scrummasterrealname %]" disabled="true"/></td>
+	<td><input type="text" name="scrummasterlogin"value="[% scrummasterloginname %]" disabled="true"/></td>
+	<td><input type="button" value="Search user" onclick="searchscrummaster()"/>
   </tr>
   <tr>
 	<td>&nbsp</td>
