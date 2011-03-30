@@ -47,6 +47,8 @@ use constant DB_COLUMNS => qw(
   status
   is_active
   description
+  start_date
+  end_date
   );
 
 use constant REQUIRED_CREATE_FIELDS => qw(
@@ -63,6 +65,8 @@ use constant UPDATE_COLUMNS => qw(
   status
   is_active
   description
+  start_date
+  end_date
   );
 
 use constant VALIDATORS => {};
@@ -118,6 +122,8 @@ sub set_nominal_schedule { $_[0]->set('nominal_schedule', $_[1]); }
 sub set_status           { $_[0]->set('status',           $_[1]); }
 sub set_is_active        { $_[0]->set('is_active',        $_[1]); }
 sub set_description      { $_[0]->set('description',      $_[1]); }
+sub set_start_date       { $_[0]->set('start_date',       $_[1]); }
+sub set_end_date         { $_[0]->set('end_date',         $_[1]); }
 
 ###############################
 ####      Accessors        ####
@@ -128,8 +134,25 @@ sub status      { return $_[0]->{'status'}; }
 sub is_active   { return $_[0]->{'is_active'}; }
 sub description { return $_[0]->{'description'}; }
 
-sub nominal_schedule {
-    my $str_with_dashes = $_[0]->{'nominal_schedule'};
+sub nominal_schedule    { 
+    my $self = shift;
+    my $str_date = $self->{'nominal_schedule'};
+    return $self->replace_dash_with_dot( $str_date );
+}
+sub start_date          { 
+    my $self = shift;
+    my $str_date = $self->{'start_date'};
+    return $self->replace_dash_with_dot( $str_date );
+}
+sub end_date            { 
+    my $self = shift;
+    my $str_date = $self->{'end_date'};
+    return $self->replace_dash_with_dot( $str_date );
+}
+
+sub replace_dash_with_dot {
+    my $self = shift;
+    my $str_with_dashes = shift;
     my $str_with_dots   = $str_with_dashes;
     if ($str_with_dashes ne "") {
         if ($str_with_dashes =~ /^(\d{4})-(\d{1,2})-(\d{1,2})/) {

@@ -26,22 +26,22 @@
 <script scripttype="text/javascript">
 function archive()
 {
- 	var begin = window.document.forms['newsprint'].elements['begin'].value;
-	var end = window.document.forms['newsprint'].elements['end'].value;
+ 	var start = window.document.forms['newsprint'].elements['start_date'].value;
+	var end = window.document.forms['newsprint'].elements['end_date'].value;
 	if(end == "")
 	{
 		alert("End date is empty. Archived sprint must be stopped before archiving.");
 		return false;
 	}
-	if(begin == "")
+	if(start == "")
 	{
 		alert("Sprint start date is empty");
 		return false;
 	}
 
-	if(begin.match(/^\d{4}\.\d{1,2}\.\d{1,2}$/) == null)
+	if(start.match(/^\d{4}\.\d{1,2}\.\d{1,2}$/) == null)
 	{
-		alert("Date field: '" + begin + "'. Date field must be given in form 'yyyy.mm.dd'");
+		alert("Date field: '" + start + "'. Date field must be given in form 'yyyy.mm.dd'");
 		return false;
 	}
 	if(end.match(/^\d{4}\.\d{1,2}\.\d{1,2}$/) == null)
@@ -116,7 +116,7 @@ function askconfirm()
   </tr>
   <tr>
 	<td><b>Actual duration:</b></td>
-	<td><input type="text" name="begin" value="[% begin %]"></td>-<td><input type="text" name="end" value="[% end %]"></td>
+	<td><input type="text" name="start_date" value="[% start_date %]"></td>-<td><input type="text" name="end_date" value="[% end_date %]"></td>
 	<td colspan="2">&nbsp</td>
   </tr>
   <tr>

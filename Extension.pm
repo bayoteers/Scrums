@@ -197,7 +197,9 @@ sub db_schema_abstract_schema {
                                                 status           => { TYPE => 'varchar(20)',  NOTNULL => 1 },
                                                 is_active        => { TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE' },
                                                 description => { TYPE => 'varchar(255)' },
-                                                scrums_sprints   => { TYPE => 'INT2',      NOTNULL => 1, DEFAULT => '1' },
+                                                item_type   => { TYPE => 'INT2',      NOTNULL => 1, DEFAULT => '1' },
+                                                start_date       => { TYPE => 'DATE' },
+                                                end_date         => { TYPE => 'DATE' },
                                               ]
                                   };
 
@@ -306,6 +308,11 @@ sub install_update_db {
                                                                         COLUMN => 'userid',
                                                                         DELETE => 'CASCADE' } };
     Bugzilla->dbh->bz_add_column("scrums_team", "scrum_master", TEAM_SCRUM_MASTER,   undef);
+
+    use constant START_DATE_DEFINITION => { TYPE => 'DATE' };
+    use constant END_DATE_DEFINITION   => { TYPE => 'DATE' };
+    Bugzilla->dbh->bz_add_column("scrums_sprints", "start_date", START_DATE_DEFINITION, undef);
+    Bugzilla->dbh->bz_add_column("scrums_sprints", "end_date", END_DATE_DEFINITION, undef);
 }
 
 sub page_before_template {

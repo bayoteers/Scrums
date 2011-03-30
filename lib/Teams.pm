@@ -489,12 +489,22 @@ sub edit_sprint {
     #    }
 
     my $cgi = Bugzilla->cgi;
-    $vars->{'editsprint'}      = $cgi->param('editsprint');
     $vars->{'teamid'}          = $cgi->param('teamid');
-    $vars->{'sprintid'}        = $cgi->param('sprintid');
-    $vars->{'sprintname'}      = $cgi->param('sprintname');
-    $vars->{'nominalschedule'} = $cgi->param('nominalschedule');
-    $vars->{'description'}     = $cgi->param('description');
+    my $editsprint = $cgi->param('editsprint');
+    $vars->{'editsprint'} = $editsprint;
+    if($editsprint eq "true")
+    {
+        my $sprint_id = $cgi->param('sprintid');    
+        $vars->{'sprintid'} = $sprint_id;
+        my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+        if (defined $sprint && ref($sprint)) {
+            $vars->{'sprintname'}      = $sprint->name();
+            $vars->{'nominalschedule'} = $sprint->nominal_schedule();
+            $vars->{'description'}     = $sprint->description();
+            $vars->{'start_date'}      = $sprint->start_date();
+            $vars->{'end_date'}        = $sprint->end_date();
+        }
+    }
 }
 
 sub show_team_and_sprints {
@@ -562,12 +572,16 @@ sub _new_sprint {
     my $name            = $cgi->param('sprintname');
     my $nominalschedule = $cgi->param('nominalschedule');
     my $description     = $cgi->param('description');
+    my $start_date      = $cgi->param('start_date');
+    my $end_date        = $cgi->param('end_date');
 
-    ($error, $teamid, $name, $nominalschedule, $description) = _sanitise_sprint_data($teamid, $name, $nominalschedule, $description);
+    ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date) = 
+        _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date);
 
     if ($teamid and $name and $nominalschedule) {
         my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
-                     { team_id => $teamid, status => "NEW", name => $name, nominal_schedule => $nominalschedule, description => $description, is_active => 1, item_type => 1 });
+                     { team_id => $teamid, status => "NEW", name => $name, nominal_schedule => $nominalschedule, description => $description, 
+                        is_active => 1, item_type => 1, start_date => $start_date, end_date => $end_date });
     }
     else {
         ThrowUserError($error);
@@ -584,13 +598,18 @@ sub _update_sprint {
     my $name            = $cgi->param('sprintname');
     my $nominalschedule = $cgi->param('nominalschedule');
     my $description     = $cgi->param('description');
+    my $start_date      = $cgi->param('start_date');
+    my $end_date        = $cgi->param('end_date');
 
-    ($error, $teamid, $name, $nominalschedule, $description) = _sanitise_sprint_data($teamid, $name, $nominalschedule, $description);
+    ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date) = 
+        _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date);
 
     if ($teamid and $name and $nominalschedule) {
         my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
         $sprint->set_name($name);
         $sprint->set_nominal_schedule($nominalschedule);
+        $sprint->set_start_date($start_date);
+        $sprint->set_end_date($end_date);
         $sprint->set_description($description);
         $sprint->update();
     }
@@ -621,7 +640,7 @@ sub _archive_sprint {
 }
 
 sub _sanitise_sprint_data {
-    my ($teamid, $name, $nominalschedule, $description) = @_;
+    my ($teamid, $name, $nominalschedule, $description, $start_date, $end_date) = @_;
     my $error = "";
 
     if ($teamid =~ /^([0-9]+)$/) {
@@ -656,7 +675,23 @@ sub _sanitise_sprint_data {
         $description = "";
     }
 
-    return ($error, $teamid, $name, $nominalschedule, $description);
+    if ($start_date =~ /^(\d{4}\.\d{1,2}\.\d{1,2})/) {
+        $start_date = $1;    # $data now untainted
+    }
+    else {
+        $error .= "Illegal start date. ";
+        $start_date = "";
+    }
+
+    if ($end_date =~ /^(\d{4}\.\d{1,2}\.\d{1,2})/) {
+        $end_date = $1;    # $data now untainted
+    }
+    else {
+        $error .= "Illegal end date. ";
+        $end_date = "";
+    }
+
+    return ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date);
 }
 
 #sub _get_team_sprints {
