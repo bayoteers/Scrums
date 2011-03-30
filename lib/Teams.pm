@@ -163,7 +163,7 @@ sub _new_team {
 
     my $name     = $cgi->param('name');
     my $owner_id = $cgi->param('userid');
-    my $scrum_master = $cgi->param('scrum_master');
+    my $scrum_master = $cgi->param('scrummasterid');
 
     my $error = "";
     if ($name =~ /^([-\ \w]+)$/) {
@@ -190,7 +190,13 @@ sub _new_team {
     }
 
     if ($name and $owner_id) {
-        my $team = Bugzilla::Extension::Scrums::Team->create({ name => $name, owner => $owner_id, scrum_master => $scrum_master });
+        my $team;
+        if($scrum_master) {
+            $team = Bugzilla::Extension::Scrums::Team->create({ name => $name, owner => $owner_id, scrum_master => $scrum_master });
+        }
+        else {
+            $team = Bugzilla::Extension::Scrums::Team->create({ name => $name, owner => $owner_id });
+        }
         my $new_id = $team->id();
         my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
                      { team_id => $new_id, status => "NEW", item_type => 2, name => "Product backlog", nominal_schedule => "2000-01-01", 
