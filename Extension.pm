@@ -415,10 +415,19 @@ sub page_before_template {
             return handle_release_bug_data($vars);
         }
     }
+    if ($page eq 'scrums/choose-classification.html') {
+        my $cgi    = Bugzilla->cgi;
+        my $team_id = $cgi->param('teamid');
+        my @classifications = Bugzilla::Classification->get_all();
+        $vars->{'classifications'} = \@classifications;
+        $vars->{'target'} = "page.cgi?id=scrums/choose-product.html&teamid=" . $team_id;
+    }
     if ($page eq 'scrums/choose-product.html') {
         my $cgi    = Bugzilla->cgi;
         my $team_id = $cgi->param('teamid');
-        my $classification = new Bugzilla::Classification(7); # 7=Ilmatar
+        my $class_name = $cgi->param('classification');
+        my $classification_list = Bugzilla::Classification->match({ name => $class_name });
+        my $classification = @$classification_list[0];
         my $enterable_products = $classification->products();
         my @classifications = ({object => $classification, products => $enterable_products});
         $vars->{'classifications'} = \@classifications;
