@@ -29,6 +29,11 @@ function searchperson()
 	window.open('page.cgi?id=searchperson.html&formname=addmember&formfieldprefix=user&submit=true', '_blanck', 'directories=no,location=no,height=400');
 	return false;
 }
+
+function removal(component, product, team)
+{
+	return confirm("Do you wan to remove component " + component + " (" + product + ")" + " from team " + team);
+}
 </script>
 
 <br>
@@ -43,7 +48,6 @@ Team created!
 
 [% owner = team.owner_user() %]
 [% scrum_master = team.scrum_master_user() %]
-<!-- <table border="true"> -->
 <table>
 <tr>
 <td><b>Team name:</b></td>
@@ -94,11 +98,13 @@ Team created!
 <td>&nbsp</td>
 <td>[% subcomponent.name() %]</td>
 <td>[% subcomponent.product().name() %]</td>
-[% IF user.in_group('editcomponents') || (user.get_products_by_permission('editcomponents').size) %]
-<td><a href="page.cgi?id=componentteam.html&compid=[% subcomponent.id() %]&compname=[% subcomponent.name() %]&productname=[% subcomponent.product().name() %]">[edit]</a></td>
-[% ELSE %]
-<td>&nbsp</td>
-[% END %]
+[% # IF TODO SOLVE USER RIGHTS user.in_group('editcomponents') || (user.get_products_by_permission('editcomponents').size) %]
+<td><a href="page.cgi?id=createteam.html&teamid=[% team.id() %]&removedcomponent=[% subcomponent.id %]"
+	onclick="return removal('[% subcomponent.name() %]', '[% subcomponent.product().name() %]', '[% team.name() %]');">[remove]</a></td>
+
+[% # ELSE %]
+<!-- <td>&nbsp</td> --!
+[% # END %]
 </tr>
 [% END %]
 
@@ -114,11 +120,11 @@ Not responsible for sub-components<br>
 
 <tr>
 <td colspan="3">&nbsp</td>
-[% IF user.in_group('editcomponents') || (user.get_products_by_permission('editcomponents').size) %]
-<td><a href="editcomponents.cgi">[add sub-component]</a></td>
-[% ELSE %]
+[% # TODO SOLVE USER RIGHTS IF user.in_group('editcomponents') || (user.get_products_by_permission('editcomponents').size) %]
+<td><a href="page.cgi?id=scrums/choose-product.html&teamid=[% team.id %]">[add sub-component]</a></td>
+[% # ELSE %]
 <td>&nbsp</td>
-[% END %]
+[% # END %]
 </tr>
 
 <tr>

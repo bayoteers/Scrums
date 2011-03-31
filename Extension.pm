@@ -415,6 +415,26 @@ sub page_before_template {
             return handle_release_bug_data($vars);
         }
     }
+    if ($page eq 'scrums/choose-product.html') {
+        my $cgi    = Bugzilla->cgi;
+        my $team_id = $cgi->param('teamid');
+        my $classification = new Bugzilla::Classification(7); # 7=Ilmatar
+        my $enterable_products = $classification->products();
+        my @classifications = ({object => $classification, products => $enterable_products});
+        $vars->{'classifications'} = \@classifications;
+        $vars->{'target'} = "page.cgi?id=scrums/choose-component.html&teamid=" . $team_id;
+    }
+    if ($page eq 'scrums/choose-component.html') {
+        my $cgi    = Bugzilla->cgi;
+        my $team_id = $cgi->param('teamid');
+        my $product_name = $cgi->param('product');
+        my $products = Bugzilla::Product->match({ name => $product_name });
+        if(scalar @{$products} > 0) {
+            $vars->{'product'} = @$products[0];
+        }
+        $vars->{'target'} = "page.cgi?id=createteam.html&teamid=" . $team_id;
+    }
+
 }
 
 # This must be the last line of your extension.

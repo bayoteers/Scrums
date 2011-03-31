@@ -109,6 +109,24 @@ sub show_create_team {
         if ($team_id =~ /^([0-9]+)$/) {
             $team_id = $1;    # $data now untainted
             my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+            if ($cgi->param('removedcomponent') ne "") {
+                my $component_id  = $cgi->param('removedcomponent');
+                if ($component_id =~ /^([0-9]+)$/) {
+                    $component_id = $1;             
+                    # This removes component from this team.
+                    $team->remove_component($component_id);
+                }
+            }
+            if ($cgi->param('component') ne "") {
+                my $component_id  = $cgi->param('component');
+                if ($component_id =~ /^([0-9]+)$/) {
+                    $component_id = $1;             
+                    # This removes component from any old team, if there was one.
+                    $team->remove_component($component_id);
+                    # This adds component into 'this' team.
+                    $team->set_component($component_id);
+                }
+            }
             if ($cgi->param('editteam') ne "") {
 
                 my $team_name  = $cgi->param('name');
@@ -286,6 +304,8 @@ sub add_into_team {
     }
 }
 
+# TODO
+# This is deprecated
 sub component_team {
     my ($vars) = @_;
 
