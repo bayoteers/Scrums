@@ -215,7 +215,19 @@ function move_list(list_id, step)
     }
 }
 
-saveResponse = function() { }
+function saveResponse(response, status, xhr) 
+{ 
+	var retObj = eval("("+ response+")");
+	if(retObj.errors)
+	{
+		alert("There are errors: "+retObj.errormsg);
+	}
+	else
+	{
+		alert("Success");
+	}
+}
+
 
 function save(lists, schema, obj_id, data_lists, call_back) {
     if (data_lists == undefined) {
@@ -245,7 +257,8 @@ function save(lists, schema, obj_id, data_lists, call_back) {
         action: 'set',
         obj_id: obj_id,
         data: JSON.stringify(data_lists)
-    }, cb        , 'json');
+    }, saveResponse        , 'text');
+//    }, saveResponse        , 'json');
 }
 
 function save_lists(ordered_lists, unordered_list, schema, obj_id, call_back)
