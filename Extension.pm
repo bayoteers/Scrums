@@ -336,28 +336,16 @@ sub page_before_template {
     if ($page eq 'createteam.html') {
         show_create_team($vars);
     }
-    if ($page eq 'userteams.html') {
-        user_teams($vars);
-    }
     if ($page eq 'addintoteam.html') {
         if (not Bugzilla->user->in_group('editteams')) {
             ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
         }
         add_into_team($vars);
     }
-    if ($page eq 'componentteam.html') {
-        if (not Bugzilla->user->in_group('editcomponents')) {
-            ThrowUserError('auth_failure', { group => "editcomponents", action => "edit", object => "components" });
-        }
-        component_team($vars);
-    }
     if ($page eq 'searchperson.html') {
         search_person($vars);
     }
     if ($page eq 'newteam.html') {
-        if (not Bugzilla->user->in_group('admin')) {
-            ThrowUserError('auth_failure', { group => "admin", action => "add", object => "team" });
-        }
         edit_team($vars);
     }
     if ($page eq 'scrums/teambugs.html') {
@@ -384,10 +372,6 @@ sub page_before_template {
     }
 
     if ($page eq 'scrums/newsprint.html') {
-        # TODO
-        #        if (not Bugzilla->user->in_group('admin')) {
-        #            ThrowUserError('auth_failure', { group => "admin", action => "add", object => "team" });
-        #        }
         edit_sprint($vars);
     }
 
@@ -404,16 +388,6 @@ sub page_before_template {
     }
     if ($page eq 'scrums/releasebugs.html') {
         show_release_bugs($vars);
-    }
-    if ($page eq 'scrums/release_ajax.html') {
-        my $cgi    = Bugzilla->cgi;
-        my $action = $cgi->param('action');
-        if ($action eq "orderteambugs") {
-            $vars->{'error'} = "orderteambugs";
-        }
-        else {
-            return handle_release_bug_data($vars);
-        }
     }
     if ($page eq 'scrums/choose-classification.html') {
         my $cgi    = Bugzilla->cgi;

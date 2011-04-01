@@ -188,18 +188,33 @@ sub team_of_component {
     return $team;
 }
 
+sub is_team_super_user {
+    my ($self, $user) = @_;
+    my $user_id = $user->id();
+
+    my ($owner_id) = Bugzilla->dbh->selectrow_array('SELECT owner FROM scrums_team WHERE id = ? AND owner = ?', undef, $self->id, $user_id);
+    if ($owner_id) {
+        return 1;
+    }
+    my ($scrum_master_id) = Bugzilla->dbh->selectrow_array('SELECT scrum_master FROM scrums_team WHERE id = ? AND scrum_master = ?', undef, $self->id, $user_id);
+    if ($scrum_master_id) {
+        return 1;
+    }        
+    return 0;
+}
+
 sub is_user_team_member {
     my ($self, $user) = @_;
     my $user_id = $user->id();
+
+    if($self->is_team_super_user($user)) {
+        return 1;
+    }
 
     my ($member_id) = Bugzilla->dbh->selectrow_array('SELECT userid FROM scrums_teammember WHERE teamid = ? AND userid = ?', undef, $self->id, $user_id);
     if ($member_id) {
         return 1;
     }
-    my ($owner_id) = Bugzilla->dbh->selectrow_array('SELECT owner FROM scrums_team WHERE id = ? AND owner = ?', undef, $self->id, $user_id);
-    if ($owner_id) {
-        return 1;
-    }    
 
     return 0;
 }

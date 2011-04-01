@@ -103,7 +103,11 @@ Release created!
 [% END %]
 </td>
 <td>
+[% IF (user.in_group('release_managers')) %]
 <a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&removeflagtype=[% flagtype.id %]" onclick="return askconfirm('[% release.name %]', '[% flagtype.name %]');">[remove]</a>
+[% ELSE %]
+&nbsp;
+[% END %]
 </td>
 </tr>
 [% END %]
@@ -134,7 +138,12 @@ No flagtypes for release<br>
 [% ELSE %]
 <tr>
 <td colspan="3">
+[% IF (user.in_group('release_managers')) %]
 <a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&addflagtype=true">[add flagtype]</a>
+[% ELSE %]
+&nbsp;
+[% END %]
+
 </td>
 </tr>
 [% END %]

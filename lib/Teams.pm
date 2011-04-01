@@ -110,6 +110,9 @@ sub show_create_team {
             $team_id = $1;    # $data now untainted
             my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
             if ($cgi->param('removedcomponent') ne "") {
+                if (not Bugzilla->user->in_group('editteams')) {
+                    ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+                }
                 my $component_id  = $cgi->param('removedcomponent');
                 if ($component_id =~ /^([0-9]+)$/) {
                     $component_id = $1;             
@@ -118,6 +121,9 @@ sub show_create_team {
                 }
             }
             if ($cgi->param('component') ne "") {
+                if (not Bugzilla->user->in_group('editteams')) {
+                    ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+                }
                 my $component_id  = $cgi->param('component');
                 if ($component_id =~ /^([0-9]+)$/) {
                     $component_id = $1;             
@@ -128,7 +134,9 @@ sub show_create_team {
                 }
             }
             if ($cgi->param('editteam') ne "") {
-
+                if (not Bugzilla->user->in_group('editteams')) {
+                    ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+                }
                 my $team_name  = $cgi->param('name');
                 my $team_owner = $cgi->param('userid');
                 my $scrum_master = $cgi->param('scrummasterid');
@@ -148,6 +156,9 @@ sub show_create_team {
         $vars->{'error'} = $error;
     }
     else {
+        if (not Bugzilla->user->in_group('editteams')) {
+            ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+        }
         _new_team($vars);
     }
 }
@@ -160,6 +171,9 @@ sub _show_existing_team {
     my $user_id = $cgi->param('userid');
 
     if ($user_id ne "") {
+        if (not Bugzilla->user->in_group('editteams')) {
+            ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+        }
         if ($user_id =~ /^([0-9]+)$/) {
             $user_id = $1;    # $data now untainted
             my $add_into_team = $cgi->param('addintoteam');
@@ -425,7 +439,20 @@ sub edit_team {
     my ($vars) = @_;
 
     my $cgi = Bugzilla->cgi;
-    $vars->{'editteam'}  = $cgi->param('editteam');
+    my $editteam = $cgi->param('editteam');
+    if($editteam eq "")
+    {
+        # If we are not editing existing team, we are creating new team. Check user access.
+        if (not Bugzilla->user->in_group('admin')) {
+            ThrowUserError('auth_failure', { group => "admin", action => "add", object => "team" });
+        }
+    }
+    else {
+        if (not Bugzilla->user->in_group('editteams')) {
+            ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+        }
+    }
+    $vars->{'editteam'}  = $editteam;
     $vars->{'teamid'}    = $cgi->param('teamid');
     $vars->{'teamname'}  = $cgi->param('teamname');
     $vars->{'realname'}  = $cgi->param('realname');
@@ -509,13 +536,16 @@ sub show_backlog_and_items {
 sub edit_sprint {
     my ($vars) = @_;
 
-    # TODO
-    #    if (not Bugzilla->user->in_group('release_managers')) {
-    #        ThrowUserError('auth_failure', { group => "release_managers", action => "edit", object => "release" });
-    #    }
-
     my $cgi = Bugzilla->cgi;
-    $vars->{'teamid'}          = $cgi->param('teamid');
+    my $team_id = $cgi->param('teamid');
+    my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+    # User access is same for creating a new sprint and for editing existing sprint
+    # Editing bug lists is separate case
+    if((not $team->is_team_super_user(Bugzilla->user)) && (not Bugzilla->user->in_group('editteams'))) {
+        ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+    }
+
+    $vars->{'teamid'}          = $team_id;
     my $editsprint = $cgi->param('editsprint');
     $vars->{'editsprint'} = $editsprint;
     if($editsprint eq "true")
@@ -581,12 +611,13 @@ sub update_team_bugs {
 
     my $user = Bugzilla->user();
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
-    if (not $team->is_user_team_member($user))
-    {
+    if ((not $team->is_user_team_member($user)) && (not Bugzilla->user->in_group('editteams'))) {
+        # TODO Define error message
         $vars->{'errors'} = 'not_member_of_team';
     }
-
-    update_bug_order_from_json($team_id, $data);
+    else {
+        update_bug_order_from_json($team_id, $data);
+    }
 }
 
 sub _new_sprint {

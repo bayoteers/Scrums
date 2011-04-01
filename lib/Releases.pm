@@ -106,10 +106,16 @@ sub create_release {
                 }
             }
             elsif ($cgi->param('newflagtype') ne "") {
+                if (not Bugzilla->user->in_group('release_managers')) {
+                    ThrowUserError('auth_failure', { group => "release_managers", action => "edit", object => "release" });
+                }
                 my $new_flagtype = $cgi->param('newflagtype');
                 _add_flagtype($release, $new_flagtype);
             }
             elsif ($cgi->param('removeflagtype') ne "") {
+                if (not Bugzilla->user->in_group('release_managers')) {
+                    ThrowUserError('auth_failure', { group => "release_managers", action => "edit", object => "release" });
+                }
                 my $remove_flagtype = $cgi->param('removeflagtype');
                 _remove_flagtype($release, $remove_flagtype);
             }
@@ -169,6 +175,7 @@ sub handle_release_bug_data {
     my $cgi    = Bugzilla->cgi;
     my $action = $cgi->param('action');
 
+    # 'fetch' is not currently used
     if ($action eq 'fetch') {
         my $release_id = $cgi->param('releaseid');
         my $release    = Bugzilla::Extension::Scrums::Release->new($release_id);
@@ -177,6 +184,12 @@ sub handle_release_bug_data {
         $vars->{'json_text'} = to_json([ $release->scheduled_bugs(), $release->unprioritised_bugs() ]);
     }
     elsif ($action eq 'set') {
+
+        if (not Bugzilla->user->in_group('release_managers')) {
+            $vars->{'errors'} = "Not member of group release managers. ";
+            return;
+        }
+
         my $msg = "set";
         my $release_id = $cgi->param('obj_id');
         my $data    = $cgi->param('data');
