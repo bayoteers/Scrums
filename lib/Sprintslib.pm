@@ -65,10 +65,10 @@ sub team_bug_order {
     my ($team_id, $all_team_sprints_and_unprioritised_in) = @_;
 
     my %sprints_hash;
-    my %team_order_hash;
+#    my %team_order_hash;
 
     _get_sprints_hash(\%sprints_hash, $team_id);
-    _get_team_order_hash(\%team_order_hash, $team_id);
+#    _get_team_order_hash(\%team_order_hash, $team_id);
 
     my @sprint_id_array = keys %{$all_team_sprints_and_unprioritised_in};
     for my $sprint_id (@sprint_id_array)
@@ -83,7 +83,8 @@ sub team_bug_order {
         }
     }
 
-    process_team_orders($all_team_sprints_and_unprioritised_in, \%team_order_hash);
+#    process_team_orders($all_team_sprints_and_unprioritised_in, \%team_order_hash);
+    process_team_orders($all_team_sprints_and_unprioritised_in);
 }
 
 sub process_sprint() {
@@ -115,7 +116,8 @@ sub process_unprioritised_in() {
 }
 
 sub process_team_orders() {
-    my ($ref, $team_order_hash) = @_;
+#    my ($ref, $team_order_hash) = @_;
+    my ($ref) = @_;
 
     my %all_team_sprints_and_unprioritised_in = %{$ref};
 
@@ -130,8 +132,11 @@ sub process_team_orders() {
         # This means, that table is sprint and not unprioritised_in
         if ($sprint_id != -1) {
             foreach my $bug (@{$bugs}) {
-                my $old_team_order = $team_order_hash->{$bug};
-                if (!exists $team_order_hash->{$bug}) {
+#                my $old_team_order = $team_order_hash->{$bug};
+#                if (!exists $team_order_hash->{$bug}) {
+                my $old_team_order = _old_team_order($bug);
+#                if (!_exists_bug_order($bug->id());
+                if ($old_team_order == -1) {
                     Bugzilla->dbh->do('INSERT INTO scrums_bug_order (bug_id, team) values (?, ?)', undef, $bug, $counter);
                 }
                 elsif ($counter != $old_team_order) {
@@ -148,25 +153,31 @@ sub process_team_orders() {
     }
 }
 
+sub _old_team_order {
+    my ($bug_id) = @_;
+
+    my ($item_id, $team_order) = Bugzilla->dbh->selectrow_array('SELECT bug_id, team FROM scrums_bug_order WHERE bug_id = ?', undef, $bug_id);
+    if ($item_id) {
+        return $team_order;
+    }        
+    return -1;
+}
+
 sub _get_sprints_hash {
     my ($sprints_hash, $team_id) = @_;
 
     my $dbh = Bugzilla->dbh;
     my $sth = $dbh->prepare(
         "select
-	b.bug_id as bug_id,
+	sbm.bug_id as bug_id,
 	spr.id as sprint
     from 
-	scrums_componentteam sct
-    inner join
-	bugs b on b.component_id = sct.component_id
-    inner join
-	scrums_sprint_bug_map sbm on b.bug_id = sbm.bug_id
+	scrums_sprint_bug_map sbm
     inner join 
 	scrums_sprints spr on sbm.sprint_id = spr.id
     where 
-	sct.teamid = ?"
-                           );
+        spr.is_active = 1 and
+	spr.team_id = ?");
     trick_taint($team_id);
     $sth->execute($team_id);
 
@@ -176,54 +187,54 @@ sub _get_sprints_hash {
     }
 }
 
-# First part of union contains team bugs, that are scheduled. All scheduled bugs
-# have bug order.
-# Second part of union contains bugs, that are both possible to schedule and
-# contain bug order in database (bug order is in this case null, because bugs are unprioritised)
-# Bug is possible to schedule, when it is unprioritised and open.
-# Some of such bugs contains bug order in database and some don't.
-sub _get_team_order_hash {
-    my ($team_order_hash, $team_id) = @_;
-
-    my $dbh = Bugzilla->dbh;
-    my $sth = $dbh->prepare(
-        "(select 
-	b.bug_id as bug_id,
-	bo.team as team
-    from 
-	scrums_componentteam sct
-    inner join
-	bugs b on b.component_id = sct.component_id
-    inner join
-	scrums_bug_order bo on b.bug_id = bo.bug_id
-    where 
-	sct.teamid = ?)
-    union
-    (select
-	b.bug_id as bug_id,
-	bo.team as team
-    from 
-	scrums_componentteam sct
-    inner join
-	bugs b on b.component_id = sct.component_id
-    inner join
-	scrums_bug_order bo on b.bug_id = bo.bug_id
-    inner join
-	bug_status bs on b.bug_status = bs.value
-    where 
-	sct.teamid = ? and
-	bs.is_open = 1 and
-        not exists (select null from scrums_sprint_bug_map sbm inner join scrums_sprints spr on sbm.sprint_id = spr.id where b.bug_id = sbm.bug_id and spr.team_id = ?))
-    order by 
-	team, bug_id"
-                           );
-    trick_taint($team_id);
-    $sth->execute($team_id, $team_id, $team_id);
-
-    while (my $row = $sth->fetchrow_arrayref) {
-        my ($bug_id, $team_order) = @$row;
-        $team_order_hash->{$bug_id} = $team_order;
-    }
-}
+## First part of union contains team bugs, that are scheduled. All scheduled bugs
+## have bug order.
+## Second part of union contains bugs, that are both possible to schedule and
+## contain bug order in database (bug order is in this case null, because bugs are unprioritised)
+## Bug is possible to schedule, when it is unprioritised and open.
+## Some of such bugs contains bug order in database and some don't.
+#sub _get_team_order_hash {
+#    my ($team_order_hash, $team_id) = @_;
+#
+#    my $dbh = Bugzilla->dbh;
+#    my $sth = $dbh->prepare(
+#        "(select 
+#	b.bug_id as bug_id,
+#	bo.team as team
+#    from 
+#	scrums_componentteam sct
+#    inner join
+#	bugs b on b.component_id = sct.component_id
+#    inner join
+#	scrums_bug_order bo on b.bug_id = bo.bug_id
+#    where 
+#	sct.teamid = ?)
+#    union
+#    (select
+#	b.bug_id as bug_id,
+#	bo.team as team
+#    from 
+#	scrums_componentteam sct
+#    inner join
+#	bugs b on b.component_id = sct.component_id
+#    inner join
+#	scrums_bug_order bo on b.bug_id = bo.bug_id
+#    inner join
+#	bug_status bs on b.bug_status = bs.value
+#    where 
+#	sct.teamid = ? and
+#	bs.is_open = 1 and
+#        not exists (select null from scrums_sprint_bug_map sbm inner join scrums_sprints spr on sbm.sprint_id = spr.id where b.bug_id = sbm.bug_id and spr.team_id = ?))
+#    order by 
+#	team, bug_id"
+#                           );
+#    trick_taint($team_id);
+#    $sth->execute($team_id, $team_id, $team_id);
+#
+#    while (my $row = $sth->fetchrow_arrayref) {
+#        my ($bug_id, $team_order) = @$row;
+#        $team_order_hash->{$bug_id} = $team_order;
+#    }
+#}
 
 1;
