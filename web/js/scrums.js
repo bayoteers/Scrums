@@ -47,8 +47,10 @@ function switch_lists(ui, lists) {
         order = to_list.visible[to_list.offset + i];
         if ($(this).attr('id') == ui.item.attr('id')) {
             new_position = order;
-            to_list.list.splice(new_position, 0, from_list.list[old_position]);
-            from_list.list.splice(old_position, 1);
+//            to_list.list.splice(new_position, 0, from_list.list[old_position]);	// fix 242837
+//            from_list.list.splice(old_position, 1);					// fix 242837
+            var temp = from_list.list.splice(old_position, 1);				// fix 242837
+            to_list.list.splice(new_position, 0, temp[0]);				// fix 242837 (should not work at all)
             from_list.visible.splice(old_vis_position, 1);
             //alert(to_list.visible.length);
             vis_position = to_list.offset + i;
