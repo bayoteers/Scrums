@@ -134,24 +134,26 @@ sub status      { return $_[0]->{'status'}; }
 sub is_active   { return $_[0]->{'is_active'}; }
 sub description { return $_[0]->{'description'}; }
 
-sub nominal_schedule    { 
-    my $self = shift;
+sub nominal_schedule {
+    my $self     = shift;
     my $str_date = $self->{'nominal_schedule'};
-    return $self->replace_dash_with_dot( $str_date );
+    return $self->replace_dash_with_dot($str_date);
 }
-sub start_date          { 
-    my $self = shift;
+
+sub start_date {
+    my $self     = shift;
     my $str_date = $self->{'start_date'};
-    return $self->replace_dash_with_dot( $str_date );
+    return $self->replace_dash_with_dot($str_date);
 }
-sub end_date            { 
-    my $self = shift;
+
+sub end_date {
+    my $self     = shift;
     my $str_date = $self->{'end_date'};
-    return $self->replace_dash_with_dot( $str_date );
+    return $self->replace_dash_with_dot($str_date);
 }
 
 sub replace_dash_with_dot {
-    my $self = shift;
+    my $self            = shift;
     my $str_with_dashes = shift;
     my $str_with_dots   = $str_with_dashes;
     if ($str_with_dashes ne "") {

@@ -197,9 +197,9 @@ sub db_schema_abstract_schema {
                                                 status           => { TYPE => 'varchar(20)',  NOTNULL => 1 },
                                                 is_active        => { TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE' },
                                                 description => { TYPE => 'varchar(255)' },
-                                                item_type   => { TYPE => 'INT2',      NOTNULL => 1, DEFAULT => '1' },
-                                                start_date       => { TYPE => 'DATE' },
-                                                end_date         => { TYPE => 'DATE' },
+                                                item_type   => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' },
+                                                start_date  => { TYPE => 'DATE' },
+                                                end_date    => { TYPE => 'DATE' },
                                               ]
                                   };
 
@@ -222,13 +222,13 @@ sub db_schema_abstract_schema {
                                                                       }
                                                       },
                                              scrum_master => {
-                                                        TYPE       => 'INT3',
-                                                        REFERENCES => {
-                                                                        TABLE  => 'profiles',
-                                                                        COLUMN => 'userid',
-                                                                        DELETE => 'CASCADE'
-                                                                      }
-                                                      },
+                                                               TYPE       => 'INT3',
+                                                               REFERENCES => {
+                                                                               TABLE  => 'profiles',
+                                                                               COLUMN => 'userid',
+                                                                               DELETE => 'CASCADE'
+                                                                             }
+                                                             },
                                              weekly_velocity_value => { TYPE => 'decimal(7,2)' },
                                              weekly_velocity_start => { TYPE => 'DATE' },
                                              weekly_velocity_end   => { TYPE => 'DATE' },
@@ -294,25 +294,30 @@ sub install_update_db {
     use constant WV_VALUE_DEFINITION => { TYPE => 'decimal(7,2)' };
     use constant WV_START_DEFINITION => { TYPE => 'DATE' };
     use constant WV_END_DEFINITION   => { TYPE => 'DATE' };
-    
+
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_value", WV_VALUE_DEFINITION, undef);
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_start", WV_START_DEFINITION, undef);
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_end",   WV_END_DEFINITION,   undef);
 
-    Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_end",   WV_END_DEFINITION,   undef);
+    Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_end", WV_END_DEFINITION, undef);
 
-    use constant SPRINT_TYPE_DEFINITION => { TYPE => 'INT2',      NOTNULL => 1, DEFAULT => '1' };
+    use constant SPRINT_TYPE_DEFINITION => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' };
     Bugzilla->dbh->bz_add_column("scrums_sprints", "item_type", SPRINT_TYPE_DEFINITION, undef);
 
-    use constant TEAM_SCRUM_MASTER => { TYPE => 'INT3', REFERENCES => { TABLE  => 'profiles',
-                                                                        COLUMN => 'userid',
-                                                                        DELETE => 'CASCADE' } };
-    Bugzilla->dbh->bz_add_column("scrums_team", "scrum_master", TEAM_SCRUM_MASTER,   undef);
+    use constant TEAM_SCRUM_MASTER => {
+                                        TYPE       => 'INT3',
+                                        REFERENCES => {
+                                                        TABLE  => 'profiles',
+                                                        COLUMN => 'userid',
+                                                        DELETE => 'CASCADE'
+                                                      }
+                                      };
+    Bugzilla->dbh->bz_add_column("scrums_team", "scrum_master", TEAM_SCRUM_MASTER, undef);
 
     use constant START_DATE_DEFINITION => { TYPE => 'DATE' };
     use constant END_DATE_DEFINITION   => { TYPE => 'DATE' };
     Bugzilla->dbh->bz_add_column("scrums_sprints", "start_date", START_DATE_DEFINITION, undef);
-    Bugzilla->dbh->bz_add_column("scrums_sprints", "end_date", END_DATE_DEFINITION, undef);
+    Bugzilla->dbh->bz_add_column("scrums_sprints", "end_date",   END_DATE_DEFINITION,   undef);
 }
 
 sub page_before_template {
@@ -364,7 +369,7 @@ sub page_before_template {
         my $cgi    = Bugzilla->cgi;
         my $schema = $cgi->param('schema');
         if ($schema eq "release") {
-           handle_release_bug_data($vars);
+            handle_release_bug_data($vars);
         }
         else {
             update_team_bugs($vars);
@@ -390,29 +395,29 @@ sub page_before_template {
         show_release_bugs($vars);
     }
     if ($page eq 'scrums/choose-classification.html') {
-        my $cgi    = Bugzilla->cgi;
-        my $team_id = $cgi->param('teamid');
+        my $cgi             = Bugzilla->cgi;
+        my $team_id         = $cgi->param('teamid');
         my @classifications = Bugzilla::Classification->get_all();
         $vars->{'classifications'} = \@classifications;
-        $vars->{'target'} = "page.cgi?id=scrums/choose-product.html&teamid=" . $team_id;
+        $vars->{'target'}          = "page.cgi?id=scrums/choose-product.html&teamid=" . $team_id;
     }
     if ($page eq 'scrums/choose-product.html') {
-        my $cgi    = Bugzilla->cgi;
-        my $team_id = $cgi->param('teamid');
-        my $class_name = $cgi->param('classification');
+        my $cgi                 = Bugzilla->cgi;
+        my $team_id             = $cgi->param('teamid');
+        my $class_name          = $cgi->param('classification');
         my $classification_list = Bugzilla::Classification->match({ name => $class_name });
-        my $classification = @$classification_list[0];
-        my $enterable_products = $classification->products();
-        my @classifications = ({object => $classification, products => $enterable_products});
+        my $classification      = @$classification_list[0];
+        my $enterable_products  = $classification->products();
+        my @classifications     = ({ object => $classification, products => $enterable_products });
         $vars->{'classifications'} = \@classifications;
-        $vars->{'target'} = "page.cgi?id=scrums/choose-component.html&teamid=" . $team_id;
+        $vars->{'target'}          = "page.cgi?id=scrums/choose-component.html&teamid=" . $team_id;
     }
     if ($page eq 'scrums/choose-component.html') {
-        my $cgi    = Bugzilla->cgi;
-        my $team_id = $cgi->param('teamid');
+        my $cgi          = Bugzilla->cgi;
+        my $team_id      = $cgi->param('teamid');
         my $product_name = $cgi->param('product');
-        my $products = Bugzilla::Product->match({ name => $product_name });
-        if(scalar @{$products} > 0) {
+        my $products     = Bugzilla::Product->match({ name => $product_name });
+        if (scalar @{$products} > 0) {
             $vars->{'product'} = @$products[0];
         }
         $vars->{'target'} = "page.cgi?id=createteam.html&teamid=" . $team_id;
