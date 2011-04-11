@@ -80,13 +80,13 @@ sub _delete_team {
         my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
 
         my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 1, is_active => 1 });
-        if(scalar @{$sprints} > 0) {
+        if (scalar @{$sprints} > 0) {
             # TODO define user error
             ThrowUserError('team_has_active_sprint', {});
         }
 
         my $components = $team->components();
-        if(scalar @{$components} > 0) {
+        if (scalar @{$components} > 0) {
             # TODO define user error
             ThrowUserError('team_has_components', {});
         }
@@ -113,9 +113,9 @@ sub show_create_team {
                 if (not Bugzilla->user->in_group('editteams')) {
                     ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
                 }
-                my $component_id  = $cgi->param('removedcomponent');
+                my $component_id = $cgi->param('removedcomponent');
                 if ($component_id =~ /^([0-9]+)$/) {
-                    $component_id = $1;             
+                    $component_id = $1;
                     # This removes component from this team.
                     $team->remove_component($component_id);
                 }
@@ -124,9 +124,9 @@ sub show_create_team {
                 if (not Bugzilla->user->in_group('editteams')) {
                     ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
                 }
-                my $component_id  = $cgi->param('component');
+                my $component_id = $cgi->param('component');
                 if ($component_id =~ /^([0-9]+)$/) {
-                    $component_id = $1;             
+                    $component_id = $1;
                     # This removes component from any old team, if there was one.
                     $team->remove_component($component_id);
                     # This adds component into 'this' team.
@@ -137,11 +137,11 @@ sub show_create_team {
                 if (not Bugzilla->user->in_group('editteams')) {
                     ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
                 }
-                my $team_name  = $cgi->param('name');
-                my $team_owner = $cgi->param('userid');
+                my $team_name    = $cgi->param('name');
+                my $team_owner   = $cgi->param('userid');
                 my $scrum_master = $cgi->param('scrummasterid');
                 if ($team_owner =~ /^([0-9]+)$/) {
-                    $team_owner = $1;                                        # $data now untainted
+                    $team_owner = $1;                                                       # $data now untainted
                     $error = _update_team($team, $team_name, $team_owner, $scrum_master);
                 }
                 else {
@@ -193,8 +193,8 @@ sub _new_team {
 
     my $cgi = Bugzilla->cgi;
 
-    my $name     = $cgi->param('name');
-    my $owner_id = $cgi->param('userid');
+    my $name         = $cgi->param('name');
+    my $owner_id     = $cgi->param('userid');
     my $scrum_master = $cgi->param('scrummasterid');
 
     my $error = "";
@@ -223,7 +223,7 @@ sub _new_team {
 
     if ($name and $owner_id) {
         my $team;
-        if($scrum_master) {
+        if ($scrum_master) {
             $team = Bugzilla::Extension::Scrums::Team->create({ name => $name, owner => $owner_id, scrum_master => $scrum_master });
         }
         else {
@@ -231,8 +231,16 @@ sub _new_team {
         }
         my $new_id = $team->id();
         my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
-                     { team_id => $new_id, status => "NEW", item_type => 2, name => "Product backlog", nominal_schedule => "2000-01-01", 
-                        description => "This is automatically generated static 'sprint' for the purpose of product backlog", is_active => 1 });
+                                                         {
+                                                           team_id          => $new_id,
+                                                           status           => "NEW",
+                                                           item_type        => 2,
+                                                           name             => "Product backlog",
+                                                           nominal_schedule => "2000-01-01",
+                                                           description => "This is automatically generated static 'sprint' for the purpose of product backlog",
+                                                           is_active   => 1
+                                                         }
+        );
         _show_existing_team($vars, $team);
     }
     else {
@@ -430,18 +438,17 @@ sub search_person {
         $vars->{'users'} = $dbh->selectall_arrayref($query, { 'Slice' => {} }, @bindValues);
     }
 
-    $vars->{'formname'} = $cgi->param('formname');
+    $vars->{'formname'}        = $cgi->param('formname');
     $vars->{'formfieldprefix'} = $cgi->param('formfieldprefix');
-    $vars->{'submit'}   = $cgi->param('submit');
+    $vars->{'submit'}          = $cgi->param('submit');
 }
 
 sub edit_team {
     my ($vars) = @_;
 
-    my $cgi = Bugzilla->cgi;
+    my $cgi      = Bugzilla->cgi;
     my $editteam = $cgi->param('editteam');
-    if($editteam eq "")
-    {
+    if ($editteam eq "") {
         # If we are not editing existing team, we are creating new team. Check user access.
         if (not Bugzilla->user->in_group('admin')) {
             ThrowUserError('auth_failure', { group => "admin", action => "add", object => "team" });
@@ -452,13 +459,13 @@ sub edit_team {
             ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
         }
     }
-    $vars->{'editteam'}  = $editteam;
-    $vars->{'teamid'}    = $cgi->param('teamid');
-    $vars->{'teamname'}  = $cgi->param('teamname');
-    $vars->{'realname'}  = $cgi->param('realname');
-    $vars->{'loginname'} = $cgi->param('loginname');
-    $vars->{'ownerid'}   = $cgi->param('ownerid');
-    $vars->{'scrummasterid'} = $cgi->param('scrummasterid');
+    $vars->{'editteam'}             = $editteam;
+    $vars->{'teamid'}               = $cgi->param('teamid');
+    $vars->{'teamname'}             = $cgi->param('teamname');
+    $vars->{'realname'}             = $cgi->param('realname');
+    $vars->{'loginname'}            = $cgi->param('loginname');
+    $vars->{'ownerid'}              = $cgi->param('ownerid');
+    $vars->{'scrummasterid'}        = $cgi->param('scrummasterid');
     $vars->{'scrummasterrealname'}  = $cgi->param('scrummasterrealname');
     $vars->{'scrummasterloginname'} = $cgi->param('scrummasterloginname');
 }
@@ -495,14 +502,14 @@ sub _show_team_bugs {
     my %backlog_container;
     $backlog_container{'sprint'} = $team_backlog;
     $backlog_container{'bugs'}   = $team_backlog->get_bugs();
-    $vars->{'backlog'} = \%backlog_container;
+    $vars->{'backlog'}           = \%backlog_container;
 }
 
 sub show_archived_sprints {
     my ($vars) = @_;
 
     my $team_id = Bugzilla->cgi->param('teamid');
-    $vars->{'team'}  = Bugzilla::Extension::Scrums::Team->new($team_id);
+    $vars->{'team'} = Bugzilla::Extension::Scrums::Team->new($team_id);
     my $archived_sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 0, item_type => 1 });
     my @team_sprints_array;
     for my $sprint (@{$archived_sprints}) {
@@ -521,7 +528,7 @@ sub show_backlog_and_items {
     my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('teamid');
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
-    $vars->{'team'}               = $team;
+    $vars->{'team'}                = $team;
     $vars->{'unprioritised_items'} = $team->unprioritised_items();
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
@@ -529,28 +536,26 @@ sub show_backlog_and_items {
     my %backlog_container;
     $backlog_container{'sprint'} = $team_backlog;
     $backlog_container{'bugs'}   = $team_backlog->get_bugs();
-    $vars->{'backlog'} = \%backlog_container;
+    $vars->{'backlog'}           = \%backlog_container;
 }
-
 
 sub edit_sprint {
     my ($vars) = @_;
 
-    my $cgi = Bugzilla->cgi;
+    my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('teamid');
-    my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+    my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
     # User access is same for creating a new sprint and for editing existing sprint
     # Editing bug lists is separate case
-    if((not $team->is_team_super_user(Bugzilla->user)) && (not Bugzilla->user->in_group('editteams'))) {
+    if ((not $team->is_team_super_user(Bugzilla->user)) && (not Bugzilla->user->in_group('editteams'))) {
         ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
     }
 
-    $vars->{'teamid'}          = $team_id;
+    $vars->{'teamid'} = $team_id;
     my $editsprint = $cgi->param('editsprint');
     $vars->{'editsprint'} = $editsprint;
-    if($editsprint eq "true")
-    {
-        my $sprint_id = $cgi->param('sprintid');    
+    if ($editsprint eq "true") {
+        my $sprint_id = $cgi->param('sprintid');
         $vars->{'sprintid'} = $sprint_id;
         my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
         if (defined $sprint && ref($sprint)) {
@@ -610,7 +615,7 @@ sub update_team_bugs {
     my $data    = $cgi->param('data');
 
     my $user = Bugzilla->user();
-    my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
+    my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
     if ((not $team->is_user_team_member($user)) && (not Bugzilla->user->in_group('editteams'))) {
         # TODO Define error message
         $vars->{'errors'} = 'not_member_of_team';
@@ -632,13 +637,23 @@ sub _new_sprint {
     my $start_date      = $cgi->param('start_date');
     my $end_date        = $cgi->param('end_date');
 
-    ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date) = 
-        _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date);
+    ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date) =
+      _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date);
 
     if ($teamid and $name and $nominalschedule) {
         my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
-                     { team_id => $teamid, status => "NEW", name => $name, nominal_schedule => $nominalschedule, description => $description, 
-                        is_active => 1, item_type => 1, start_date => $start_date, end_date => $end_date });
+                                                                 {
+                                                                   team_id          => $teamid,
+                                                                   status           => "NEW",
+                                                                   name             => $name,
+                                                                   nominal_schedule => $nominalschedule,
+                                                                   description      => $description,
+                                                                   is_active        => 1,
+                                                                   item_type        => 1,
+                                                                   start_date       => $start_date,
+                                                                   end_date         => $end_date
+                                                                 }
+                                                                );
     }
     else {
         ThrowUserError($error);
@@ -658,8 +673,8 @@ sub _update_sprint {
     my $start_date      = $cgi->param('start_date');
     my $end_date        = $cgi->param('end_date');
 
-    ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date) = 
-        _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date);
+    ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date) =
+      _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date);
 
     if ($teamid and $name and $nominalschedule) {
         my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
@@ -679,11 +694,11 @@ sub _update_sprint {
 sub _delete_sprint {
     my ($vars, $sprint_id) = @_;
 
-    my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    my $sprint      = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
     my $sprint_bugs = $sprint->get_bugs();
-    if(scalar @{$sprint_bugs} > 0) {
+    if (scalar @{$sprint_bugs} > 0) {
         # TODO define user error
-        ThrowUserError('sprint_has_bugs');    
+        ThrowUserError('sprint_has_bugs');
     }
     $sprint->remove_from_db();
 }
@@ -733,7 +748,7 @@ sub _sanitise_sprint_data {
     }
 
     if ($start_date =~ /^(\d{4}\.\d{1,2}\.\d{1,2})/) {
-        $start_date = $1;    # $data now untainted
+        $start_date = $1;         # $data now untainted
     }
     else {
         $error .= "Illegal start date. ";
@@ -741,7 +756,7 @@ sub _sanitise_sprint_data {
     }
 
     if ($end_date =~ /^(\d{4}\.\d{1,2}\.\d{1,2})/) {
-        $end_date = $1;    # $data now untainted
+        $end_date = $1;           # $data now untainted
     }
     else {
         $error .= "Illegal end date. ";
