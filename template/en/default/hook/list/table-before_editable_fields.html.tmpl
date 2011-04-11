@@ -1,0 +1,102 @@
+[% USE Bugzilla %]
+[% USE date %]
+[% SET select_fields = {} %]
+[% FOREACH field = Bugzilla.get_fields(
+  { type => constants.FIELD_TYPE_SINGLE_SELECT, custom => 0 })
+%]
+  [% select_fields.${field.name} = field %]
+[% END %]
+
+<script>
+var edited_fieldid = "";
+var original_value = "";
+
+function get_input_element_by_parent_id(parent_id)
+{
+    var parent_el = document.getElementById(parent_id);
+    var inputs_list = parent_el.getElementsByTagName("input");
+    return inputs_list[0];
+}
+
+function check_if_edited_field_changed()
+{
+    var edit_field = get_input_element_by_parent_id(edited_fieldid + "_editable");
+    var new_value = "";
+    if(edit_field)
+    {
+        new_value = edit_field.value;	
+    }
+    // TODO Else input is selection. Must be handled separately.
+    if(new_value != original_value)
+    {
+	// alert('value changed');
+	return save(edited_fieldid, new_value);
+    }
+    else
+    {
+	// alert('value same');
+	return false;
+    }
+}
+
+function save(fieldid, new_value) 
+{
+    if(confirm("Do you want to save changes in field "+fieldid))
+    {
+	alert("saved value "+new_value);
+	// Lataa sivu uudelleen
+	return true;
+    }
+    else
+    {
+        var edit_field = get_input_element_by_parent_id(edited_fieldid + "_editable");	
+	edit_field.value = original_value;
+	return false;
+    }
+}
+
+// Täytyy vielä estää 2 X tuplaklikkaus. Kaikki talletus done:n kautta.
+function toggle(fieldid) 
+{
+//alert('toggle');
+    var static_id = fieldid + "_static";
+    var editable_id = fieldid + "_editable";
+    var static_el = document.getElementById(static_id);
+    var editable_el = document.getElementById(editable_id);
+    if(static_el.style.visibility == 'collapse')
+    {
+	static_el.style.visibility = 'visible';
+        editable_el.style.visibility = 'collapse';
+    }
+    else
+    {
+	if(edited_fieldid != "" && edited_fieldid != fieldid)
+	{
+    	    var previous_static_id = edited_fieldid + "_static";
+	    var previous_static_el = document.getElementById(previous_static_id);		
+            var previous_editable_id = edited_fieldid + "_editable";
+	    var previous_editable_el = document.getElementById(previous_editable_id);		
+	    check_if_edited_field_changed();
+	    previous_editable_el.style.visibility = 'collapse';
+	    previous_static_el.style.visibility = 'visible';
+	}
+	edited_fieldid = fieldid;
+	static_el.style.visibility = 'collapse';
+        editable_el.style.visibility = 'visible';
+	
+	var all_inputs = editable_el.getElementsByTagName("input");
+	if(all_inputs.length > 0)
+	{
+	    original_value = all_inputs[0].value;
+	}
+	else 
+	{
+		// TODO Else input is selection. Must be handled separately.
+	    original_value = "";
+	}
+    }
+}
+</script>
+
+<p><b>Before editable fields</b></p>
+

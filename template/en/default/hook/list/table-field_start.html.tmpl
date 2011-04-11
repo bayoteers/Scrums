@@ -1,0 +1,13 @@
+<table>
+[% IF column == 'bug_severity' ||
+	column == 'priority' ||
+	column == 'bug_status' ||
+	column == 'assigned_to' ||
+	column == 'estimated_time' ||
+	column == 'actual_time' ||
+	column == 'remaining_time' %]
+<tr id="[% bug.bug_id %]_[% column %]_static"><td border="1" ondblclick="toggle('[% bug.bug_id %]_[% column %]');">
+[% ELSE %]
+<tr><td ondblclick="alert('No editing');">
+[% END %]	
+
