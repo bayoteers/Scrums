@@ -7,6 +7,9 @@
   [% select_fields.${field.name} = field %]
 [% END %]
 
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.4.4.min.js"></script>
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.10.custom.min.js"></script>
+
 <script>
 var edited_fieldid = "";
 var original_value = "";
@@ -20,6 +23,8 @@ function get_input_element_by_parent_id(parent_id)
 
 function check_if_edited_field_changed()
 {
+    var status = false;
+
     var edit_field = get_input_element_by_parent_id(edited_fieldid + "_editable");
     var new_value = "";
     if(edit_field)
@@ -30,32 +35,143 @@ function check_if_edited_field_changed()
     if(new_value != original_value)
     {
 	// alert('value changed');
-	return save(edited_fieldid, new_value);
+//	return save(edited_fieldid, new_value);
+	status = save(edited_fieldid, new_value);
     }
     else
     {
 	// alert('value same');
-	return false;
+//	return false;
+	status = false;
     }
+
+    if(status)
+    {
+    	makestatic(edited_fieldid, new_value); // !!!!!
+    }
+    else
+    {
+    	makestatic(edited_fieldid, original_value); // !!!!!
+    }
+    edited_fieldid = "";
+    original_value = "";
+
+//alert('status: '+status);
+    return status;
 }
 
 function save(fieldid, new_value) 
 {
-    if(confirm("Do you want to save changes in field "+fieldid))
+    var bug_id = fieldid.match(/^\d{1,6}/);
+    var field_name = fieldid.substr(bug_id[0].length + 1);
+    if(confirm("Do you want to save changes in "+field_name))
     {
-	alert("saved value "+new_value);
-	// Lataa sivu uudelleen
+	save_bug_field(bug_id[0], field_name, new_value);
+	// Value true enables reloading page
 	return true;
     }
     else
     {
         var edit_field = get_input_element_by_parent_id(edited_fieldid + "_editable");	
 	edit_field.value = original_value;
+//	toggle(edited_fieldid);
+//	edited_fieldid = "";
+//	original_value = "";
 	return false;
     }
 }
 
+function saveResponse(response, status, xhr) 
+{ 
+	var retObj = eval("("+ response+")");
+	if(retObj.errors)
+	{
+		alert("There are errors: "+retObj.errormsg);
+	}
+	else
+	{
+		alert("Success");
+	}
+}
+
+function save_bug_field(bug_id, field_name, new_value)
+{
+    var json_params = '{ "method": "Bug.update", "params": {"ids" : [' +bug_id+ '], "' +field_name+ '" : "' +new_value+ '"}, "id" : 0 }';
+
+//    $.post('page.cgi?id=scrums/ajax.html', {
+//        schema: 'bug',
+//        action: 'update',
+//        data: json_params
+//    }, saveResponse        , 'text');
+
+    $.ajax({ async: false,
+	url: 'page.cgi?id=scrums/ajax.html', 
+	data: {
+        	schema: 'bug',
+        	action: 'update',
+	        data: json_params },
+	success: saveResponse }
+    );
+
+
+//    alert("bug id: " + bug_id + " field name: " + field_name + " saved value: "+new_value);
+}
+
 // Täytyy vielä estää 2 X tuplaklikkaus. Kaikki talletus done:n kautta.
+function makeeditable(fieldid) 
+{
+    var status = false;
+
+    var static_id = fieldid + "_static";
+    var editable_id = fieldid + "_editable";
+    var static_el = document.getElementById(static_id);
+    var editable_el = document.getElementById(editable_id);
+
+    if(edited_fieldid != "" && edited_fieldid != fieldid)
+    {
+        status = check_if_edited_field_changed();
+
+// THIS IS NOW RECURSIVE. CHECK_IF_EDITED_FIELD_CHANGED CALLS TOGGLE.
+//	    previous_editable_el.style.visibility = 'collapse';
+//	    previous_static_el.style.visibility = 'visible';
+    }
+    edited_fieldid = fieldid;
+    static_el.style.visibility = 'collapse';
+    editable_el.style.visibility = 'visible';
+	
+    var all_inputs = editable_el.getElementsByTagName("input");
+    if(all_inputs.length > 0)
+    {
+	original_value = all_inputs[0].value;
+    }
+    else 
+    {
+	// TODO Else input is selection. Must be handled separately.
+	original_value = "";
+    }
+
+    if(status)
+    {
+   	window.location = window.location;
+    }
+}
+
+function makestatic(fieldid, currentvalue) 
+{
+//alert('toggle');
+    var static_id = fieldid + "_static";
+    var editable_id = fieldid + "_editable";
+    var static_el = document.getElementById(static_id);
+    var editable_el = document.getElementById(editable_id);
+
+    static_el.style.visibility = 'visible';
+    editable_el.style.visibility = 'collapse';
+
+    var all_inputs = editable_el.getElementsByTagName("input");
+    all_inputs[0].value = currentvalue;
+}
+
+/*
 function toggle(fieldid) 
 {
 //alert('toggle');
@@ -77,8 +193,10 @@ function toggle(fieldid)
             var previous_editable_id = edited_fieldid + "_editable";
 	    var previous_editable_el = document.getElementById(previous_editable_id);		
 	    check_if_edited_field_changed();
-	    previous_editable_el.style.visibility = 'collapse';
-	    previous_static_el.style.visibility = 'visible';
+
+// THIS IS NOW RECURSIVE. CHECK_IF_EDITED_FIELD_CHANGED CALLS TOGGLE.
+//	    previous_editable_el.style.visibility = 'collapse';
+//	    previous_static_el.style.visibility = 'visible';
 	}
 	edited_fieldid = fieldid;
 	static_el.style.visibility = 'collapse';
@@ -96,6 +214,7 @@ function toggle(fieldid)
 	}
     }
 }
+*/
 </script>
 
 <p><b>Before editable fields</b></p>

@@ -31,6 +31,7 @@ use Bugzilla::User;
 
 use Bugzilla::Extension::Scrums::Teams;
 use Bugzilla::Extension::Scrums::Releases;
+use Bugzilla::Extension::Scrums::Bugrpclib;
 
 use Data::Dumper;
 
@@ -370,6 +371,11 @@ sub page_before_template {
         my $schema = $cgi->param('schema');
         if ($schema eq "release") {
             handle_release_bug_data($vars);
+        }
+        elsif ($schema eq "bug") {
+#            my $msg = update_bug_fields_from_json($vars);
+#            $vars->{errors} = $msg;
+            update_bug_fields_from_json($vars);
         }
         else {
             update_team_bugs($vars);
