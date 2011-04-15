@@ -58,15 +58,8 @@ sub update_bug_fields_from_json {
     }
     my $content = $json->allow_nonref->utf8->relaxed->decode($data);
 
-#    my %all_properties_from_rpc = %{$content};
-
-#    my $params = $content->{params};
-#    my $ids = $params->{ids};
-#    my $bug_id = @{$ids}[0];
-#    return $bug_id;
-
     my ($params, $ids, $bug_id, $field_name, $field_value);
-    my $params = $content->{params};
+    $params = $content->{params};
     my @param_keys = keys %{$params};
     for my $key (@param_keys) {
         if($key eq "ids") {
@@ -100,6 +93,10 @@ sub update_bug_fields_from_json {
         {
             $vars->{errors} = "login_name: " . $field_value. " is not known to Bugzilla";
         }
+    }
+    elsif($field_name eq 'priority') {
+        $bug->set_priority($field_value);
+        $bug->update();
     }
     else
     {

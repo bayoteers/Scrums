@@ -11,72 +11,87 @@
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.10.custom.min.js"></script>
 
 <script>
-var edited_fieldid = "";
-var original_value = "";
+var editedFieldid = "";
+var originalValue = "";
+var originalSelectedIndex = "";
 
-function get_input_element_by_parent_id(parent_id)
+function getInputElementByParentId(parentId)
 {
-    var parent_el = document.getElementById(parent_id);
-    var inputs_list = parent_el.getElementsByTagName("input");
-    return inputs_list[0];
+    var parentEl = document.getElementById(parentId);
+    var inputsList = parentEl.getElementsByTagName("input");
+    return inputsList[0];
 }
 
-function check_if_edited_field_changed()
+function checkIfEditedFieldChanged()
 {
     var status = false;
 
-    var edit_field = get_input_element_by_parent_id(edited_fieldid + "_editable");
-    var new_value = "";
-    if(edit_field)
+    var editField = getInputElementByParentId(editedFieldid + "_editable");
+    var newValue = "";
+    if(editField)
     {
-        new_value = edit_field.value;	
-    }
-    // TODO Else input is selection. Must be handled separately.
-    if(new_value != original_value)
-    {
-	// alert('value changed');
-//	return save(edited_fieldid, new_value);
-	status = save(edited_fieldid, new_value);
+        newValue = editField.value;	
+        if(newValue != originalValue)
+        {
+	    if(save(editedFieldid, newValue))
+    	    {
+    		makeInputStatic(editedFieldid, newValue); 
+		status = true;
+    	    }
+            else
+            {
+    	        makeInputStatic(editedFieldid, originalValue);
+		status = false;
+            }
+        }
+        else
+        {
+	    makeInputStatic(editedFieldid, originalValue);
+            status = false;
+        }
     }
     else
     {
-	// alert('value same');
-//	return false;
-	status = false;
+    // Else input is selection. Must be handled separately.
+        editableEl = document.getElementById(editedFieldid + "_editable");
+	var selectEl = editableEl.getElementsByTagName("select")[0];
+	var selectedIndex = selectEl.selectedIndex;
+	if(originalSelectedIndex != selectedIndex)
+	{
+	    newValue = selectEl.options[selectedIndex].value;
+	    if(save(editedFieldid, newValue))
+    	    {
+    	        makeSelectStatic(editedFieldid, selectedIndex); 
+            }
+            else
+            {
+    	        makeSelectStatic(editedFieldid, originalSelectedIndex);
+            }
+	}
+        else
+        {
+    	    makeSelectStatic(editedFieldid, originalSelectedIndex);
+        }
     }
 
-    if(status)
-    {
-    	makestatic(edited_fieldid, new_value); // !!!!!
-    }
-    else
-    {
-    	makestatic(edited_fieldid, original_value); // !!!!!
-    }
-    edited_fieldid = "";
-    original_value = "";
-
-//alert('status: '+status);
+    editedFieldid = "";
+    originalValue = "";
     return status;
 }
 
-function save(fieldid, new_value) 
+function save(fieldid, newValue) 
 {
-    var bug_id = fieldid.match(/^\d{1,6}/);
-    var field_name = fieldid.substr(bug_id[0].length + 1);
-    if(confirm("Do you want to save changes in "+field_name))
+    var bugId = fieldid.match(/^\d{1,6}/);
+    var fieldName = fieldid.substr(bugId[0].length + 1);
+    if(confirm("Do you want to save changes in "+fieldName))
     {
-	save_bug_field(bug_id[0], field_name, new_value);
-	// Value true enables reloading page
+	saveBugField(bugId[0], fieldName, newValue);
 	return true;
     }
     else
     {
-        var edit_field = get_input_element_by_parent_id(edited_fieldid + "_editable");	
-	edit_field.value = original_value;
-//	toggle(edited_fieldid);
-//	edited_fieldid = "";
-//	original_value = "";
+//        var editField = getInputElementByParentId(editedFieldid + "_editable");	
+//	editField.value = originalValue;
 	return false;
     }
 }
@@ -94,9 +109,11 @@ function saveResponse(response, status, xhr)
 	}
 }
 
-function save_bug_field(bug_id, field_name, new_value)
+function saveBugField(bugId, fieldName, newValue)
 {
-    var json_params = '{ "method": "Bug.update", "params": {"ids" : [' +bug_id+ '], "' +field_name+ '" : "' +new_value+ '"}, "id" : 0 }';
+    var json_params = '{ "method": "Bug.update", "params": {"ids" : [' +bugId+ '], "' +fieldName+ '" : "' +newValue+ '"}, "id" : 0 }';
+
+// Can move to back to asynchronous calling after reloading is removed
 
 //    $.post('page.cgi?id=scrums/ajax.html', {
 //        schema: 'bug',
@@ -112,109 +129,89 @@ function save_bug_field(bug_id, field_name, new_value)
 	        data: json_params },
 	success: saveResponse }
     );
-
-
-//    alert("bug id: " + bug_id + " field name: " + field_name + " saved value: "+new_value);
 }
 
-// Täytyy vielä estää 2 X tuplaklikkaus. Kaikki talletus done:n kautta.
 function makeeditable(fieldid) 
 {
     var status = false;
 
-    var static_id = fieldid + "_static";
-    var editable_id = fieldid + "_editable";
-    var static_el = document.getElementById(static_id);
-    var editable_el = document.getElementById(editable_id);
+    var staticId = fieldid + "_static";
+    var editableId = fieldid + "_editable";
+    var staticEl = document.getElementById(staticId);
+    var editableEl = document.getElementById(editableId);
 
-    if(edited_fieldid != "" && edited_fieldid != fieldid)
+    if(editedFieldid != "" && editedFieldid != fieldid)
     {
-        status = check_if_edited_field_changed();
-
-// THIS IS NOW RECURSIVE. CHECK_IF_EDITED_FIELD_CHANGED CALLS TOGGLE.
-//	    previous_editable_el.style.visibility = 'collapse';
-//	    previous_static_el.style.visibility = 'visible';
+        status = checkIfEditedFieldChanged();
     }
-    edited_fieldid = fieldid;
-    static_el.style.visibility = 'collapse';
-    editable_el.style.visibility = 'visible';
+    editedFieldid = fieldid;
+    staticEl.style.visibility = 'collapse';
+    editableEl.style.visibility = 'visible';
 	
-    var all_inputs = editable_el.getElementsByTagName("input");
-    if(all_inputs.length > 0)
+    var allInputs = editableEl.getElementsByTagName("input");
+    if(allInputs.length > 0)
     {
-	original_value = all_inputs[0].value;
+	originalValue = allInputs[0].value;
     }
     else 
     {
-	// TODO Else input is selection. Must be handled separately.
-	original_value = "";
-    }
-
-    if(status)
-    {
-   	window.location = window.location;
+	// Else input is selection. Must be handled separately.
+	var spanEl = staticEl.getElementsByTagName("span")[0];
+	var textVal = spanEl.title;
+	var selectEl = editableEl.getElementsByTagName("select")[0];
+	var allOptions = selectEl.options;
+	var i = 0;
+        for(i = 0; i < allOptions.length; i++)
+        {
+	    if(allOptions[i].value == textVal)
+	        break;
+	}
+	var selectedIndex = i;
+	var selectedItem = selectEl.options[selectedIndex];
+	originalSelectedIndex = selectedIndex;
+	originalValue = selectedItem.value;
     }
 }
 
-function makestatic(fieldid, currentvalue) 
+function makeInputStatic(fieldid, currentvalue) 
 {
-//alert('toggle');
-    var static_id = fieldid + "_static";
-    var editable_id = fieldid + "_editable";
-    var static_el = document.getElementById(static_id);
-    var editable_el = document.getElementById(editable_id);
+    var staticId = fieldid + "_static";
+    var editableId = fieldid + "_editable";
+    var staticEl = document.getElementById(staticId);
+    var editableEl = document.getElementById(editableId);
 
-    static_el.style.visibility = 'visible';
-    editable_el.style.visibility = 'collapse';
+    staticEl.firstChild.innerHTML = currentvalue;
 
-    var all_inputs = editable_el.getElementsByTagName("input");
-    all_inputs[0].value = currentvalue;
+    staticEl.style.visibility = 'visible';
+    editableEl.style.visibility = 'collapse';
+
+    var allInputs = editableEl.getElementsByTagName("input");
+    allInputs[0].value = currentvalue;
 }
 
-/*
-function toggle(fieldid) 
+function makeSelectStatic(fieldid, currentSelectedIndex) 
 {
-//alert('toggle');
-    var static_id = fieldid + "_static";
-    var editable_id = fieldid + "_editable";
-    var static_el = document.getElementById(static_id);
-    var editable_el = document.getElementById(editable_id);
-    if(static_el.style.visibility == 'collapse')
-    {
-	static_el.style.visibility = 'visible';
-        editable_el.style.visibility = 'collapse';
-    }
-    else
-    {
-	if(edited_fieldid != "" && edited_fieldid != fieldid)
-	{
-    	    var previous_static_id = edited_fieldid + "_static";
-	    var previous_static_el = document.getElementById(previous_static_id);		
-            var previous_editable_id = edited_fieldid + "_editable";
-	    var previous_editable_el = document.getElementById(previous_editable_id);		
-	    check_if_edited_field_changed();
+    var staticId = fieldid + "_static";
+    var editableId = fieldid + "_editable";
+    var staticEl = document.getElementById(staticId);
+    var editableEl = document.getElementById(editableId);
 
-// THIS IS NOW RECURSIVE. CHECK_IF_EDITED_FIELD_CHANGED CALLS TOGGLE.
-//	    previous_editable_el.style.visibility = 'collapse';
-//	    previous_static_el.style.visibility = 'visible';
-	}
-	edited_fieldid = fieldid;
-	static_el.style.visibility = 'collapse';
-        editable_el.style.visibility = 'visible';
-	
-	var all_inputs = editable_el.getElementsByTagName("input");
-	if(all_inputs.length > 0)
-	{
-	    original_value = all_inputs[0].value;
-	}
-	else 
-	{
-		// TODO Else input is selection. Must be handled separately.
-	    original_value = "";
-	}
-    }
+    var selectEl = editableEl.getElementsByTagName("select")[0];
+    selectEl.selectedIndex = currentSelectedIndex;
+
+    var selectedItem = selectEl.options[currentSelectedIndex];
+    var currentValue = selectedItem.value;
+
+    var abbr = currentValue.substr(0, 3);
+    var newText = '<span title="' + currentValue + '">' + abbr + '</span>';
+    staticEl.firstChild.innerHTML = newText;
+
+    staticEl.style.visibility = 'visible';
+    editableEl.style.visibility = 'collapse';
+
+
 }
-*/
+
 </script>
 
 <p><b>Before editable fields</b></p>

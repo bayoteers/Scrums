@@ -1,5 +1,3 @@
-<!-- [% bug.bug_id %]<b>LOPPU</b> -->
-
 </td></tr>
 <tr id="[% bug.bug_id %]_[% column %]_editable" style="visibility: collapse"><td>
 
@@ -10,23 +8,23 @@
             no_tds = 1, value = bug.$column
             editable = 1 %]
 	&nbsp
-        <a href="" onclick="return check_if_edited_field_changed();">[done]</a>
+        <a href="" onclick="checkIfEditedFieldChanged(); return false;">[done]</a>
 [% ELSIF column == 'assigned_to' %]
         [% INCLUDE global/userselect.html.tmpl
             id => "assigned_to"
             name => "assigned_to"
-            value => bug.assigned_to.login
+            value => bug.assigned_to
             size => 30
         %]
 	&nbsp
-        <a href="" onclick="return check_if_edited_field_changed();">[done]</a>
+        <a href="" onclick="checkIfEditedFieldChanged(); return false;">[done]</a>
 [% ELSIF column == 'estimated_time' %]
         <input name="estimated_time" id="estimated_time"
                value="[% PROCESS formattimeunit
                                  time_unit=bug.estimated_time %]"
                size="6" maxlength="6">
 	&nbsp
-	<a href="" onclick="return check_if_edited_field_changed();">[done]</a>
+	<a href="" onclick="checkIfEditedFieldChanged(); return false;">[done]</a>
 [% ELSIF column == 'actual_time' %]
         [% PROCESS formattimeunit time_unit=bug.actual_time %] +
 <!-- Removed script onchange="adjustRemainingTime();"> -->
@@ -41,7 +39,7 @@
                                  time_unit=bug.remaining_time %]"
                size="6" maxlength="6">
 	&nbsp
-	<a href="" onclick="return check_if_edited_field_changed();">[done]</a>
+	<a href="" onclick="checkIfEditedFieldChanged(); return false;">[done]</a>
 [% ELSE %]
 Error
 [% END %]
