@@ -98,18 +98,14 @@ sub update_bug_fields_from_json {
         $bug->set_priority($field_value);
         $bug->update();
     }
+    elsif($field_name eq 'bug_severity') {
+        $bug->set_severity($field_value);
+        $bug->update();
+    }
     else
     {
         $vars->{errors} = "Not able to save column " . $field_name;
     }
-
-#column == 'bug_severity' ||
-#	column == 'priority' ||
-#	column == 'bug_status' ||
-#	column == 'assigned_to' ||
-#	column == 'estimated_time' ||
-#	column == 'actual_time' ||
-#	column == 'remaining_time' %]
 }
 
 1;

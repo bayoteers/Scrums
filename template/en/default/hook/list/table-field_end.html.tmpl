@@ -1,7 +1,28 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
 </td></tr>
 <tr id="[% bug.bug_id %]_[% column %]_editable" style="visibility: collapse"><td>
 
-[% IF column == 'bug_severity' || column == 'priority' || column == 'bug_status' %]       
+[% IF column == 'bug_severity' || column == 'priority' %]       
 	[% PROCESS "bug/field.html.tmpl"
             bug = bug, field = select_fields.$column,
             override_legal_values = bug.choices.$column
@@ -25,13 +46,6 @@
                size="6" maxlength="6">
 	&nbsp
 	<a href="" onclick="checkIfEditedFieldChanged(); return false;">[done]</a>
-[% ELSIF column == 'actual_time' %]
-        [% PROCESS formattimeunit time_unit=bug.actual_time %] +
-<!-- Removed script onchange="adjustRemainingTime();"> -->
-	<input name="work_time" id="work_time"
-               value="0" size="3" maxlength="6">
-	&nbsp
-	<a href="">[done]</a>
 [% ELSIF column == 'remaining_time' %]
 <!-- Removed script onchange="updateRemainingTime();"> -->
         <input name="remaining_time" id="remaining_time"
@@ -47,4 +61,3 @@ Error
 </td></tr>
 </table> 
 
-<!-- <input type="edit" id="[% bug.bug_id %]_[% column %]" value="?" onchange="save('[% bug.bug_id %]_[% column %]');"/> -->

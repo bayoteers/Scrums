@@ -1,3 +1,24 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
 [% USE Bugzilla %]
 [% USE date %]
 [% SET select_fields = {} %]
@@ -15,6 +36,9 @@ var editedFieldid = "";
 var originalValue = "";
 var originalSelectedIndex = "";
 
+/**
+ * Function finds element by it's id. First element of type 'input' is searched and returned.
+ */
 function getInputElementByParentId(parentId)
 {
     var parentEl = document.getElementById(parentId);
@@ -22,6 +46,14 @@ function getInputElementByParentId(parentId)
     return inputsList[0];
 }
 
+/**
+ * Function checks whether edited field has been changed from original value.
+ * If value has changed, field is tried to be saved. Edited field is made hidden
+ * static field is made visible. Static field is changed into same value, that is saved, 
+ * or original value, if saving is not done.
+ *
+ * Editable fields of types 'input' and 'select' are handled separately.
+ */
 function checkIfEditedFieldChanged()
 {
     var status = false;
@@ -79,6 +111,9 @@ function checkIfEditedFieldChanged()
     return status;
 }
 
+/**
+ * Function first asks user, if he wants to save value. Status of saving is returned.
+ */
 function save(fieldid, newValue) 
 {
     var bugId = fieldid.match(/^\d{1,6}/);
@@ -90,12 +125,15 @@ function save(fieldid, newValue)
     }
     else
     {
-//        var editField = getInputElementByParentId(editedFieldid + "_editable");	
-//	editField.value = originalValue;
 	return false;
     }
 }
 
+/**
+ * Function is call-back function, that is called after succesfull ajax call returns.
+ * Ajax call if succesfull, if server responds without throwing exception. Ordered
+ * errors are shown in error message. Function shows status of saving to user.
+ */
 function saveResponse(response, status, xhr) 
 { 
 	var retObj = eval("("+ response+")");
@@ -109,17 +147,24 @@ function saveResponse(response, status, xhr)
 	}
 }
 
+/**
+ * Function saves value of one bug field into database by doing ajax-call.
+ */ 
 function saveBugField(bugId, fieldName, newValue)
 {
     var json_params = '{ "method": "Bug.update", "params": {"ids" : [' +bugId+ '], "' +fieldName+ '" : "' +newValue+ '"}, "id" : 0 }';
 
-// Can move to back to asynchronous calling after reloading is removed
+    $.post('page.cgi?id=scrums/ajax.html', {
+        schema: 'bug',
+        action: 'update',
+        data: json_params
+    }, saveResponse        , 'text');
+}
 
-//    $.post('page.cgi?id=scrums/ajax.html', {
-//        schema: 'bug',
-//        action: 'update',
-//        data: json_params
-//    }, saveResponse        , 'text');
+/* Synchronous call for debugging */
+function synchronous_saveBugField(bugId, fieldName, newValue)
+{
+    var json_params = '{ "method": "Bug.update", "params": {"ids" : [' +bugId+ '], "' +fieldName+ '" : "' +newValue+ '"}, "id" : 0 }';
 
     $.ajax({ async: false,
 	url: 'page.cgi?id=scrums/ajax.html', 
@@ -131,6 +176,13 @@ function saveBugField(bugId, fieldName, newValue)
     );
 }
 
+/**
+ * Function makes static field hidden and editable field visible.
+ * Value of edited field is stored for use in saving changed value later.
+ * While initialising one field to be editable, id of that field is stored.
+ *
+ * Editable fields of types 'input' and 'select' are handled separately.
+ */
 function makeeditable(fieldid) 
 {
     var status = false;
@@ -173,6 +225,10 @@ function makeeditable(fieldid)
     }
 }
 
+/**
+ * Function makes static field visible and makes editable field hidden,
+ * when editable field is type 'input'.
+ */
 function makeInputStatic(fieldid, currentvalue) 
 {
     var staticId = fieldid + "_static";
@@ -189,6 +245,10 @@ function makeInputStatic(fieldid, currentvalue)
     allInputs[0].value = currentvalue;
 }
 
+/**
+ * Function makes static field visible and makes editable field hidden,
+ * when editable field is type 'select'.
+ */
 function makeSelectStatic(fieldid, currentSelectedIndex) 
 {
     var staticId = fieldid + "_static";
@@ -213,6 +273,4 @@ function makeSelectStatic(fieldid, currentSelectedIndex)
 }
 
 </script>
-
-<p><b>Before editable fields</b></p>
 
