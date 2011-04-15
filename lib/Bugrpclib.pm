@@ -42,7 +42,8 @@ our @EXPORT = qw(
 # Important!
 # Data needs to be in exact format:
 #
-#  { "method": "Bug.update", "params": {"ids" : [216089], "estimated_time," : 0.8}, "id" : 0 }
+#
+#  { "method": "Bug.update", "params": {"ids" : [ { 216089 : { "estimated_time," : 0.8 } } ] }, "id" : 0 }
 #
 
 sub update_bug_fields_from_json {
@@ -58,20 +59,26 @@ sub update_bug_fields_from_json {
     }
     my $content = $json->allow_nonref->utf8->relaxed->decode($data);
 
-    my ($params, $ids, $bug_id, $field_name, $field_value);
+    my ($params, $bug_obj_array_ref, $field_value);
     $params = $content->{params};
-    my @param_keys = keys %{$params};
-    for my $key (@param_keys) {
-        if($key eq "ids") {
-            $ids = $params->{$key};
-            $bug_id = @{$ids}[0];                    
-        }
-        else {
-            $field_name = $key;
-            $field_value = $params->{$key};
+
+    $bug_obj_array_ref = $params->{ids};
+    my @bug_obj_array = @{$bug_obj_array_ref};
+    for my $bug_obj (@bug_obj_array) {
+        my @this_bug_id = keys %{$bug_obj};
+        my $bug_id = $this_bug_id[0];
+        my $bug_fields = $bug_obj->{$bug_id};
+        my @bug_field_names = keys %{$bug_fields};
+        for my $field_name (@bug_field_names) {
+            $field_value = $bug_fields->{$field_name};
+            update_bug_field($vars, $bug_id, $field_name, $field_value);
         }
     }
+}
     
+sub update_bug_field {
+    my ($vars, $bug_id, $field_name, $field_value) = @_;
+
     my $bug = Bugzilla::Bug->new($bug_id);
     my $old_value;
     if($field_name eq 'estimated_time') {

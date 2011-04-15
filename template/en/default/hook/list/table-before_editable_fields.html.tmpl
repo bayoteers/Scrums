@@ -152,7 +152,8 @@ function saveResponse(response, status, xhr)
  */ 
 function saveBugField(bugId, fieldName, newValue)
 {
-    var json_params = '{ "method": "Bug.update", "params": {"ids" : [' +bugId+ '], "' +fieldName+ '" : "' +newValue+ '"}, "id" : 0 }';
+    var json_params = '{ "method": "Bug.update", "params": {"ids" : [ {"' +bugId+ '": { "' +fieldName+ '": "' +newValue+ '"} } ] }, "id" : 0 }';
+//    var json_params = '{ "method": "Bug.update", "params": {"ids" : [' +bugId+ '], "' +fieldName+ '" : "' +newValue+ '"}, "id" : 0 }';
 
     $.post('page.cgi?id=scrums/ajax.html', {
         schema: 'bug',
@@ -164,7 +165,7 @@ function saveBugField(bugId, fieldName, newValue)
 /* Synchronous call for debugging */
 function synchronous_saveBugField(bugId, fieldName, newValue)
 {
-    var json_params = '{ "method": "Bug.update", "params": {"ids" : [' +bugId+ '], "' +fieldName+ '" : "' +newValue+ '"}, "id" : 0 }';
+//    var json_params = '{ "method": "Bug.update", "params": {"ids" : [' +bugId+ '], "' +fieldName+ '" : "' +newValue+ '"}, "id" : 0 }';
 
     $.ajax({ async: false,
 	url: 'page.cgi?id=scrums/ajax.html', 
