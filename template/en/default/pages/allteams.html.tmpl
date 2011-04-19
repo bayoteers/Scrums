@@ -24,12 +24,9 @@
     style_urls = ['skins/standard/admin.css']
 %]
 
-<table>
+<table border=1 cellpadding=4 cellspacing=0>
 [% IF teamlist.size > 0 %]
-  <tr>
-    <th colspan="3">Teams</th>
-  </tr>
-  <tr>
+  <tr bgcolor="#6666ff">
     <th>
     [% IF sort == 1 %] 
     <a href="page.cgi?id=allteams.html&sort=2">Name</a>
@@ -96,6 +93,6 @@
 [% class = user.in_group('admin') ? "" : "forbidden" %]
 <table><tr><td class="admin_links"> 
 <dl><dt class="[%class%]">
-<a href="page.cgi?id=newteam.html">new team</a>
+<a href="page.cgi?id=newteam.html">Add team</a>
 </dt></dl></td></tr></table>
 [% PROCESS global/footer.html.tmpl %]

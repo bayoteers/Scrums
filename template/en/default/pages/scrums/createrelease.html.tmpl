@@ -38,8 +38,10 @@ function askconfirm(releasename, flagtypename)
     color: #aaa;
 }
 
-.line_header {
-    font-weight: bold;
+table.main th {
+    text-align: right;
+    min-width: 200px;
+    white-space: nowrap;
 }
 -->
 </style>
@@ -54,48 +56,39 @@ Error msg: [% error %]
 Release created!
 [% END %]
 
+<h3>Release</h3>
+
 <!-- <table border="true"> -->
-<table>
+<table class="main">
 <tr>
-<th>&nbsp</th>
-<th>Release</th>
-<tr>
-<td class="line_header">Name:</td>
+<th>Name:</th>
 <td colspan="2">[% release.name %]</td>
 <td>
 </tr><tr>
-<td class="line_header">Milestone:</td>
+<th>Milestone:</th>
 <td colspan="2">[% release.target_milestone_begin %] - [% release.target_milestone_end %]</td>
 </tr><tr class="future_use">
-<td class="line_header">Algorithm:</td>
+<th>Algorithm:</th>
 <td colspan="2">[% release.capacity_algorithm %]</td>
 </tr><tr class="future_use">
-<td class="line_header">Original capacity:</td>
+<th>Original capacity:</th>
 <td colspan="2">[% release.original_capacity %]</td>
 </tr><tr class="future_use">
-<td class="line_header">Remaining capacity:</td>
+<th>Remaining capacity:</th>
 <td colspan="2">[% release.remaining_capacity %]</td>
-</tr><tr>
-[% IF (user.in_group('release_managers')) %]
-<a href="page.cgi?id=scrums/newrelease.html&editrelease='true'&releaseid=[% release.id %]&releasename=[% release.name %]&mr_begin=[% release.target_milestone_begin %]&
-	mr_end=[% release.target_milestone_end %]&algorithm=[% release.capacity_algorithm %]&original=[% release.original_capacity %]&remaining=[% release.remaining_capacity %]">
-	[edit release]</a>
-[% ELSE %]
-&nbsp
-[% END %]
-</td>
 </tr>
+<tr><th>&nbsp;</th><td colspan="2"><a href="page.cgi?id=scrums/releasebugs.html&releaseid=[% release.id %]">bugs in release</a>
 </table>
 
 <br><br>
-<b>Flagtypes for release:</b>
-<table>
+<h3>Flagtypes for release:</h3>
+<table class="main">
 [% IF flagtypelist.size > 0 %]
 
 [% FOREACH flagtype IN flagtypelist %]
 <tr>
-<td>&nbsp</td>
-<td width="150">
+<th>&nbsp</th>
+<td>
 [% IF (user.in_group('release_managers')) %]
 <a href="editflagtypes.cgi?action=edit&id=[% flagtype.id %]">[% flagtype.name %]</a>
 [% ELSE %]
@@ -135,27 +128,30 @@ No flagtypes for release<br>
 <form>
 </td>
 </tr>
-[% ELSE %]
-<tr>
-<td colspan="3">
-[% IF (user.in_group('release_managers')) %]
-<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&addflagtype=true">[add flagtype]</a>
-[% ELSE %]
-&nbsp;
-[% END %]
-
-</td>
-</tr>
 [% END %]
 
 </table>
 <p>
-<a href="page.cgi?id=scrums/releasebugs.html&releaseid=[% release.id %]">show bugs in release</a>
+
 </p>
 
 <p>
 <a href="page.cgi?id=scrums/allreleases.html">releases main page</a>
 </p>
+<hr>
+
+
+[% IF NOT addflagtype %]
+[% IF (user.in_group('release_managers')) %]
+
+<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&addflagtype=true">Add</a>&nbsp;a flagtype to '[% release.name %]'.
+Edit release 
+'<a href="page.cgi?id=scrums/newrelease.html&editrelease='true'&releaseid=[% release.id %]&releasename=[% release.name %]&mr_begin=[% release.target_milestone_begin %]&
+	mr_end=[% release.target_milestone_end %]&algorithm=[% release.capacity_algorithm %]&original=[% release.original_capacity %]&remaining=[% release.remaining_capacity %]">
+	[% release.name %]</a>'.
+[% END %]
+[% END %]
+
 [% END %]
 
 

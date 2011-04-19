@@ -85,7 +85,7 @@ function bind_sortable_lists(lists) {
     }).disableSelection();
 }
 
-function update_lists(bugs_list, move_pos, data, disabled) {
+function update_lists(bugs_list, move_pos, data) {
     if (data != undefined) {
         bugs_list.list = data;
         //deep copy
@@ -116,18 +116,10 @@ function update_lists(bugs_list, move_pos, data, disabled) {
             break;
         }
 
-	if(disabled == true) {
-            html += parseTemplate($("#DisabledLiTmpl").html(), {
-                bug: bugs_list.list[bugs_list.visible[i]],
-                counter: (bugs_list.visible[i] + 1)
-            });
-	}
-	else {
-	    html += parseTemplate($("#BugLiTmpl").html(), {
-                bug: bugs_list.list[bugs_list.visible[i]],
-                counter: (bugs_list.visible[i] + 1)
-            });
-	}
+        html += parseTemplate($("#BugLiTmpl").html(), {
+            bug: bugs_list.list[bugs_list.visible[i]],
+            counter: (bugs_list.visible[i] + 1)
+        });
     }
     $("#" + bugs_list.ul_id).html(html);
 }

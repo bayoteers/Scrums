@@ -34,12 +34,9 @@
 -->
 </style>
 
-<table>
+<table border=1 cellpadding=4 cellspacing=0>
 [% IF releaselist.size > 0 %]
-  <tr>
-    <th colspan="3">Releases</th>
-  </tr>
-  <tr>
+  <tr bgcolor="#6666ff">
     <th>Name</th>
     <th colspan="2">Milestone</th>
     <th class="future_use">Algorithm</th>
@@ -88,6 +85,6 @@ none
 [% class = user.in_group('admin') ? "" : "forbidden" %]
 <table><tr><td class="admin_links"> 
 <dl><dt class="[%class%]">
-<a href="page.cgi?id=scrums/newrelease.html">new release</a>
+<a href="page.cgi?id=scrums/newrelease.html">Add release</a>
 </dt></dl></td></tr></table>
 [% PROCESS global/footer.html.tmpl %]

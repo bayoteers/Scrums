@@ -6,21 +6,32 @@
 
     <style>
 
-    .sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #eee; padding: 5px; width: 560px; text-align: left; }
-    .sortable li { margin: 5px; padding: 5px; font-size: 1em; width: 540px; }
+    .sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 600px; text-align: left; }
+    .sortable li { background: #eeeeee; margin: 5px; padding: 5px; font-size: 1em; width: 580px; }
+    .disabled { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 600px; text-align: left; }
+    .disabled li { background: #eeeeee; margin: 3px; padding: 7px; font-size: 1em; width: 580px; }
     .number { background: #eee; color: #000000; border: 1px solid #dddddd;  }
+    .content { text-align: center; }
+    h3 { text-align: center; }
+
+    .bz_title_container {
+    margin: 8px 0; 
+    padding: 0.3em; 
+    background-color: rgb(208, 208, 208); 
+    -moz-border-radius: 0.5em; 
+    font-size: 125%; 
+    font-weight: bold; }
+</style>
 
     </style>
 <script id="BugLiTmpl" type="text/html">
-    <li class="ui-state-default" id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span ><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #> <#= bug[4] #></span></li>
+    <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span ><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #> <#= bug[4] #></span></li>
 </script>
 
-<script id="DisabledLiTmpl" type="text/html">
-    <li class="ui-state-disabled" id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span ><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #></span></li>
-</script>
+
 
 <script id="ListTmpl" type="text/html">
-    <h1 id="<#= list.h_id #>"><#= list.name #></h1>
+    <h3 id="<#= list.h_id #>"><#= list.name #></h3>
     <div class='content'>
     <p>
     <input type='button' value='previous' OnClick='move_list_left("<#= list.id #>");'/>
@@ -31,6 +42,23 @@
     </p>
 
     <ul id="<#= list.ul_id #>" class="connectedSortable sortable">
+    </ul>
+    </div>
+    <br />
+</script>
+
+<script id="StaticTmpl" type="text/html">
+    <h3 id="<#= list.h_id #>"><#= list.name #></h3>
+    <div class='content'>
+    <p>
+    <input type='button' value='previous' OnClick='move_list_left("<#= list.id #>");'/>
+
+    <#= extra_middle #>
+
+    <input type='button' value='next' OnClick='move_list_right("<#= list.id #>");'/>
+    </p>
+
+    <ul id="<#= list.ul_id #>" class="connectedSortable disabled">
     </ul>
     </div>
     <br />

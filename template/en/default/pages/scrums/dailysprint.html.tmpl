@@ -20,7 +20,7 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Bugs in team" 
+    title = "Team daily tasks" 
     style_urls = ['skins/standard/admin.css']
 %]
 
@@ -58,8 +58,7 @@ $(document).ready(function() {
         list.nominal_schedule = sprint_list_data[id][3]
         list.description = sprint_list_data[id][4]
 
-        var edit_link = '<a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid='+list.id+'&status='+list._status+'&sprintname='+list.name+'&nominalschedule='+list.nominal_schedule +'&description='+list.description+'&editsprint=true">[edit]</a>';
-        html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: edit_link });
+        html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: '' });
         $(html).appendTo($('#sprints'));
         update_lists(list, 0, sprint_list_data[id][1]);
 
@@ -87,26 +86,21 @@ $(document).ready(function() {
 
 
 </script>
-<!--
-        <select onChange='offset_step = parseInt($(this).val()); update_lists(ordered_bugs); update_lists(unordered_bugs);'> -->
 
-[% IF team_sprints_array.0 %]
-<h1>Team "[% team.name %]" current sprint [% team_sprints_array.0.sprint.name() %] [% team_sprints_array.0.sprint.nominal_schedule() %]</h1>
-[% ELSE %]
-<h1>Team "[% team.name %]" doesn't have a sprint currently</h1>
-[% END %]
-<a href="page.cgi?id=createteam.html&teamid=[% team.id %]">back to team</a>
+  <div class="bz_title_container">
+      Team '[% team.name %]' daily tasks
+  </div>
 
 <input type='button' value='save' OnClick='save_all();'/> 
 
 <table>
     <tr>
-        <th valign='top' id='sprints'>
-        </th>
-        <th valign='top' id='unordered'>
-        </th>
+        <td valign='top' id='sprints'>
+        </td>
+        <td valign='top' id='unordered'>
+        </td>
     </tr>
 </table>
-
-
+<br>
+<a href="page.cgi?id=createteam.html&teamid=[% team.id %]">back to team</a><br>
 [% PROCESS global/footer.html.tmpl %]
