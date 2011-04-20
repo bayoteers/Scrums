@@ -373,8 +373,8 @@ sub page_before_template {
             handle_release_bug_data($vars);
         }
         elsif ($schema eq "bug") {
-#            my $msg = update_bug_fields_from_json($vars);
-#            $vars->{errors} = $msg;
+            #            my $msg = update_bug_fields_from_json($vars);
+            #            $vars->{errors} = $msg;
             update_bug_fields_from_json($vars);
         }
         else {
@@ -429,6 +429,20 @@ sub page_before_template {
         $vars->{'target'} = "page.cgi?id=createteam.html&teamid=" . $team_id;
     }
 
+}
+
+sub config {
+    my ($self, $args) = @_;
+
+    my $config = $args->{config};
+    $config->{Scrums} = "Bugzilla::Extension::Scrums::ConfigScrums";
+}
+
+sub config_add_panels {
+    my ($self, $args) = @_;
+
+    my $modules = $args->{panel_modules};
+    $modules->{Scrums} = "Bugzilla::Extension::Scrums::ConfigScrums";
 }
 
 # This must be the last line of your extension.

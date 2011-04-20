@@ -20,7 +20,7 @@
 #                 Bradley Baetz <bbaetz@acm.org>
 #                 Jari Savolainen <ext-jari.a.savolainen@nokia.com>
 
-package Bugzilla::Extension::Scrums::Config;
+package Bugzilla::Extension::Scrums::ConfigScrums;
 use strict;
 use warnings;
 
@@ -31,11 +31,11 @@ sub get_param_list {
 
     my @param_list = (
                       {
-                         name => 'bug_list_editable_fields',
-                         desc => 'Those fields in bug, that are editable in bug list directly',
-                         type => 'm',
-                         choices => [estimated_time, remaining_time],
-                         default => []
+                        name    => 'bug_list_editable_fields',
+                        desc    => 'Those fields in bug, that are editable in bug list directly',
+                        type    => 'm',
+                        choices => [ 'estimated_time', 'remaining_time' ],
+                        default => ['estimated_time']
                       }
                      );
     return @param_list;
