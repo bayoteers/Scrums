@@ -56,8 +56,10 @@ $(document).ready(function() {
 
 </script>
 
-<h1>Release "[% release.name %]"  bugs</h1>
-<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]">back to release</a>
+  <div class="bz_title_container">
+  Release '[% release.name %]' bugs
+  </div>
+
 <input type='button' value='save' OnClick='save_all();'/> 
 
 <table>
@@ -69,5 +71,6 @@ $(document).ready(function() {
     </tr>
 </table>
 
+<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]">back to release</a><br>
 
 [% PROCESS global/footer.html.tmpl %]
