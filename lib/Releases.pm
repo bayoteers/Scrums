@@ -230,43 +230,6 @@ sub _set_bug_release_order() {
     }
 }
 
-## Notice that method XMLin is used parameter forcearray=> in place. Parameter must be used as such.
-## Reason is that resulting in-memory object tree, that results from parsing is inconsistent without parameter.
-## In situation, when there is only one child tag like one bug for example, parsing result would become different
-## from what it becomes in situation where there are several tags.
-#
-#sub release_bug_order {
-#    my ($vars) = @_;
-#
-#    my $cgi = Bugzilla->cgi;
-#    #    my $release_id = $cgi->param('releaseid');
-#
-#    # There was no success in reading request body from XmlHttpRequest. Content
-#    # is consequently coded into URL. This is not a problem, because URL is not browser URL.
-#    #    my $body = $cgi->var($CGI::ENTITY_BODY);
-#    my $content = $cgi->param('content');
-#    my $ordered_bugs_document = XMLin($content, forcearray => 1);
-#
-#    my @bug_tag_data_array    = $ordered_bugs_document->{'bug'};
-#    my $bug_content_array_ref = $bug_tag_data_array[0];            # Array has only one element
-#    my @bug_content_array     = @{$bug_content_array_ref};
-#
-#    for my $child_tags_ref (@bug_content_array) {
-#        my $bug_id           = @{ $child_tags_ref->{'id'} }[0];
-#        my $release_priority = @{ $child_tags_ref->{'releasepriority'} }[0];
-#
-#        my $bug_order = Bugzilla::Extension::Scrums::Bugorder->new($bug_id);
-#
-#        if (defined $bug_order && ref($bug_order)) {
-#            $bug_order->set_release_order($release_priority);
-#            $bug_order->update();
-#        }
-#        else {
-#            $bug_order = Bugzilla::Extension::Scrums::Bugorder->create({ bug_id => $bug_id, rlease => $release_priority });
-#        }
-#    }
-#}
-
 sub _new_release {
     my ($vars) = @_;
 
@@ -288,11 +251,12 @@ sub _new_release {
       _sanitize($release_name, $mr_begin, $mr_end, $algorithm, $original, $remaining);
 
     if ($release_name) {
-        my $release = Bugzilla::Extension::Scrums::Release->create({ name => $release_name });
-
+        my $release;
         if ($mr_begin and $mr_end) {
-            $release->set_target_milestone_begin($mr_begin);
-            $release->set_target_milestone_end($mr_end);
+            $release = Bugzilla::Extension::Scrums::Release->create({ name => $release_name, target_milestone_begin => $mr_begin, target_milestone_end => $mr_end });
+        }
+        else {
+            $release = Bugzilla::Extension::Scrums::Release->create({ name => $release_name });
         }
         _show_existing_release($vars, $release);
     }
@@ -354,7 +318,10 @@ sub _sanitize {
         $release_name = "";
     }
 
-    if ($mr_begin =~ /^\ *([0-9][0-9][0-9][0-9]-[0-9][0-9])\ *$/) {
+    if ($mr_begin eq "") {
+        $mr_begin = "";
+    }
+    elsif ($mr_begin =~ /^\ *([0-9][0-9][0-9][0-9]-[0-9][0-9])\ *$/) {
         $mr_begin = $1;        # $data now untainted
     }
     else {
@@ -362,7 +329,10 @@ sub _sanitize {
         $mr_begin = "";
     }
 
-    if ($mr_end =~ /^\ *([0-9][0-9][0-9][0-9]-[0-9][0-9])\ *$/) {
+    if ($mr_end eq "") {
+        $mr_end = "";
+    }
+    elsif ($mr_end =~ /^\ *([0-9][0-9][0-9][0-9]-[0-9][0-9])\ *$/) {
         $mr_end = $1;          # $data now untainted
     }
     else {
