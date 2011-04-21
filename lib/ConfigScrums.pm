@@ -34,7 +34,7 @@ sub get_param_list {
                         name    => 'bug_list_editable_fields',
                         desc    => 'Those fields in bug, that are editable in bug list directly',
                         type    => 'm',
-                        choices => [ 'estimated_time', 'remaining_time' ],
+                        choices => [ 'bug_severity', 'priority', 'assigned_to', 'estimated_time', 'remaining_time' ],
                         default => ['estimated_time']
                       }
                      );
