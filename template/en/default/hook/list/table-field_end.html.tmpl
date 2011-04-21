@@ -48,12 +48,17 @@
 	<a href="" onclick="checkIfEditedFieldChanged(); return false;">[done]</a>
 [% ELSIF column == 'remaining_time' %]
 <!-- Removed script onchange="updateRemainingTime();"> -->
+ 	<table><tr><td>
         <input name="remaining_time" id="remaining_time"
                value="[% PROCESS formattimeunit
                                  time_unit=bug.remaining_time %]"
                size="6" maxlength="6">
-	&nbsp
-	<a href="" onclick="checkIfEditedFieldChanged(); return false;">[done]</a>
+	</td><td>
+ 	<span class="ui-icon ui-icon-trash" title="cancel"" onclick="checkIfEditedFieldChanged(false);"></span>
+	</td><td>
+	<span class="ui-icon ui-icon-disk" title="save" onclick="checkIfEditedFieldChanged(true);">
+	</span>
+	</td></tr></table>
 [% ELSE %]
 Error
 [% END %]

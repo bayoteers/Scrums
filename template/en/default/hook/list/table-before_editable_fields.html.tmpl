@@ -54,32 +54,29 @@ function getInputElementByParentId(parentId)
  *
  * Editable fields of types 'input' and 'select' are handled separately.
  */
-function checkIfEditedFieldChanged()
+function checkIfEditedFieldChanged(mustsave, mustask)
 {
-    var status = false;
-
     var editField = getInputElementByParentId(editedFieldid + "_editable");
     var newValue = "";
+
     if(editField)
     {
         newValue = editField.value;	
         if(newValue != originalValue)
         {
-	    if(save(editedFieldid, newValue))
-    	    {
+	    if(decidetosave(editedFieldid, mustsave, mustask))
+	    { 
+		save(editedFieldid, newValue);
     		makeInputStatic(editedFieldid, newValue); 
-		status = true;
     	    }
             else
             {
     	        makeInputStatic(editedFieldid, originalValue);
-		status = false;
             }
         }
         else
         {
 	    makeInputStatic(editedFieldid, originalValue);
-            status = false;
         }
     }
     else
@@ -91,8 +88,9 @@ function checkIfEditedFieldChanged()
 	if(originalSelectedIndex != selectedIndex)
 	{
 	    newValue = selectEl.options[selectedIndex].value;
-	    if(save(editedFieldid, newValue))
-    	    {
+	    if(decidetosave(editedFieldid, mustsave, mustask))
+	    { 
+		save(editedFieldid, newValue)
     	        makeSelectStatic(editedFieldid, selectedIndex); 
             }
             else
@@ -108,25 +106,59 @@ function checkIfEditedFieldChanged()
 
     editedFieldid = "";
     originalValue = "";
-    return status;
 }
+
+function decidetosave(fieldid, mustsave, mustask) 
+{
+    var decission = false;
+
+    if(mustsave)
+    {
+        var bugId = fieldid.match(/^\d{1,6}/);
+        var fieldName = fieldid.substr(bugId[0].length + 1);
+        if(mustask)
+        {
+            if(confirm("Do you want to save changes in "+fieldName))
+	    {
+		decission = true;
+            }
+	    else
+	    {
+		decission = false;
+	    }
+        }
+	else
+        {
+	    decission = true;
+	}
+    }
+    else
+    {
+	decission = false;
+    }
+    return decission;
+}
+
 
 /**
  * Function first asks user, if he wants to save value. Status of saving is returned.
  */
-function save(fieldid, newValue) 
+function save(fieldid, newValue, mustask) 
 {
     var bugId = fieldid.match(/^\d{1,6}/);
     var fieldName = fieldid.substr(bugId[0].length + 1);
-    if(confirm("Do you want to save changes in "+fieldName))
+
+    var status = true;
+    if(mustask) 
+    {
+        status = confirm("Do you want to save changes in "+fieldName);
+    }
+
+    if(status)
     {
 	saveBugField(bugId[0], fieldName, newValue);
-	return true;
     }
-    else
-    {
-	return false;
-    }
+    return status;
 }
 
 /**
@@ -195,7 +227,7 @@ function makeeditable(fieldid)
 
     if(editedFieldid != "" && editedFieldid != fieldid)
     {
-        status = checkIfEditedFieldChanged();
+        status = checkIfEditedFieldChanged(true /* must save */, true /* must ask first */);
     }
     editedFieldid = fieldid;
     staticEl.style.visibility = 'collapse';
