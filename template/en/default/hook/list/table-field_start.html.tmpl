@@ -18,15 +18,17 @@
   # Contributor(s):
   #   Visa Korhonen <visa.korhonen@symbio.com>
   #%]
-
 <table>
-[% IF column == 'bug_severity' ||
-	column == 'priority' ||
-	column == 'assigned_to' ||
-	column == 'estimated_time' ||
-	column == 'remaining_time' %]
+[% editable = Param('bug_list_editable_fields') %]
+[% caneditcolumn = 0 %]
+[% FOREACH field IN editable %]
+[% IF (field == column) %]
+[% caneditcolumn = 1 %]
+[% END %]
+[% END %]
+[% IF (caneditcolumn == 1) %]
 <tr id="[% bug.bug_id %]_[% column %]_static"><td border="1" ondblclick="makeeditable('[% bug.bug_id %]_[% column %]');">
 [% ELSE %]
-<tr><td ondblclick="alert('No editing');">
+<tr><td>
 [% END %]	
 
