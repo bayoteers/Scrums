@@ -39,6 +39,12 @@
     <#= extra_middle #>
 
     <input type='button' value='next' OnClick='move_list_right("<#= list.id #>");'/>
+    <select id="<#= list.id #>" onchange='select_step("<#= list.id #>");'>
+    <option selected="true">10</option>
+    <option>20</option>		
+    <option>50</option>		
+    <option>all</option>				
+    </select>
     </p>
 
     <ul id="<#= list.ul_id #>" class="connectedSortable sortable">

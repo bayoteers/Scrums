@@ -12,10 +12,33 @@ function listObject(ul_id, h_id, id, name) {
     this.orginal_list = [];
     this.visible = -1;
     this.offset = 0;
+    this.offset_step = 10; // default value
     this.name = name;
 }
-var offset_step = 10;
+
 var from_list_ul_id = '';
+
+function select_step(list_id)
+{
+    var sel = document.getElementById(list_id);
+    var val = new Number(sel.value); // Val becomes 0, if sel.value equals "all"
+
+    for (var i = 0; i< all_lists.length; i++)
+    {
+        if (all_lists[i].id == list_id)
+        {
+	    if(sel.value == "all")
+	    {
+	    	val = all_lists[i].length;
+		all_lists[i].offset = 0;
+	    }
+	    all_lists[i].offset_step = val;
+	    all_lists[i].visible = -1;
+	    update_lists(all_lists[i]);
+            break;
+        }
+    }
+}
 
 function switch_lists(ui, lists) {
     to_list_ul_id = ui.item.parent().attr('id');
@@ -47,10 +70,8 @@ function switch_lists(ui, lists) {
         order = to_list.visible[to_list.offset + i];
         if ($(this).attr('id') == ui.item.attr('id')) {
             new_position = order;
-//            to_list.list.splice(new_position, 0, from_list.list[old_position]);	// fix 242837
-//            from_list.list.splice(old_position, 1);					// fix 242837
-            var temp = from_list.list.splice(old_position, 1);				// fix 242837
-            to_list.list.splice(new_position, 0, temp[0]);				// fix 242837 (should not work at all)
+            var temp = from_list.list.splice(old_position, 1);
+            to_list.list.splice(new_position, 0, temp[0]);
             from_list.visible.splice(old_vis_position, 1);
             //alert(to_list.visible.length);
             vis_position = to_list.offset + i;
@@ -104,7 +125,7 @@ function update_lists(bugs_list, move_pos, data) {
     }
     bugs_list.offset += move_pos;
     if (bugs_list.offset < 0) {
-        bugs_list.offset = bugs_list.visible.length - (bugs_list.visible.length % offset_step);
+        bugs_list.offset = bugs_list.visible.length - (bugs_list.visible.length % bugs_list.offset_step);
     }
     if (bugs_list.offset >= bugs_list.visible.length) {
         bugs_list.offset = 0;
@@ -112,7 +133,7 @@ function update_lists(bugs_list, move_pos, data) {
     html = "";
     //for(var i = bugs_list.offset; i < bugs_list.list.length; i++) {
     for (var i = bugs_list.offset; i < bugs_list.visible.length; i++) {
-        if (i > bugs_list.offset + offset_step - 1) {
+        if (i > bugs_list.offset + bugs_list.offset_step - 1) {
             break;
         }
 
@@ -190,20 +211,27 @@ function list_filter(header, list, bugs_list) { // header is any element, list i
 
 function move_list_left(list_id)
 {
-    move_list(list_id, -offset_step);
+    move_list(list_id, true);
 }
 function move_list_right(list_id)
 {
-    move_list(list_id, offset_step);
+    move_list(list_id, false);
 }
 
-function move_list(list_id, step)
+function move_list(list_id, left)
 {
     for (var i = 0; i< all_lists.length; i++)
     {
         if (all_lists[i].id == list_id)
         {
-            update_lists(all_lists[i], step);
+	    if(left)
+            {
+                update_lists(all_lists[i], -all_lists[i].offset_step);
+	    }
+            else
+            {
+	        update_lists(all_lists[i], all_lists[i].offset_step);
+            }
             break;
         }
     }
