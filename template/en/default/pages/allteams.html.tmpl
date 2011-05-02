@@ -90,9 +90,11 @@
 [% END %]
 </table>
 
-[% class = user.in_group('admin') ? "" : "forbidden" %]
-<table><tr><td class="admin_links"> 
-<dl><dt class="[%class%]">
+
+<hr>
+<a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">Scrums user's guide</a>. 
+[% IF user.in_group('admin') %]
 <a href="page.cgi?id=newteam.html">Add team</a>
-</dt></dl></td></tr></table>
+[% END %]
+
 [% PROCESS global/footer.html.tmpl %]

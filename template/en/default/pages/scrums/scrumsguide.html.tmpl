@@ -1,0 +1,469 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Scrums</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="The Bugzilla Scrums extension"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Using Bugzilla"
+HREF="using.html"></HEAD
+><BODY
+CLASS="section"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>The Bugzilla Guide</TH
+></TR
+><TR
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Using Scrums-extension</TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+
+><H1
+CLASS="section"
+><A
+NAME="scrumsextension"
+>Scrums extension</A
+></H1
+
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+
+><DT
+>1.<A
+HREF="#teamviewpoint"
+>Team viewpoint</A>
+</DT
+><DD
+><DL
+><DT>
+1.1. Purpose
+</DT
+><DT>
+1.2. Team
+</DT
+><DT>
+1.3. Adminitering teams
+</DT
+><DT>
+1.4.<A
+HREF="#teamplanning"
+>Team's planning views</A
+</DT
+><DD
+><DL
+><DT>
+Steps of planning
+</DT
+><DT>
+Backlog planning
+</DT
+><DT>
+Sprint planning
+</DT
+><DT>
+Daily planning
+</DT
+><DT>
+Archived sprints
+</DT>
+</DL>
+</DD>
+</DL>
+</DD
+><DT>
+
+2.<A
+HREF="#releaseviewpoint"
+>Release viewpoint</A>
+</DT
+><DD
+><DL
+><DT>
+2.1. Purpose
+</DT
+><DT>
+2.2. Release
+</DT
+><DT>
+2.3. Adminitering releases
+</DT
+><DT>
+2.4.<A
+HREF="#releaseplanning"
+>Release planning view</A>
+</DT>
+</DL>
+</DD
+><DT>
+<A
+HREF="#permissionsettings"
+>3. Permissions</A>
+</DT>
+</DL>
+</DD>
+
+</DIV
+
+><hr
+><DIV
+CLASS="section"
+><P
+>&#13;    Scrums-extension allows you to have holistic view into items in Bugzilla.
+Viewpoints are of two types, release and team.</P
+><P>Scrums-extension has the purpose of supporting agile software development methods.</P
+</DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="teamviewpoint"
+>1. Team viewpoint</A
+></H2
+><H2
+CLASS="section"
+>1.1. Purpose
+</H2
+><P
+>&#13;        This viewpoint allows you to look at items in Bugzilla from team point of view.
+It supports planning activities of team.
+      </P
+><H2
+CLASS="section"
+>1.2. Team
+</H2
+><P>Team is a whole, that builds around components. Team has responsibility for one or several components.
+Dedicating components to teams fixes also bugs and other items, that have been recorded to component, to team.
+Bugzilla users can be nominated as members of teams.
+</P
+><H2
+CLASS="section"
+>1.3. Adminitering teams
+</H2
+><P>
+Teams main page shows table of all teams. It is possible to create a new team in main page.
+</P
+><P>
+Teams are shown as a table, which can be sorted by any of it's columns by clicking column header.
+Clicking any individual team shows information of team.
+</P
+><P>
+Team information page shows basic information of a team and also components, that team is responsible, and team members.
+Any information can be edited in team information page. Team planning pages can be selected from team information page.
+There are four different planning pages for team:
+</P
+><UL
+COMPACT="COMPACT"
+><LI
+><P
+>&#13;            Daily planning
+          </P
+></LI
+><LI
+><P
+>&#13;            Sprint planning 
+          </P
+></LI
+><LI
+><P
+>&#13;            Backlog planning
+          </P
+></LI
+><LI
+><P
+>&#13;            Archived sprints
+          </P
+></LI
+></UL
+></DIV
+><H2
+CLASS="section"
+><A
+NAME="teamplanning"
+>1.4. Team's planning views</A
+</H2
+><H3>Steps of planning</H3>
+<p>
+Any individual item weather it is bug or other item, can be in different states depending on plans, that team has.
+Item can be in unplanned state, backlog, sprint plan or elapsed. 
+Every item is forced into pre-defined path through different stages. This has purpose of enforcing product and team management.
+Control of workflow is gained by dividing tasks into separate roles.
+<img src="extensions/Scrums/template/en/default/pages/scrums/Item-path.png"/>
+</p
+<p>
+Backlog for team is simple list of items, where items are in defined order.
+Unplanned items are taken into backlog, whence they become planned<sup>1</sup>. Items in backlog can be sorted. 
+Order of items is meant to represent relative priority of items.
+</p
+><p>
+Items in backlog are taken into sprint, whence they become scheduled<sup>2</sup>. Each sprint has defined time schedule and
+also items inside individual sprint can be ordered. 
+</p
+><p>
+After sprint has ended it is archived<sup>3</sup>. 
+It is notable, that item, which remains open, while sprint is archived, becomes unplanned once more.
+</p
+><H3>Backlog planning</H3
+><P>
+View consists of two lists of items. 'Unordered bugs'-list contains any open item, that belongs to team, but which
+has not been taken into other lists. 'Backlog'-list contains items, that are in product backlog, but which are not
+scheduled in sprint. Taking items into backlog is managing product. Product means in here those components, that the team
+in question has responsibility. Product backlog is common to any responsibilities, that team might have.
+</P
+><P>
+Items are taken into backlog by dragging lines from one list to another. Order of items in backlog is saved. 
+On the other hand order of items in unordered bugs-list is not saved. Items can be also moved in opposite direction
+from backlog to unordered bugs.
+</P
+><H3>Sprint planning</H3
+><P>
+View consists of two lists of items. Sprint list contains all items in sprint. Shown sprint is currently active sprint, that
+team has, since team can have only one active sprint simultaneously.
+'Backlog'-list contains items, that are in product backlog, but which are not
+scheduled in sprint. Items are in only one active list simultaneously.
+</P
+><P>
+It is possible to edit sprint information. From sprint editing it is also possible to move sprint into archived state.
+Archiving means ending sprint once and for all. Sprint is meant to last limited time. This is also enforced by allowing
+only one active sprint simultaneously. While ending and archiving sprint end date must be given.
+</P
+><P>
+Items are taken into sprint by dragging lines from one list to another. Order of items in sprint is also saved and
+items can be sorted. 
+Items can be also moved in opposite direction from sprint to backlog.
+</P
+
+><H3>Daily planning</H3
+><P>
+View consists of two lists of items. Sprint list contains all items in sprint. Shown sprint is currently active sprint, that
+team has, since team can have only one active sprint simultaneously.
+</P
+><P>
+'Unordered bugs'-list contains any open bug, that belongs to team, but which has not been taken into other lists.
+It is notable, that bugs are only items, that are visible in this list in daily planning page. Items, that are not bugs, do
+not belong to daily planning. Purpose of unordered bugs in daily planning is, that team can pick bugs into
+it's own workflow autonomously.
+</P
+><P>
+Bugs are taken into sprint by dragging lines from one list to another. Order of items in sprint is also saved and
+items can be sorted. 
+Bugs can be also moved in opposite direction from sprint to unordered.
+</P
+><H3>Archived sprints</H3
+><P>
+Archived sprints-view shows ended sprints of team. Sprints are shown in time order. Newest sprint is shown first.
+</P
+
+
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="releaseviewpoint"
+>2. Release viewpoint</A
+></H2
+><H2
+CLASS="section"
+>2.1. Purpose
+</H2
+><P
+>&#13;        This viewpoint allows you to look at items in Bugzilla from release point of view.
+It supports planning content and priorities of a release.
+      </P
+><H2
+CLASS="section"
+>2.2. Release
+</H2
+><P>Release is a whole, that builds around collection of items. 
+</P
+><H2
+CLASS="section"
+>2.3. Adminitering releases
+</H2
+><P>
+Releases main page shows table of all releases. It is possible to create a new release in main page.
+Clicking any individual release shows information of release.
+</P
+><P>
+Release information page shows basic information of a release and also flagtypes, that are marked into release.
+Any information can be edited in release information page. Release planning page can be accessed from release information page.
+</P
+
+><H2
+CLASS="section"
+><A
+NAME="releaseplanning"
+>2.4. Release planning view</A
+</H2
+><P>
+View consists of two lists of items. 'Unordered bugs'-list contains all items, that belong to release, but which
+have not been taken into sorted list of items. 'Bug order'-list contains items, that have been sorted by priority in release.
+</P
+><P>
+Bugs are taken into 'bug order' by dragging lines from one list to another. Order of items in 'bug order' is also saved and
+items can be sorted. 
+Bugs can be also moved in opposite direction from ordered to unordered.
+</P>
+</DIV
+><DIV
+CLASS="section"
+><H2
+CLASS="section"
+><A
+NAME="permissionsettings"
+>3. Permissions</A
+></H2
+><P
+>&#13;      This is a purely informative page which outlines your current
+      permissions on Scrums extension.
+</P
+><P
+>&#13;      A complete list of permissions is below. Only users with 
+      <EM
+>editusers</EM
+> privileges can change the permissions 
+      of other users.
+      </P
+><P
+></P>
+</DIV
+><DIV
+CLASS="variablelist"
+><DL
+><DT
+>admin</DT
+><DD
+><P
+> 
+             Administrator can create new teams and delete existing teams.
+            </P
+></DD
+><DT
+>editteams</DT
+><DD
+><P
+> 
+             Indicates user can edit team information including component responsibilities and team members.<br> 
+		User can also edit backlog, create a new sprint and edit content and information of an existing sprint.
+            </P
+></DD
+
+><DT
+>team owner</DT
+><DD
+><P
+> 
+             This user role is set in team information and it is set into each team separately. 
+		Owner of one team is not granted any rights into any other team.
+		Indicates that user can edit backlog and create and edit sprint.
+            </P
+></DD
+
+><DT
+>scrum master</DT
+><DD
+><P
+> 
+		This user role is set in team information and it is set into each team separately. 
+		Scrums master of one team is not granted any rights into any other team.
+             Indicates that user can create a new sprint and edit existing sprint.
+            </P
+></DD
+
+><DT
+>team member</DT
+><DD
+><P
+> 
+             This user role is set in team information and it is set into each team separately. 
+		Team member of one team is not granted any rights into any other team.
+             Indicates that user can edit content of existing sprint.
+            </P
+></DD
+
+><DT
+>release manageer</DT
+><DD
+><P
+> 
+             Indicates that user can create a new release and edit an existing release.
+		User can also sort item order in release and add and remove flagtypes from release. 
+            </P
+></DD
+
+></DL
+></DIV>
+
+All users are allowed to view team list and individual teams, view daily team planning and view releases.
+<DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+>
+
+<TR>
+<TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="#scrumsextension"
+ACCESSKEY="H"
+>Up</A>
+</TD>
+</TR
+><TR
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="docs/en/html/using.html"
+ACCESSKEY="U"
+>Bugzilla User's guide</A
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

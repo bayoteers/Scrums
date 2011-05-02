@@ -253,7 +253,8 @@ sub _new_release {
     if ($release_name) {
         my $release;
         if ($mr_begin and $mr_end) {
-            $release = Bugzilla::Extension::Scrums::Release->create({ name => $release_name, target_milestone_begin => $mr_begin, target_milestone_end => $mr_end });
+            $release =
+              Bugzilla::Extension::Scrums::Release->create({ name => $release_name, target_milestone_begin => $mr_begin, target_milestone_end => $mr_end });
         }
         else {
             $release = Bugzilla::Extension::Scrums::Release->create({ name => $release_name });

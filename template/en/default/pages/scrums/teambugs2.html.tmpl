@@ -107,6 +107,7 @@ $(document).ready(function() {
 <br>
 <a href="page.cgi?id=createteam.html&teamid=[% team.id %]">back to team</a><br>
 <hr>
+<a href="page.cgi?id=scrums/scrumsguide.html#teamplanning">Scrums user's guide</a>. 
 <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add</a> sprint for team '[% team.name %]'. 
 [% team_sprint = team_sprints_array.first() %]
         <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&status='[% team_sprint.sprint.status() %]'&sprintname='[% team_sprint.sprint.name() %]'&nominalschedule='[% team_sprint.sprint.nominal_schedule() %]'&description='[% team_sprint.sprint.description() %]'&editsprint=true">Edit</a>' sprint '[% team_sprint.sprint.name() %]'.
