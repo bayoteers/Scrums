@@ -372,11 +372,6 @@ sub page_before_template {
         if ($schema eq "release") {
             handle_release_bug_data($vars);
         }
-        elsif ($schema eq "bug") {
-            #            my $msg = update_bug_fields_from_json($vars);
-            #            $vars->{errors} = $msg;
-            update_bug_fields_from_json($vars);
-        }
         else {
             update_team_bugs($vars);
         }
