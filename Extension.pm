@@ -371,8 +371,11 @@ sub page_before_template {
         if ($schema eq "release") {
             handle_release_bug_data($vars);
         }
+        elsif ($schema eq "backlog") {
+            update_team_bugs($vars, 1);
+        }
         else {
-            update_team_bugs($vars);
+            update_team_bugs($vars, 0);
         }
     }
 

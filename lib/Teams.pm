@@ -608,17 +608,31 @@ sub show_team_and_sprints {
 }
 
 sub update_team_bugs {
-    my ($vars) = @_;
+    my ($vars, $list_is_backlog) = @_;
 
     my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('obj_id');
     my $data    = $cgi->param('data');
 
-    my $user = Bugzilla->user();
-    my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
-    if ((not $team->is_user_team_member($user)) && (not Bugzilla->user->in_group('editteams'))) {
-        # TODO Define error message
-        $vars->{'errors'} = 'not_member_of_team';
+    my $user  = Bugzilla->user();
+    my $team  = Bugzilla::Extension::Scrums::Team->new($team_id);
+    my $error = "";
+
+    if ($list_is_backlog) {
+        if (($team->owner() != $user->id()) && (not Bugzilla->user->in_group('editteams'))) {
+            # TODO Define error message
+            $error = 'not_owner_of_team';
+        }
+    }
+    else {
+        if ((not $team->is_user_team_member($user)) && (not Bugzilla->user->in_group('editteams'))) {
+            # TODO Define error message
+            $error = 'not_member_of_team';
+        }
+    }
+
+    if ($error ne "") {
+        $vars->{'errors'} = $error;
     }
     else {
         update_bug_order_from_json($team_id, $data);
