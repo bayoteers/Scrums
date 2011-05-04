@@ -1,8 +1,7 @@
 /*
  * Contributor(s):
- *   Visa Korhonen <visa.korhonen@symbio.com>
+ *   Eero Heino <eero.heino@nokia.com>
  */
-// Eero's stuff
 
 function listObject(ul_id, h_id, id, name) {
     this.ul_id = ul_id;
@@ -184,31 +183,6 @@ function list_filter(header, list, bugs_list) { // header is any element, list i
     });
 }
 
-//function init(schema, obj_id, lists) {
-//    // DEMO
-//    //var demo1 = new listObject("#demo1");
-//    //var demo2 = new listObject("#demo2");
-//
-//    function call_back(data) {
-//        for (var i = 0; i < lists.length; i++) {
-//            update_lists(lists[i], 0, data[i]);
-//            listFilter($(lists[i].h_id), $("#" + lists[i].ul_id), lists[i]);
-//        }
-//    }
-//    $.post('page.cgi?id=scrums/ajax.html', {
-//        schema: schema,
-//        action: 'fetch',
-//        obj_id: obj_id
-//    }, call_back, 'json');
-//    //update_lists(ordered_bugs);
-//    bind_sortable_lists(lists);
-//    // DEMO
-//    //    update_lists(demo1);
-//    //    update_lists(demo2);
-//    //    listFilter($("#headers3"), $(demo1.ul_id), demo1);
-//    //    listFilter($("#headers4"), $(demo2.ul_id), demo2);
-//}
-
 function move_list_left(list_id)
 {
     move_list(list_id, true);
@@ -264,23 +238,12 @@ function save(lists, schema, obj_id, data_lists, call_back) {
         }
     }
 
-    function cb(data)
-        {
-        alert('jo');
-            if (call_back != undefined)
-            {
-                call_back();
-            }
-        }
-
-        
     $.post('page.cgi?id=scrums/ajax.html', {
         schema: schema,
         action: 'set',
         obj_id: obj_id,
         data: JSON.stringify(data_lists)
     }, saveResponse        , 'text');
-//    }, saveResponse        , 'json');
 }
 
 function save_lists(ordered_lists, unordered_list, schema, obj_id, call_back)
