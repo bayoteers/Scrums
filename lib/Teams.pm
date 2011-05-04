@@ -250,50 +250,6 @@ sub _new_team {
     $vars->{'teamisnew'} = "true";
 }
 
-sub user_teams {
-    my ($vars) = @_;
-
-    my $cgi     = Bugzilla->cgi;
-    my $user_id = $cgi->param('userid');
-
-    if ($user_id ne "") {
-        if ($user_id =~ /^([0-9]+)$/) {
-            $user_id = $1;    # $data now untainted
-
-            my $add_team = $cgi->param('addteam');
-            my $rem_team = $cgi->param('remteam');
-            if ($rem_team ne "") {
-                if ($rem_team =~ /^([0-9]+)$/) {
-                    $rem_team = $1;    # $data now untainted
-                    my $team = Bugzilla::Extension::Scrums::Team->new($rem_team);
-                    $team->remove_member($user_id);
-                }
-            }
-            # else-condition is needed because addteam and remteam can be present at the same time
-            # Addteam is then unintentional and is caused by select-element having unintentional value
-            elsif ($add_team ne "") {
-                if ($add_team =~ /^([0-9]+)$/) {
-                    $add_team = $1;    # $data now untainted
-                    my $team = Bugzilla::Extension::Scrums::Team->new($add_team);
-                    $team->set_member($user_id);
-                }
-            }
-
-            my $user_team_ids = Bugzilla::Extension::Scrums::Team->team_memberships_of_user($user_id);
-            my $user_teams    = Bugzilla::Extension::Scrums::Team->new_from_list(@{$user_team_ids});
-            $vars->{'userteamlist'} = $user_teams;
-
-            $vars->{'allteams'}  = [ Bugzilla::Extension::Scrums::Team->get_all() ];
-            $vars->{'userid'}    = $user_id;
-            $vars->{'username'}  = $cgi->param('username');
-            $vars->{'userlogin'} = $cgi->param('userlogin');
-        }
-        else {
-            $vars->{'error'} = "Illegal user id. ";
-        }
-    }
-}
-
 sub add_into_team {
     my ($vars) = @_;
 
@@ -322,53 +278,6 @@ sub add_into_team {
         }
         else {
             $vars->{'error'} .= "Illegal user id. ";
-        }
-    }
-}
-
-# TODO
-# This is deprecated
-sub component_team {
-    my ($vars) = @_;
-
-    my $cgi     = Bugzilla->cgi;
-    my $comp_id = $cgi->param('compid');
-
-    if ($comp_id ne "") {
-        if ($comp_id =~ /^([0-9]+)$/) {
-            $comp_id = $1;    # $data now untainted
-
-            my $add_team = $cgi->param('addteam');
-            my $rem_team = $cgi->param('remteam');
-            if ($rem_team ne "") {
-                Bugzilla::Extension::Scrums::Team->remove_component($comp_id);
-            }
-            # else-condition is needed because addteam and remteam can be present at the same time
-            # Addteam is then unintentional and is caused by select-element having unintentional value
-            elsif ($add_team ne "") {
-                if ($add_team =~ /^([0-9]+)$/) {
-                    $add_team = $1;    # $data now untainted
-                    my $team_id = $cgi->param('teamid');
-                    if ($team_id ne "") {
-                        # There was previous team id. Existing row must be updated.
-                        my $team = Bugzilla::Extension::Scrums::Team->new($add_team);
-                        $team->update_component($comp_id);
-                    }
-                    else {
-                        my $team = Bugzilla::Extension::Scrums::Team->new($add_team);
-                        $team->set_component($comp_id);
-                    }
-                }
-            }
-
-            $vars->{'componentteam'} = Bugzilla::Extension::Scrums::Team->team_of_component($comp_id);
-
-            my ($all_teams) = [ Bugzilla::Extension::Scrums::Team->get_all() ];
-            @{$all_teams} = sort { lc($a->id) cmp lc($b->id) } @{$all_teams};
-            $vars->{'allteams'}    = $all_teams;
-            $vars->{'compid'}      = $cgi->param('compid');
-            $vars->{'compname'}    = $cgi->param('compname');
-            $vars->{'productname'} = $cgi->param('productname');
         }
     }
 }
@@ -779,12 +688,6 @@ sub _sanitise_sprint_data {
 
     return ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date);
 }
-
-#sub _get_team_sprints {
-#    my ($vars, $team_id) = @_;
-#
-#    $vars->{'sprints'} = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id });
-#}
 
 sub _update_team {
     my ($team, $name, $owner, $scrum_master) = @_;
