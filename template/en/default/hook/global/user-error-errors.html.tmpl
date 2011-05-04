@@ -12,4 +12,31 @@
 [% ELSIF error == "scrums_actual_time_required" %]
    [% title = "Actual estimate required" %]
    You have to specify actual hours worked while closing task or feature.
+[% ELSIF error == "team_has_active_sprint" %]
+   [% title = "Deleting team is not allowed" %]
+   Deleting team is not possible. Team has active sprint.
+[% ELSIF error == "team_has_components" %]
+   [% title = "Deleting team is not allowed" %]
+   Deleting team is not possible. Team has components.
+[% ELSIF error == "sprint_has_bugs" %]
+   [% title = "Deleting sprint is not allowed" %]
+   Deleting sprint is not possible. Sprint has items.
+[% ELSIF error == "team_name_not_specified" %]
+   [% title = "Team name required" %]
+   Created team needs to have name.
+[% ELSIF error == "team_name_too_long" %]
+   [% title = "Team name too long" %]
+   Provided name for team is too long '[% name %]'.
+[% ELSIF error == "team_already_exists" %]
+   [% title = "Team already exists" %]
+   Team '[% name %]' already exists.
+[% ELSIF error == "user_already_member_of_team" %]
+   [% title = "User already member" %]
+   User is already member of team '[% name %]'.
+[% ELSIF error == "release_name_too_long" %]
+   [% title = "Release name too long" %]
+   Provided name for release is too long '[% name %]'.
+[% ELSIF error == "release_already_exists" %]
+   [% title = "Release already exists" %]
+   Release '[% name %]' already exists.
 [% END %]

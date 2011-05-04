@@ -10,7 +10,7 @@
 # implied. See the License for the specific language governing
 # rights and limitations under the License.
 #
-# The Original Code is the PMO Bugzilla Extension.
+# The Original Code is the Scrums Bugzilla Extension.
 #
 # The Initial Developer of the Original Code is "Nokia corporation"
 # Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -81,13 +81,11 @@ sub _delete_team {
 
         my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 1, is_active => 1 });
         if (scalar @{$sprints} > 0) {
-            # TODO define user error
             ThrowUserError('team_has_active_sprint', {});
         }
 
         my $components = $team->components();
         if (scalar @{$components} > 0) {
-            # TODO define user error
             ThrowUserError('team_has_components', {});
         }
         my $backlog_items = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 2 });
@@ -529,14 +527,14 @@ sub update_team_bugs {
 
     if ($list_is_backlog) {
         if (($team->owner() != $user->id()) && (not Bugzilla->user->in_group('editteams'))) {
-            # TODO Define error message
-            $error = 'not_owner_of_team';
+            # User error can not be used, because this is ajax-call
+            $error = 'Sorry, you are not the owner of the team. You are not allowed to edit backlog';
         }
     }
     else {
         if ((not $team->is_user_team_member($user)) && (not Bugzilla->user->in_group('editteams'))) {
-            # TODO Define error message
-            $error = 'not_member_of_team';
+            # User error can not be used, because this is ajax-call
+            $error = 'Sorry, you are not member of the team. You are not allowed to edit sprint';
         }
     }
 
@@ -620,7 +618,6 @@ sub _delete_sprint {
     my $sprint      = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
     my $sprint_bugs = $sprint->get_bugs();
     if (scalar @{$sprint_bugs} > 0) {
-        # TODO define user error
         ThrowUserError('sprint_has_bugs');
     }
     $sprint->remove_from_db();

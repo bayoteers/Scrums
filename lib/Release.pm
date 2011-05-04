@@ -12,7 +12,7 @@
 #
 # The Original Code is the Scrums Bugzilla Extension.
 #
-# The Initial Developer of the Original Code is YOUR NAME
+# The Initial Developer of the Original Code is "Nokia corporation"
 # Portions created by the Initial Developer are Copyright (C) 2011 the
 # Initial Developer. All Rights Reserved.
 #
@@ -96,13 +96,11 @@ sub _check_name {
     $name || ThrowUserError('release_not_specified');
 
     if (length($name) > MAX_RELEASE_SIZE) {
-        # TODO define user error
         ThrowUserError('release_name_too_long', { 'name' => $name });
     }
 
     my $release = new Bugzilla::Extension::Scrums::Release({ name => $name });
     if ($release && (!ref $invocant || $release->id != $invocant->id)) {
-        # TODO define user error
         ThrowUserError("release_already_exists", { name => $release->name });
     }
     return $name;

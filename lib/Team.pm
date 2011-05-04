@@ -12,8 +12,8 @@
 #
 # The Original Code is the Scrums Bugzilla Extension.
 #
-# The Initial Developer of the Original Code is YOUR NAME
-# Portions created by the Initial Developer are Copyright (C) 2010 the
+# The Initial Developer of the Original Code is "Nokia corporation"
+# Portions created by the Initial Developer are Copyright (C) 2011 the
 # Initial Developer. All Rights Reserved.
 #
 # Contributor(s):
@@ -91,18 +91,15 @@ sub remove_from_db {
 sub _check_name {
     my ($invocant, $name) = @_;
 
-    # TODO define user error
     $name = trim($name);
     $name || ThrowUserError('team_name_not_specified');
 
     if (length($name) > MAX_TEAM_NAME_SIZE) {
-        # TODO define user error
         ThrowUserError('team_name_too_long', { 'name' => $name });
     }
 
     my $team = new Bugzilla::Extension::Scrums::Team({ name => $name });
     if ($team && (!ref $invocant || $team->id != $invocant->id)) {
-        # TODO define user error
         ThrowUserError("team_already_exists", { name => $team->name });
     }
 
@@ -150,7 +147,6 @@ sub set_member {
 
     # User can not belong to same team several times
     if (scalar @{$team_member_ids} > 0) {
-        # TODO define user error
         ThrowUserError("user_already_member_of_team", { name => $self->name });
     }
 
