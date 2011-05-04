@@ -31,7 +31,6 @@ use Bugzilla::User;
 
 use Bugzilla::Extension::Scrums::Teams;
 use Bugzilla::Extension::Scrums::Releases;
-use Bugzilla::Extension::Scrums::Bugrpclib;
 
 use Data::Dumper;
 
