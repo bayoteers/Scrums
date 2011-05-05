@@ -10,15 +10,14 @@
 # implied. See the License for the specific language governing
 # rights and limitations under the License.
 #
-# The Original Code is the Bugzilla Example Plugin.
+# The Original Code is the Ultimate Scrum Bugzilla Extension.
 #
-# The Initial Developer of the Original Code is Canonical Ltd.
-# Portions created by Canonical Ltd. are Copyright (C) 2008
-# Canonical Ltd. All Rights Reserved.
+# The Initial Developer of the Original Code is "Nokia Corporation"
+# Portions created by the Initial Developer are Copyright (C) 2011 the
+# Initial Developer. All Rights Reserved.
 #
-# Contributor(s): Max Kanat-Alexander <mkanat@bugzilla.org>
-#                 Bradley Baetz <bbaetz@acm.org>
-#                 Jari Savolainen <ext-jari.a.savolainen@nokia.com>
+# Contributor(s):
+#   Visa Korhonen <visa.korhonen@symbio.com>
 
 package Bugzilla::Extension::Scrums::ConfigScrums;
 use strict;
