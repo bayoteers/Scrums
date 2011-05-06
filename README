@@ -1,0 +1,22 @@
+
+    BUS - Bugzilla Ultimate Scrum
+
+Ultimate Scrum is extension to Bugzilla reporting system. Ultimate Scrum-extension allows you to have holistic view into items in Bugzilla. Viewpoints are of two types, release and team.
+
+Ultimate Scrum-extension has the purpose of supporting agile software development methods.
+
+
+    INSTALLATION
+
+Install extension by extracting files from archive. Switch to 'extension' directory below Bugzilla root directory and extract files from archive.
+
+
+    LICENCE
+
+The code/extension is released under the Mozilla Public License Version 1.1
+http://www.mozilla.org/MPL/
+
+The Initial Developer of the Original Code is "Nokia Corporation"
+Portions created by the Initial Developer are Copyright (C) 2011 the
+Initial Developer. All Rights Reserved.
+
