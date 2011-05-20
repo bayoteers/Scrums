@@ -10,6 +10,9 @@ Ultimate Scrum-extension has the purpose of supporting agile software developmen
 
 Install extension by extracting files from archive. Switch to 'extension' directory below Bugzilla root directory and extract files from archive.
 
+Patch the core Bugzilla with patch file. Copy patch file into Bugzilla root directory. Switch into Bugzilla root directory and run patching with command: 
+patch -p1 < bus_into_bz_v3_6_2.patch
+
 
     LICENCE
 
