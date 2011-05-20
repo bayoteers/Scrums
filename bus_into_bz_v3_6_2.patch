@@ -1,0 +1,13 @@
+diff --git a/Bugzilla/Search.pm b/Bugzilla/Search.pm
+index b79945c..37a3de6 100644
+--- a/Bugzilla/Search.pm
++++ b/Bugzilla/Search.pm
+@@ -280,6 +280,8 @@ sub init {
+         push(@supptables, "LEFT JOIN flagtypes ON flagtypes.id = flags.type_id");
+     }
+ 
++    Bugzilla::Hook::process('buglist_supptables', { fields => \@fields, supptables => \@supptables });
++
+     my $minvotes;
+     if (defined $params->param('votes')) {
+         my $c = trim($params->param('votes'));
