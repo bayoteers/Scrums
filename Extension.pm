@@ -70,6 +70,15 @@ sub buglist_supptables {
 
     # Add this table to what can be referenced in MySQL when displaying search results
     push(@$supptables, 'LEFT JOIN scrums_bug_order ON scrums_bug_order.bug_id = bugs.bug_id');
+
+    # Add this table to what can be referenced in MySQL when displaying search results
+    push(@$supptables, 'LEFT JOIN dependencies ON dependencies.dependson = bugs.bug_id');
+
+    # Add this table to what can be referenced in MySQL when displaying search results
+    push(@$supptables, 'LEFT JOIN scrums_sprint_bug_map ON scrums_sprint_bug_map.bug_id = bugs.bug_id');
+
+    # Add this table to what can be referenced in MySQL when displaying search results
+    push(@$supptables, 'LEFT JOIN scrums_sprints ON scrums_sprints.id = scrums_sprint_bug_map.sprint_id ');
 }
 
 sub buglist_columns {
@@ -81,6 +90,10 @@ sub buglist_columns {
     $columns->{'scrums_team_order'}    = { 'name' => 'scrums_bug_order.team',    'title' => 'Team Order' };
     $columns->{'scrums_release_order'} = { 'name' => 'scrums_bug_order.rlease',  'title' => 'Release Order' };
     $columns->{'scrums_program_order'} = { 'name' => 'scrums_bug_order.program', 'title' => 'Program Order' };
+
+    $columns->{'scrums_blocked'} = { 'name' => 'dependencies.blocked', 'title' => 'Parent item' };
+
+    $columns->{'sprint_name'} = { 'name' => 'scrums_sprints.name', 'title' => 'Sprint' };
 }
 
 sub colchange_columns {
@@ -92,6 +105,20 @@ sub colchange_columns {
     push(@$columns, "scrums_team_order");
     push(@$columns, "scrums_release_order");
     push(@$columns, "scrums_program_order");
+
+    push(@$columns, "scrums_blocked");
+
+    push(@$columns, "sprint_name");
+}
+
+sub buglist_supp_legal_fields {
+    my ($self, $args) = @_;
+
+    my $fields = $args->{'fields'};
+    my $supp_fields = eval { Bugzilla::Field->match({ name => 'scrums_sprint_bug_map.sprint_id' }) } || [];
+    if (@{$supp_fields}) {
+        push(@{$fields}, @{$supp_fields}[0]);
+    }
 }
 
 sub db_schema_abstract_schema {
@@ -425,7 +452,6 @@ sub page_before_template {
         }
         $vars->{'target'} = "page.cgi?id=createteam.html&teamid=" . $team_id;
     }
-
 }
 
 # This must be the last line of your extension.
