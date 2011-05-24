@@ -193,7 +193,11 @@ Team has no members.
 <li><a href="page.cgi?id=allteams.html"><b>Teams main page</b></a>
 <h3>Team planning</h3>
 <ul><b>
-<li><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">Daily planning</a>
+[% IF active_sprint_id %]
+<li><a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENEDbug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENEDquery_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&daily">
+Active sprint tasks</a>
+[% END %]
+<li><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">New bugs</a>
 <li><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% team.id %]">Sprint planning</a>
 <li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Team product back-log</a>
 <li><a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">Archived sprints</a>

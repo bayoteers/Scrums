@@ -184,6 +184,10 @@ sub _show_existing_team {
         }
     }
     $vars->{'team'} = $team;
+    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team->id(), is_active => 1, item_type => 1 });
+    if(@{$sprints}) {
+        $vars->{'active_sprint_id'} = @{$sprints}[0]->id();
+    }
 }
 
 sub _new_team {
