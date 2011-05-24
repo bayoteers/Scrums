@@ -119,6 +119,10 @@ sub buglist_supp_legal_fields {
     if (@{$supp_fields}) {
         push(@{$fields}, @{$supp_fields}[0]);
     }
+    else {
+        my $sprint = Bugzilla::Field->create({name => 'scrums_sprint_bug_map.sprint_id', description => 'Sprint id'});
+        push(@{$fields}, $sprint);
+    }
 }
 
 sub db_schema_abstract_schema {
