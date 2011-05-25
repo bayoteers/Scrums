@@ -32,7 +32,7 @@ use Bugzilla::User;
 use Bugzilla::Extension::Scrums::Teams;
 use Bugzilla::Extension::Scrums::Releases;
 
-use Data::Dumper;
+use Bugzilla::Util qw(trick_taint);
 
 our $VERSION = '1.0';
 
@@ -60,6 +60,61 @@ sub bug_end_of_update {
                 ThrowUserError("scrums_actual_time_required");
             }
         }
+    }
+
+    my $cgi = Bugzilla->cgi;
+    my $dbh = Bugzilla->dbh;
+    # If the initial description has been updated we need
+    # to take care of updated the database to reflect this.
+
+    # Find out whether the user is a member of the group
+    # that can change the initial description.
+
+    # This ensures we only apply this change to the bug that
+    # is being updated. Not, for example, a bug that is having
+    # duplicate notation added to it.
+    if ($bug->bug_id == $cgi->param('id')) {
+        if (Bugzilla->user->in_group('setfeature')) {
+            # Current bug description
+            my $description = ${ @{ $bug->comments }[0] }{'thetext'};
+
+            # Current bug descriptions comment id (in longdescs table)
+            my $comment_id = ${ @{ $bug->comments }[0] }{'comment_id'};
+
+            # Possibly new description
+            my $thetext = $cgi->param('comment_text_0');
+
+            if ($thetext) {
+                trick_taint($thetext);
+
+                # Taken from Bug (_check_comment) ~ Line 1152
+                $thetext =~ s/\s*$//s;
+                $thetext =~ s/\r\n?/\n/g;    # Get rid of \r.
+
+                if ($description ne $thetext) {
+                    # There has been a change, update the description.
+
+                    $dbh->do('UPDATE longdescs SET thetext = ? WHERE bug_id = ? and comment_id = ?', undef, $thetext, $bug->bug_id, $comment_id);
+
+                    # Append a comment to the end of the bug stating that
+                    # the description has been updated.
+
+                    $thetext = "The feature's description has been updated.\n";
+
+                    my $delta_ts = $dbh->selectrow_array("SELECT NOW()");
+
+                    $dbh->do(
+                        "INSERT INTO longdescs (bug_id, who, bug_when, thetext)
+                      VALUES (?,?,?,?)", undef,
+                        $bug->bug_id, Bugzilla->user->id, $delta_ts, $thetext
+                            );
+                }
+            }
+        }
+
+        # Confirm we haven't got invalid status/resolution selections.
+        _bug_check_bug_status($bug);
+        _bug_check_resolution($bug);
     }
 }
 
@@ -120,7 +175,7 @@ sub buglist_supp_legal_fields {
         push(@{$fields}, @{$supp_fields}[0]);
     }
     else {
-        my $sprint = Bugzilla::Field->create({name => 'scrums_sprint_bug_map.sprint_id', description => 'Sprint id'});
+        my $sprint = Bugzilla::Field->create({ name => 'scrums_sprint_bug_map.sprint_id', description => 'Sprint id' });
         push(@{$fields}, $sprint);
     }
 }
@@ -455,6 +510,56 @@ sub page_before_template {
             $vars->{'product'} = @$products[0];
         }
         $vars->{'target'} = "page.cgi?id=createteam.html&teamid=" . $team_id;
+    }
+}
+
+sub _bug_check_bug_status {
+    my ($bug) = @_;
+
+    my @bug_status_black_list = ('INDEFINITION', 'ACCEPTED', 'WAITING');
+
+    my @feature_status_black_list = ('ASSIGNED', 'WAITING FOR UPSTREAM');
+
+    my $is_feature = ($bug->bug_severity() eq "task" || $bug->bug_severity() eq "feature");
+
+    if ($is_feature) {
+        foreach my $blacklisted (@feature_status_black_list) {
+            if ($bug->status->{'value'} eq $blacklisted) {
+                ThrowUserError("invalid_feature_status", { bug => $bug, invstatus => $blacklisted });
+            }
+        }
+    }
+    else {
+        foreach my $blacklisted (@bug_status_black_list) {
+            if ($bug->status->{'value'} eq $blacklisted) {
+                ThrowUserError("invalid_bug_status", { bug => $bug, invstatus => $blacklisted });
+            }
+        }
+    }
+}
+
+sub _bug_check_resolution {
+    my ($bug) = @_;
+
+    my @bug_resolution_black_list = ('READYFORINTEGRATION', 'REJECTED');
+
+    my @feature_resolution_black_list = ('FIXED', 'INVALID', 'WONTFIX', 'WORKSFORME');
+
+    my $is_feature = ($bug->bug_severity() eq "task" || $bug->bug_severity() eq "feature");
+
+    if ($is_feature) {
+        foreach my $blacklisted (@feature_resolution_black_list) {
+            if ($bug->resolution eq $blacklisted) {
+                ThrowUserError("invalid_feature_resolution", { bug => $bug, invresolution => $blacklisted });
+            }
+        }
+    }
+    else {
+        foreach my $blacklisted (@bug_resolution_black_list) {
+            if ($bug->resolution eq $blacklisted) {
+                ThrowUserError("invalid_bug_resolution", { bug => $bug, invresolution => $blacklisted });
+            }
+        }
     }
 }
 
