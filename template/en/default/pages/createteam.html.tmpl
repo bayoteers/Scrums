@@ -58,6 +58,25 @@ Error msg: [% error %]
 Team created!
 [% END %]
 
+<li><a href="page.cgi?id=allteams.html">Teams main page</a>
+<h3>Team daily tasks</h3>
+<ul>
+[% IF active_sprint_id %]
+<li><a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
+Active sprint tasks</a>
+[% END %]
+<li><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">New bugs</a></li>
+</ul>
+<h3>Team planning</h3>
+<ul>
+[% IF active_sprint_id %]
+<li><a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]&sprintname=[% active_sprint_name %]&teamname=[% team.name %]">Sprint burndown chart</a>
+[% END %]
+<li><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% team.id %]">Sprint planning</a>
+<li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Team product back-log</a>
+<li><a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">Archived sprints</a>
+</ul>
+
 [% owner = team.owner_user() %]
 [% scrum_master = team.scrum_master_user() %]
 <h3>Team</h3>
@@ -189,21 +208,6 @@ Team has no members.
 <input type="hidden" name="userrealname" />
 <input type="hidden" name="userlogin" />
 </form>
-
-<li><a href="page.cgi?id=allteams.html"><b>Teams main page</b></a>
-<h3>Team planning</h3>
-<ul><b>
-[% IF active_sprint_id %]
-<li><a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
-Active sprint tasks</a>
-[% END %]
-<li><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">New bugs</a>
-<li><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% team.id %]">Sprint planning</a>
-<li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Team product back-log</a>
-<li><a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">Archived sprints</a>
-</b></ul>
-
-
 
 <hr>
 <a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">Scrums user's guide</a>. 

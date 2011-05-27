@@ -30,6 +30,8 @@ use Bugzilla::Error;
 use Bugzilla::Util qw(trick_taint);
 
 use JSON::XS;
+use Date::Parse;
+use Date::Calc qw(Today_and_Now Mktime);
 
 use strict;
 use base qw(Exporter);
@@ -40,6 +42,7 @@ use base qw(Exporter);
 # @EXPORT.)
 our @EXPORT = qw(
   update_bug_order_from_json
+  burndown_plot
   );
 #
 # Important!
@@ -148,6 +151,153 @@ sub process_team_orders() {
         # Unprioritised_in must be handled separately
         # Table scrums_bug_order is however updated for unprioritised_in at the same time as scrums_sprint_bug_map, because order in table is irrelevant.
     }
+}
+
+sub burndown_plot {
+    my ($vars, $sprint_id) = @_;
+
+    if ($sprint_id =~ /([0-9]+)/) {
+        $sprint_id = $1;    # $data now untainted
+    }
+
+    my $hour_log_array = _task_hour_log($vars, $sprint_id);
+    my $index = scalar @{$hour_log_array};
+
+    my $end = 1000 * Mktime(Today_and_Now());
+    $vars->{'end'}  = $end;
+    $vars->{'last'} = $index;
+
+    my $dbh = Bugzilla->dbh;
+    my $sth = $dbh->prepare(
+        "select
+            sum(remaining_time) as remaining
+        from 
+            bugs b
+        inner join
+            scrums_sprint_bug_map sbm on
+            sbm.bug_id = b.bug_id
+        where 
+            sprint_id = ?"
+                           );
+    $sth->execute($sprint_id);
+    my ($cum_remain) = $sth->fetchrow_array();
+
+    my $sth = $dbh->prepare(
+        "select
+            sum(work_time)
+        from 
+            longdescs ld
+        inner join
+            scrums_sprint_bug_map sbm on
+            sbm.bug_id = ld.bug_id
+        where
+            sprint_id = ?"
+                           );
+    $sth->execute($sprint_id);
+    my ($cum_work_time) = $sth->fetchrow_array();
+
+    my @remaining_array;
+    my @worktime_array;
+    my @last_rem_plot;
+    my @last_work_plot;
+    my ($x, $y);
+
+    $x = $end;
+    $y = $cum_remain;
+    push @last_rem_plot,   $x;
+    push @last_rem_plot,   $y;
+    push @remaining_array, \@last_rem_plot;
+
+    $y = $cum_remain + $cum_work_time;
+    push @last_work_plot, $x;
+    push @last_work_plot, $y;
+    push @worktime_array, \@last_work_plot;
+
+    my $row;
+    while ($index > 0) {
+        $index = $index - 1;
+        $row   = @{$hour_log_array}[$index];
+
+        $x = @{$row}[0];
+        $y = $cum_remain;
+        my @rem_plot1;
+        push @rem_plot1,       $x;
+        push @rem_plot1,       $y;
+        push @remaining_array, \@rem_plot1;
+
+        $y = $cum_remain + $cum_work_time;
+        my @work_plot1;
+        push @work_plot1,     $x;
+        push @work_plot1,     $y;
+        push @worktime_array, \@work_plot1;
+
+        $cum_remain = $cum_remain - @{$row}[1];    # 'added' in remain field
+        $cum_remain = $cum_remain + @{$row}[2];    # 'removed' in remain field
+        $y          = $cum_remain;
+        my @rem_plot2;
+        push @rem_plot2,       $x;
+        push @rem_plot2,       $y;
+        push @remaining_array, \@rem_plot2;
+
+        $cum_work_time = $cum_work_time - @{$row}[3];    # 'work_time'
+        $y             = $cum_remain + $cum_work_time;
+        my @work_plot2;
+        push @work_plot2,     $x;
+        push @work_plot2,     $y;
+        push @worktime_array, \@work_plot2;
+    }
+
+    $vars->{'result'}         = $hour_log_array;
+    $vars->{'remaining_plot'} = \@remaining_array;
+    $vars->{'worktime_plot'}  = \@worktime_array;
+}
+
+sub _task_hour_log {
+    my ($vars, $sprint_id) = @_;
+
+    my $dbh = Bugzilla->dbh;
+    my $sth = $dbh->prepare(
+        # With MySql-database it would be possible to select directly with function unix_timestamp(bug_when).
+        # That would not however be database agnostic.
+        "select bug_when, sum(added), sum(removed), sum(work_time) from
+        ((select
+            bug_when, added, removed, null as work_time
+        from 
+            bugs_activity ba
+        inner join
+            scrums_sprint_bug_map sbm on
+            sbm.bug_id = ba.bug_id
+        where 
+            fieldid = 41 and
+            sprint_id = ?)
+        union
+        (select
+            bug_when, null as added, null as removed, work_time 
+        from 
+            longdescs ld
+        inner join
+            scrums_sprint_bug_map sbm on
+            sbm.bug_id = ld.bug_id
+        where
+            sprint_id = ? and 
+            work_time > 0)) as hours
+        group by
+            bug_when
+        order by
+            bug_when"
+    );
+    $sth->execute($sprint_id, $sprint_id);
+    my @result;
+    my ($v1, $v2, $v3, $v4);
+    while (($v1, $v2, $v3, $v4) = $sth->fetchrow_array) {
+        my @copy;
+        push(@copy,   1000 * str2time($v1));
+        push(@copy,   $v2);
+        push(@copy,   $v3);
+        push(@copy,   $v4);
+        push(@result, \@copy);
+    }
+    return \@result;
 }
 
 sub _old_team_order {

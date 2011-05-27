@@ -31,6 +31,7 @@ use Bugzilla::User;
 
 use Bugzilla::Extension::Scrums::Teams;
 use Bugzilla::Extension::Scrums::Releases;
+use Bugzilla::Extension::Scrums::Sprintslib;
 
 use Bugzilla::Util qw(trick_taint);
 
@@ -510,6 +511,14 @@ sub page_before_template {
             $vars->{'product'} = @$products[0];
         }
         $vars->{'target'} = "page.cgi?id=createteam.html&teamid=" . $team_id;
+    }
+
+    if ($page eq 'scrums/sprintburndown.html') {
+        my $cgi       = Bugzilla->cgi;
+        my $sprint_id = $cgi->param('sprintid');
+        $vars->{'team_name'}   = $cgi->param('teamname');
+        $vars->{'sprint_name'} = $cgi->param('sprintname');
+        burndown_plot($vars, $sprint_id);
     }
 }
 
