@@ -39,7 +39,7 @@ $(function () {
 
 var rem = [[% FOREACH plot IN remaining_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
 var work = [[% FOREACH plot IN worktime_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
-$.plot($("#placeholder"), [ rem, work ], options);
+$.plot($("#placeholder"), [ { label: "Remaining work", data: rem }, { label: "Total amount of work", data: work } ], options);
 
 });
 </script>
