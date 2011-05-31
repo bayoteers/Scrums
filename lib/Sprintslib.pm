@@ -252,6 +252,33 @@ sub burndown_plot {
     $vars->{'worktime_plot'}  = \@worktime_array;
 }
 
+#
+# Function fetches every log record from sprint, which changes hour balance.
+# Main focus is on 'remaining hour' information. Also worked hours are collected.
+#
+# Remaining hours need to be collected from several sources. Remaining hours are
+# recorded into some items while creating them and later changed. Some items are
+# given hours while creating them and not changed after that (yet). Also some items
+# are left without hour record while creating but hours are added later.
+#
+# Hour are fetched in union of four queries. 
+# 1.
+# First query fetches changes in 'remaining hours' that are done after creating items. 
+# These changes are incremental.
+# 2.
+# Second query fetches values of 'remaining hours' that have been recorded while
+# creating items, but which have been overwritten after that. The time amount, 
+# that was recorded while creating item, can not be read directly from item, because 
+# it has been overwritten. Time amount is read from later record of change of value.
+# Timestamp of creating item is read from item itself.
+# 3.
+# Third query fetches values of 'remaining hours' that have been recorded while
+# creating items and which have not been changed after that. The time amount, 
+# that was recorded while creating item, can be read directly from item.
+# 4.
+# Fourth query fetches worked hour, that have been recorded. Work hours are combined
+# with 'remaining hours' in single query result. Rows are sorted by timestamp.
+#
 sub _task_hour_log {
     my ($vars, $sprint_id) = @_;
 
@@ -259,8 +286,8 @@ sub _task_hour_log {
     my $sth = $dbh->prepare(
         # With MySql-database it would be possible to select directly with function unix_timestamp(bug_when).
         # That would not however be database agnostic.
-        "select bug_when, sum(added), sum(removed), sum(work_time) from
-        ((select
+        "select bug_when, sum(added), sum(removed), sum(work_time) from (
+        (select
             bug_when, added, removed, null as work_time
         from 
             bugs_activity ba
@@ -270,7 +297,63 @@ sub _task_hour_log {
         where 
             fieldid = 41 and
             sprint_id = ?)
+
         union
+
+        (select 
+            creation_ts as bug_when, 
+            removed as added,
+            null as removed,
+            null as work_time
+        from
+            bugs_activity ba
+            inner join
+        (select
+            sbm.bug_id as bug_id, min(bug_when) as ts
+        from 
+            scrums_sprint_bug_map sbm 
+        inner join
+            bugs_activity ba
+        on
+            sbm.bug_id = ba.bug_id and
+            fieldid = 41 
+        where 
+            sprint_id = ?
+        group by
+            sbm.bug_id) as first_change
+        on
+            first_change.bug_id = ba.bug_id and
+            fieldid = 41 and
+            first_change.ts = ba.bug_when and
+            ba.removed > 0
+        inner join
+            bugs b
+        on
+            first_change.bug_id = b.bug_id)
+
+        union
+
+            (select
+            creation_ts as bug_when, 
+            remaining_time as added,
+            null as removed,
+            null as worktime
+        from 
+            scrums_sprint_bug_map sbm 
+        inner join
+            bugs b
+        on
+            sbm.bug_id = b.bug_id
+        where 
+            sprint_id = ? and
+            remaining_time > 0 and
+            not exists
+        (select null from bugs_activity ba
+            where b.bug_id = ba.bug_id and
+            fieldid = 41))
+
+        union
+
         (select
             bug_when, null as added, null as removed, work_time 
         from 
@@ -286,7 +369,7 @@ sub _task_hour_log {
         order by
             bug_when"
     );
-    $sth->execute($sprint_id, $sprint_id);
+    $sth->execute($sprint_id, $sprint_id, $sprint_id, $sprint_id);
     my @result;
     my ($v1, $v2, $v3, $v4);
     while (($v1, $v2, $v3, $v4) = $sth->fetchrow_array) {
