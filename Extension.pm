@@ -422,22 +422,22 @@ sub page_before_template {
 
     # Teams
 
-    if ($page eq 'allteams.html') {
+    if ($page eq 'scrums/allteams.html') {
         show_all_teams($vars);
     }
-    if ($page eq 'createteam.html') {
+    if ($page eq 'scrums/createteam.html') {
         show_create_team($vars);
     }
-    if ($page eq 'addintoteam.html') {
+    if ($page eq 'scrums/addintoteam.html') {
         if (not Bugzilla->user->in_group('editteams')) {
             ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
         }
         add_into_team($vars);
     }
-    if ($page eq 'searchperson.html') {
+    if ($page eq 'scrums/searchperson.html') {
         search_person($vars);
     }
-    if ($page eq 'newteam.html') {
+    if ($page eq 'scrums/newteam.html') {
         edit_team($vars);
     }
     if ($page eq 'scrums/teambugs.html') {
@@ -510,7 +510,7 @@ sub page_before_template {
         if (scalar @{$products} > 0) {
             $vars->{'product'} = @$products[0];
         }
-        $vars->{'target'} = "page.cgi?id=createteam.html&teamid=" . $team_id;
+        $vars->{'target'} = "page.cgi?id=scrums/createteam.html&teamid=" . $team_id;
     }
 
     if ($page eq 'scrums/sprintburndown.html') {

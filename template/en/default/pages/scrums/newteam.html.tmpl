@@ -26,18 +26,18 @@
 <script scripttype="text/javascript">
 function cancel()
 {
-	window.location = "page.cgi?id=allteams.html";	
+	window.location = "page.cgi?id=scrums/allteams.html";	
 }
 
 function searchuser()
 {
-	window.open('page.cgi?id=searchperson.html&formname=newteam&formfieldprefix=user', '_blanck', 'directories=no,location=no,height=400');
+	window.open('page.cgi?id=scrums/searchperson.html&formname=newteam&formfieldprefix=user', '_blanck', 'directories=no,location=no,height=400');
 	return false;
 }
 
 function searchscrummaster()
 {
-	window.open('page.cgi?id=searchperson.html&formname=newteam&formfieldprefix=scrummaster', '_blanck', 'directories=no,location=no,height=400');
+	window.open('page.cgi?id=scrums/searchperson.html&formname=newteam&formfieldprefix=scrummaster', '_blanck', 'directories=no,location=no,height=400');
 	return false;
 }
 
@@ -62,7 +62,7 @@ function askconfirm()
 }
 </script>
 
-<form method="post" name="newteam" action="page.cgi?id=createteam.html">
+<form method="post" name="newteam" action="page.cgi?id=scrums/createteam.html">
 <input type="hidden" name="teamid" value="[% teamid %]"/>
 <input type="hidden" name="editteam" value="[% editteam %]"/>
 <input type="hidden" name="userid" value="[% ownerid %]"/>
@@ -105,7 +105,7 @@ function askconfirm()
   </tr>
   <tr>
 	[% IF teamid %]
-	<td colspan="4"><a href="page.cgi?id=allteams.html&deleteteam=[% teamid %]" onclick='return askconfirm()'>[delete team]</a></td>
+	<td colspan="4"><a href="page.cgi?id=scrums/allteams.html&deleteteam=[% teamid %]" onclick='return askconfirm()'>[delete team]</a></td>
 	[% ELSE %]
 	<td colspan="4">&nbsp</td>
 	[% END %]
