@@ -261,19 +261,19 @@ sub burndown_plot {
 # given hours while creating them and not changed after that (yet). Also some items
 # are left without hour record while creating but hours are added later.
 #
-# Hour are fetched in union of four queries. 
+# Hour are fetched in union of four queries.
 # 1.
-# First query fetches changes in 'remaining hours' that are done after creating items. 
+# First query fetches changes in 'remaining hours' that are done after creating items.
 # These changes are incremental.
 # 2.
 # Second query fetches values of 'remaining hours' that have been recorded while
-# creating items, but which have been overwritten after that. The time amount, 
-# that was recorded while creating item, can not be read directly from item, because 
+# creating items, but which have been overwritten after that. The time amount,
+# that was recorded while creating item, can not be read directly from item, because
 # it has been overwritten. Time amount is read from later record of change of value.
 # Timestamp of creating item is read from item itself.
 # 3.
 # Third query fetches values of 'remaining hours' that have been recorded while
-# creating items and which have not been changed after that. The time amount, 
+# creating items and which have not been changed after that. The time amount,
 # that was recorded while creating item, can be read directly from item.
 # 4.
 # Fourth query fetches worked hour, that have been recorded. Work hours are combined

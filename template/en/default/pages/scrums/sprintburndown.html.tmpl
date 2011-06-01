@@ -31,17 +31,132 @@
 <script language="javascript" type="text/javascript" src="extensions/Scrums/web/js/jquery.flot.js"></script>
 
 <script type="text/javascript">
-$(function () {
-    var options = {
-        xaxis: { mode: "time", tickLength: 5 },
-        selection: { mode: "x" }
-    };
-
 var rem = [[% FOREACH plot IN remaining_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
 var work = [[% FOREACH plot IN worktime_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
-$.plot($("#placeholder"), [ { label: "Remaining work", data: rem }, { label: "Total amount of work", data: work } ], options);
 
+var max_ts, min_ts, max_str, min_str;
+</script>
+
+<script type="text/javascript">
+
+var options = {
+    xaxis: { mode: "time", tickLength: 5 },
+    selection: { mode: "x" }
+};
+
+$(function () {
+    var ch = $("#testi_id");
+    ch[0].checked = false;
+
+    init();
 });
+
+function init()
+{
+    max_ts = rem[0][0];
+    min_ts = rem[rem.length-1][0];
+    var max_date = new Date(max_ts);
+    var min_date = new Date(min_ts);
+    var max_y = max_date.getFullYear();
+    var max_m = max_date.getMonth()+1;
+    var max_d = max_date.getDate();
+    if(max_m < 10)
+        max_m = "0" + max_m;
+    if(max_d < 10)
+        max_d = "0" + max_d;
+    max_str = max_y + "-" + max_m + "-" + max_d;
+
+    var min_y = min_date.getFullYear();
+    var min_m = min_date.getMonth()+1;
+    var min_d = min_date.getDate();
+    if(min_m < 10)
+        min_m = "0" + min_m;
+    if(min_d < 10)
+        min_d = "0" + min_d;
+    min_str = min_y + "-" + min_m + "-" + min_d;
+
+    reset_range();
+}
+
+function reset_range()
+{
+    var e = $("#range_begin");
+    e[0].value = min_str;
+
+    e = $("#range_end");
+    e[0].value = max_str;
+
+    scale_chart();
+    refresh();
+}
+
+function refresh()
+{
+    var ch = $("#testi_id");
+    var work_selected = ch[0].checked;
+    if(work_selected)
+    {
+    	$.plot($("#placeholder"), [ { label: "Remaining work", data: rem }, { label: "Total amount of work", data: work } ], options);
+    }
+    else
+    {
+    	$.plot($("#placeholder"), [ { label: "Remaining work", data: rem } ], options);
+    }
+}
+
+function gettime() 
+{
+    var rb = $("#range_begin")[0];
+    var re = $("#range_end")[0];
+
+    var range_begin = make_time(rb.value);
+    var range_end = make_time(re.value, true);
+
+    if(range_begin > range_end)
+    {
+        alert('Start time is bigger than end time');
+        return;
+    }
+
+    scale_chart(range_begin, range_end); 
+    refresh();
+}
+
+function scale_chart(range_begin, range_end) 
+{
+    var min_value = min_ts;
+    if(range_begin && range_begin > min_ts) 
+    {
+	 min_value = range_begin;
+    }
+    options.xaxis.min = min_value;
+
+    var max_value = max_ts;
+    if(range_end && range_end < max_ts) 
+    {
+	max_value = range_end;
+    }
+    options.xaxis.max = max_value;
+}
+
+function make_time(str_with_dashes, is_upper_limit) 
+{
+    var str_with_dots = "";
+    var y, m, d;
+    var str1 = str_with_dashes.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (str1) 
+    {
+        y = str1[1];
+	m = str1[2];
+	d = str1[3];
+	if(y < 1970 || y > 2030 || m < 1 || m > 12 || d < 1 || d > 31)
+	    return null;
+	if(is_upper_limit)
+	    d++;
+        var date = new Date(y, m-1, d, 0, 0, 0, 0);
+	return date.getTime()
+    }
+}
 </script>
 
 <div class="bz_title_container">
@@ -58,5 +173,10 @@ $.plot($("#placeholder"), [ { label: "Remaining work", data: rem }, { label: "To
 [% END %]
 </p>
     <div id="placeholder" style="width:800px;height:400px;"></div>
-
+<input type="checkbox" id="testi_id" onclick="refresh();">
+<label for="testi_id">Show total work amount</label>
+</input>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Show days: <input type="edit" id="range_begin" size="8" onchange="gettime();"/>-<input type="edit" id="range_end" size="8" onchange="gettime();"/>
+&nbsp;<button>Show</button onclick="gettime();">&nbsp;<button onclick="reset_range();">Reset</button>
 [% PROCESS global/footer.html.tmpl %]
