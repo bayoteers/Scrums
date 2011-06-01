@@ -517,6 +517,7 @@ sub page_before_template {
         my $cgi       = Bugzilla->cgi;
         my $sprint_id = $cgi->param('sprintid');
         $vars->{'team_name'}   = $cgi->param('teamname');
+        $vars->{'team_id'}     = $cgi->param('teamid');
         $vars->{'sprint_name'} = $cgi->param('sprintname');
         burndown_plot($vars, $sprint_id);
     }

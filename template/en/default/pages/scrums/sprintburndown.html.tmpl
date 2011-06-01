@@ -53,6 +53,25 @@ $(function () {
 
 function init()
 {
+/**
+ * Flot library, which draws chart, will always show time scale in UTC. We do not want to
+ * look at timescale in UTC. Because this can not be set into Flot library, we do a trick
+ * in which we shift time data with timezone offset. Then we pretend, that time, which is
+ * shown in UTC, is apparent server time.
+ */
+    var d = new Date();
+    var tzo = -d.getTimezoneOffset() * 60 * 1000; // Timezone offset in milliseconds
+
+    var i = 0;
+    for(i = 0; i < rem.length; i++)
+    {
+	rem[i][0] = rem[i][0] + tzo;
+    }
+    for(i = 0; i < work.length; i++)
+    {
+	work[i][0] = work[i][0] + tzo;
+    }
+
     max_ts = rem[0][0];
     min_ts = rem[rem.length-1][0];
     var max_date = new Date(max_ts);
@@ -154,6 +173,9 @@ function make_time(str_with_dashes, is_upper_limit)
 	if(is_upper_limit)
 	    d++;
         var date = new Date(y, m-1, d, 0, 0, 0, 0);
+        date.setUTCHours(0);
+	date.setUTCDate(d);
+	date.setUTCMonth(m-1);
 	return date.getTime()
     }
 }
@@ -179,4 +201,6 @@ function make_time(str_with_dashes, is_upper_limit)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Show days: <input type="edit" id="range_begin" size="8" onchange="gettime();"/>-<input type="edit" id="range_end" size="8" onchange="gettime();"/>
 &nbsp;<button>Show</button onclick="gettime();">&nbsp;<button onclick="reset_range();">Reset</button>
+<br><br>
+<a href="page.cgi?id=createteam.html&teamid=[% team_id %]">Back to team</a>
 [% PROCESS global/footer.html.tmpl %]

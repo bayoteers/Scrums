@@ -23,6 +23,8 @@
     title = "Team" 
 %]
 
+<link rel="stylesheet" href="extensions/Scrums/web/css/scrums.css">
+
 <style>
 <!--
 
@@ -48,8 +50,6 @@ function removal(component, product, team)
 }
 </script>
 
-<br>
-
 [% IF error %]
 Error msg: [% error %]
 [% ELSE %]
@@ -57,6 +57,10 @@ Error msg: [% error %]
 [% IF teamisnew %]
 Team created!
 [% END %]
+
+<div class="bz_title_container">
+      Team '[% team.name %]'
+</div>
 
 <li><a href="page.cgi?id=allteams.html">Teams main page</a>
 <h3>Team daily tasks</h3>
@@ -70,7 +74,7 @@ Active sprint tasks</a>
 <h3>Team planning</h3>
 <ul>
 [% IF active_sprint_id %]
-<li><a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]&sprintname=[% active_sprint_name %]&teamname=[% team.name %]">Sprint burndown chart</a>
+<li><a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]&sprintname=[% active_sprint_name %]&teamname=[% team.name %]&teamid=[% team.id %]">Sprint burndown chart</a>
 [% END %]
 <li><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% team.id %]">Sprint planning</a>
 <li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Team product back-log</a>
