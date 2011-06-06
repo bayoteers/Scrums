@@ -153,6 +153,14 @@ sub process_team_orders() {
     }
 }
 
+sub status_summary {
+    my ($vars, $sprint_id) = @_;
+
+    if ($sprint_id =~ /([0-9]+)/) {
+        $sprint_id = $1;    # $data now untainted
+    }
+}
+
 sub burndown_plot {
     my ($vars, $sprint_id) = @_;
 

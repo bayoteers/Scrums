@@ -20,7 +20,7 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Bugs in release" 
+    title = "Items in release" 
     style_urls = ['skins/standard/admin.css']
 %]
 
@@ -28,11 +28,11 @@
 
 <script>
 
-var ordered_bugs = new listObject("sortable1", "headers", '0', 'Bug Order');
-var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Bugs');
+var ordered_bugs = new listObject("sortable1", "headers", '0', 'Item Order', $("#ReleaseBugLiTmpl"));
+var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Items', $("#ReleaseBugLiTmpl"));
 
-var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]"],[% END %]];
-var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]"],[% END %]];
+var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]"], [% END %]];
+var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]"], [% END %]];
 
 function save_all()
 {
@@ -57,17 +57,17 @@ $(document).ready(function() {
 </script>
 
   <div class="bz_title_container">
-  Release '[% release.name %]' bugs
+  Release '[% release.name %]' items
   </div>
 
 <input type='button' value='save' OnClick='save_all();'/> 
 
 <table>
     <tr>
-        <th valign='top' id='left'>
-        </th>
-        <th valign='top' id='right'>
-        </th>
+        <td valign='top' id='left'>
+        </td>
+        <td valign='top' id='right'>
+        </td>
     </tr>
 </table>
 

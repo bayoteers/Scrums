@@ -99,10 +99,10 @@ sub get_bugs {
     my ($sprint_bugs) = $dbh->selectall_arrayref(
         'select
 	b.bug_id,
-        p.realname,
-        b.bug_status,
-        left(b.short_desc, 40),
         b.remaining_time,
+        b.bug_status,
+        p.realname,
+        left(b.short_desc, 40),
 	bo.team
     from
 	scrums_sprint_bug_map sbm

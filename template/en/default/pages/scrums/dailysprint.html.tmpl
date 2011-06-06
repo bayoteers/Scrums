@@ -30,7 +30,7 @@
 
 <script>
 
-var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Bugs');
+var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Bugs', $("#TeamBugLiTmpl"));
 
 var all_lists = [];
 
@@ -40,8 +40,8 @@ function save_all()
 }
 
 // data from backend
-var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]",[% bug.4 %]],[% END %]];
-var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]", "[% bug.3 | replace( '"', '\"' ) %]",[% bug.4 %]],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %]"], [% END %]];
+var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
 
 
 var sprint_lists = [];
@@ -51,7 +51,7 @@ $(document).ready(function() {
     for (id in sprint_list_data)
     {
         // last argument is the name
-        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0]);
+        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0], $("#TeamBugLiTmpl"));
         // last argument is the bug list
         // extra stuff for sprint
         list._status = sprint_list_data[id][2]

@@ -26,11 +26,18 @@
 <link rel="stylesheet" href="extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
 
     <style>
+    .colA { min-width:190px; }
+    .colB { min-width:100px; }
+    .colC { min-width: 70px; }
+    .colD { min-width: 60px; }
+    .colE { min-width: 40px; }
+    .colF { min-width: 15px; }
+    .sortable table tr td { margin: 0px; padding: 0px; }
 
-    .sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 600px; text-align: left; }
-    .sortable li { background: #eeeeee; margin: 5px; padding: 5px; font-size: 1em; width: 580px; }
-    .disabled { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 600px; text-align: left; }
-    .disabled li { background: #eeeeee; margin: 3px; padding: 7px; font-size: 1em; width: 580px; }
+    .sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }
+    .sortable li { background: #eeeeee; margin: 5px; padding: 5px; width: 680px; }
+    .disabled { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }
+    .disabled li { background: #eeeeee; margin: 3px; padding: 5px; font-size: 1em; width: 680px; }
     .number { background: #eee; color: #000000; border: 1px solid #dddddd;  }
     .content { text-align: center; }
     h3 { text-align: center; }
@@ -42,13 +49,37 @@
     -moz-border-radius: 0.5em; 
     font-size: 125%; 
     font-weight: bold; }
-</style>
 
     </style>
+
+<script id="ReleaseBugLiTmpl" type="text/html">
+    <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
+    <table><tr>
+        <td class="colF"><span class="number"><#= counter #></span></td>
+        <td class="colD"><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
+        <td class="colC"> <#= bug[1] #></td>
+        <td class="colD"> <#= bug[2] #></td>
+	<td class="colA"> <#= bug[3] #></td> 
+	<td class="colB"> <#= bug[4] #></td>
+	<td> <#= bug[5] #></td>
+    </tr></table></li>
+</script>
+
+<script id="TeamBugLiTmpl" type="text/html">
+    <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
+    <table><tr>
+        <td class="colF"> <span class="number"><#= counter #></span></td>
+        <td class="colD"> <a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
+        <td class="colF"> <#= bug[1] #></td>
+        <td class="colC"> <#= bug[2] #></td>
+	<td class="colA"> <#= bug[3] #></td>
+	<td> <#= bug[4] #></td>
+    </tr></table></li>
+</script>
+
 <script id="BugLiTmpl" type="text/html">
     <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span ><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #> <#= bug[4] #></span></li>
 </script>
-
 
 
 <script id="ListTmpl" type="text/html">

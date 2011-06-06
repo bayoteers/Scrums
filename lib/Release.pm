@@ -164,12 +164,18 @@ sub scheduled_bugs {
         b.bug_status,
         b.bug_severity,
         left(b.short_desc, 40),
+        t.name,
+        s.name,
 	bo.rlease
     from
 	scrums_flagtype_release_map rfm
 	inner join flags f on rfm.flagtype_id = f.type_id
 	inner join bugs b on f.bug_id = b.bug_id
 	inner join scrums_bug_order bo on f.bug_id = bo.bug_id
+        left join scrums_componentteam ct on b.component_id = ct.component_id
+        left join scrums_team t on ct.teamid = t.id
+        left join scrums_sprint_bug_map sbm on b.bug_id = sbm.bug_id
+        left join scrums_sprints s on s.id = sbm.sprint_id and s.item_type = 1
     where
 	f.status = "+" and
         bo.rlease > 0 and
@@ -189,12 +195,18 @@ sub unprioritised_bugs {
 	b.bug_id,
         b.bug_status,
         b.bug_severity,
-        left(b.short_desc, 40)
+        left(b.short_desc, 40),
+        t.name,
+        s.name
     from
 	scrums_flagtype_release_map rfm
 	inner join flags f on rfm.flagtype_id = f.type_id
 	inner join bugs b on f.bug_id = b.bug_id
         inner join bug_status bs on b.bug_status = bs.value
+        left join scrums_componentteam ct on b.component_id = ct.component_id
+        left join scrums_team t on ct.teamid = t.id
+        left join scrums_sprint_bug_map sbm on b.bug_id = sbm.bug_id
+        left join scrums_sprints s on s.id = sbm.sprint_id and s.item_type = 1
     where
 	not exists (select null from scrums_bug_order bo where f.bug_id = bo.bug_id and bo.rlease > 0) and
 	f.status = "+" and
