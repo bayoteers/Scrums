@@ -190,7 +190,7 @@ sub burndown_plot {
     $sth->execute($sprint_id);
     my ($cum_remain) = $sth->fetchrow_array();
 
-    my $sth = $dbh->prepare(
+    $sth = $dbh->prepare(
         "select
             sum(work_time)
         from 
