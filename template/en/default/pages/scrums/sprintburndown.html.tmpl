@@ -29,10 +29,15 @@
 
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.4.4.min.js"></script>
 <script language="javascript" type="text/javascript" src="extensions/Scrums/web/js/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="extensions/Scrums/web/js/jquery.flot.pie.js"></script>
 
 <script type="text/javascript">
 var rem = [[% FOREACH plot IN remaining_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
 var work = [[% FOREACH plot IN worktime_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
+
+var open_closed = [
+		{ label: "Open items",  data: [% summary.open %]},
+		{ label: "Closed items",  data: [% summary.closed %]} ];
 
 var max_ts, min_ts, max_str, min_str;
 </script>
@@ -121,6 +126,44 @@ function refresh()
     {
     	$.plot($("#placeholder"), [ { label: "Remaining work", data: rem } ], options);
     }
+
+    $.plot($("#pie1"), open_closed, 
+	{
+		series: {
+			pie: { 
+				show: true
+			}
+		},
+                label: {
+			show: false
+		}
+	});
+
+/*
+    $.plot($("#pie1"), data,
+    {
+        series: {
+            pie: {
+                show: true,
+                radius: 1,
+                label: {
+                    show: true,
+                    radius: 3/4,
+                    formatter: function(label, series){
+                        return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+label+'<br/>'+Math.round(series.percent)+'%</div>';
+                    },
+                    background: {
+                        opacity: 0.5,
+                        color: '#000'
+                    }
+                }
+            }
+	},
+        legend: {
+            show: false
+        }
+    });
+*/
 }
 
 function gettime() 
@@ -201,6 +244,10 @@ function make_time(str_with_dashes, is_upper_limit)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Show days: <input type="edit" id="range_begin" size="8" onchange="gettime();"/>-<input type="edit" id="range_end" size="8" onchange="gettime();"/>
 &nbsp;<button>Show</button onclick="gettime();">&nbsp;<button onclick="reset_range();">Reset</button>
-<br><br>
+<br>
+<!-- Open items:   [% summary.open %]<br>
+Closed items: [% summary.closed %]<br> -->
+<br>
+<div id="pie1" style="width:200px;height:200px;"></div>
 <a href="page.cgi?id=scrums/createteam.html&teamid=[% team_id %]">back to team</a>
 [% PROCESS global/footer.html.tmpl %]

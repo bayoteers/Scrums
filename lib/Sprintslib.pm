@@ -43,6 +43,7 @@ use base qw(Exporter);
 our @EXPORT = qw(
   update_bug_order_from_json
   burndown_plot
+  status_summary
   );
 #
 # Important!
@@ -159,6 +160,39 @@ sub status_summary {
     if ($sprint_id =~ /([0-9]+)/) {
         $sprint_id = $1;    # $data now untainted
     }
+
+    my $dbh = Bugzilla->dbh;
+    my $sth = $dbh->prepare(
+        "select
+	bs.is_open,
+	count(b.bug_id)
+    from
+	bugs b
+    inner join
+	bug_status bs 
+    on
+	b.bug_status = bs.value
+    inner join
+	scrums_sprint_bug_map sbm on sbm.bug_id = b.bug_id
+    inner join
+	scrums_sprints s on s.id = sbm.sprint_id
+    where
+	s.id = ?
+    group by
+	bs.is_open");
+    $sth->execute($sprint_id);
+    my ($open_status, $count);
+    my %summary;
+    while (($open_status, $count) = $sth->fetchrow_array) {
+        if($open_status == 1) {
+            $summary{"open"} = $count;
+        }
+        else {
+            $summary{"closed"} = $count;
+        }
+        
+    }
+    $vars->{'summary'} = \%summary;
 }
 
 sub burndown_plot {
@@ -200,7 +234,7 @@ sub burndown_plot {
             sbm.bug_id = ld.bug_id
         where
             sprint_id = ?"
-                           );
+                        );
     $sth->execute($sprint_id);
     my ($cum_work_time) = $sth->fetchrow_array();
 

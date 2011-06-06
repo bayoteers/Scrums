@@ -520,6 +520,7 @@ sub page_before_template {
         $vars->{'team_id'}     = $cgi->param('teamid');
         $vars->{'sprint_name'} = $cgi->param('sprintname');
         burndown_plot($vars, $sprint_id);
+        status_summary($vars, $sprint_id);
     }
 }
 
