@@ -516,11 +516,7 @@ sub page_before_template {
     if ($page eq 'scrums/sprintburndown.html') {
         my $cgi       = Bugzilla->cgi;
         my $sprint_id = $cgi->param('sprintid');
-        $vars->{'team_name'}   = $cgi->param('teamname');
-        $vars->{'team_id'}     = $cgi->param('teamid');
-        $vars->{'sprint_name'} = $cgi->param('sprintname');
-        burndown_plot($vars, $sprint_id);
-        status_summary($vars, $sprint_id);
+        sprint_summary($vars, $sprint_id);
     }
 }
 

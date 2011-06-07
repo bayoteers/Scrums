@@ -134,6 +134,7 @@ sub name        { return $_[0]->{'name'}; }
 sub status      { return $_[0]->{'status'}; }
 sub is_active   { return $_[0]->{'is_active'}; }
 sub description { return $_[0]->{'description'}; }
+sub team_id     { return $_[0]->{'team_id'}; }
 
 sub nominal_schedule {
     my $self     = shift;

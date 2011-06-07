@@ -166,6 +166,8 @@ sub scheduled_bugs {
         left(b.short_desc, 40),
         t.name,
         s.name,
+        t.id,
+        s.id,
 	bo.rlease
     from
 	scrums_flagtype_release_map rfm
@@ -197,7 +199,9 @@ sub unprioritised_bugs {
         b.bug_severity,
         left(b.short_desc, 40),
         t.name,
-        s.name
+        s.name,
+        t.id,
+        s.id
     from
 	scrums_flagtype_release_map rfm
 	inner join flags f on rfm.flagtype_id = f.type_id

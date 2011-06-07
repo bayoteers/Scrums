@@ -31,8 +31,8 @@
 var ordered_bugs = new listObject("sortable1", "headers", '0', 'Item Order', $("#ReleaseBugLiTmpl"));
 var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Items', $("#ReleaseBugLiTmpl"));
 
-var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]"], [% END %]];
-var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]"], [% END %]];
+var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]", [% bug.6 %], [% bug.7 %]], [% END %]];
+var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]", [% bug.6 %], [% bug.7 %]], [% END %]];
 
 function save_all()
 {

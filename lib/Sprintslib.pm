@@ -42,8 +42,7 @@ use base qw(Exporter);
 # @EXPORT.)
 our @EXPORT = qw(
   update_bug_order_from_json
-  burndown_plot
-  status_summary
+  sprint_summary
   );
 #
 # Important!
@@ -154,7 +153,20 @@ sub process_team_orders() {
     }
 }
 
-sub status_summary {
+sub sprint_summary {
+    my ($vars, $sprint_id) = @_;
+
+    my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    my $team_id = $sprint->team_id();
+    my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+    _burndown_plot($vars, $sprint_id);
+    _status_summary($vars, $sprint_id);
+    $vars->{'team_name'}   = $team->name();
+    $vars->{'team_id'}     = $team_id;
+    $vars->{'sprint_name'} = $sprint->name();
+}
+
+sub _status_summary {
     my ($vars, $sprint_id) = @_;
 
     if ($sprint_id =~ /([0-9]+)/) {
@@ -179,7 +191,8 @@ sub status_summary {
     where
 	s.id = ?
     group by
-	bs.is_open");
+	bs.is_open"
+                           );
     $sth->execute($sprint_id);
     my ($open_status, $count);
     my %summary;
@@ -205,7 +218,8 @@ sub status_summary {
         where
 	    s.id = ?
         group by
-	    b.bug_status");
+	    b.bug_status"
+                        );
     $sth->execute($sprint_id);
     my @slist;
     my ($status, $count);
@@ -219,7 +233,7 @@ sub status_summary {
     $vars->{'slist'}   = \@slist;
 }
 
-sub burndown_plot {
+sub _burndown_plot {
     my ($vars, $sprint_id) = @_;
 
     if ($sprint_id =~ /([0-9]+)/) {
@@ -243,7 +257,8 @@ sub burndown_plot {
             scrums_sprint_bug_map sbm on
             sbm.bug_id = b.bug_id
         where 
-            sprint_id = ?");
+            sprint_id = ?"
+                           );
     $sth->execute($sprint_id);
     my ($cum_remain) = $sth->fetchrow_array();
 
@@ -256,7 +271,8 @@ sub burndown_plot {
             scrums_sprint_bug_map sbm on
             sbm.bug_id = ld.bug_id
         where
-            sprint_id = ?");
+            sprint_id = ?"
+                        );
     $sth->execute($sprint_id);
     my ($cum_work_time) = $sth->fetchrow_array();
 
