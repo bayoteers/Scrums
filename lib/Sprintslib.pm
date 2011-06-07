@@ -190,7 +190,6 @@ sub status_summary {
         else {
             $summary{"closed"} = $count;
         }
-
     }
 
     $sth = $dbh->prepare(
@@ -207,17 +206,17 @@ sub status_summary {
 	    s.id = ?
         group by
 	    b.bug_status");
-        $sth->execute($sprint_id);
+    $sth->execute($sprint_id);
     my @slist;
     my ($status, $count);
     while (($status, $count) = $sth->fetchrow_array) {
         my @row;
-        push(@row, $status);
-        push(@row, $count);
+        push(@row,   $status);
+        push(@row,   $count);
         push(@slist, \@row);
     }
     $vars->{'summary'} = \%summary;
-    $vars->{'slist'} = \@slist;
+    $vars->{'slist'}   = \@slist;
 }
 
 sub burndown_plot {
@@ -244,8 +243,7 @@ sub burndown_plot {
             scrums_sprint_bug_map sbm on
             sbm.bug_id = b.bug_id
         where 
-            sprint_id = ?"
-                           );
+            sprint_id = ?");
     $sth->execute($sprint_id);
     my ($cum_remain) = $sth->fetchrow_array();
 
@@ -258,8 +256,7 @@ sub burndown_plot {
             scrums_sprint_bug_map sbm on
             sbm.bug_id = ld.bug_id
         where
-            sprint_id = ?"
-                        );
+            sprint_id = ?");
     $sth->execute($sprint_id);
     my ($cum_work_time) = $sth->fetchrow_array();
 

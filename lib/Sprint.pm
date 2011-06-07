@@ -103,6 +103,7 @@ sub get_bugs {
         b.bug_status,
         p.realname,
         left(b.short_desc, 40),
+        b.short_desc,
 	bo.team
     from
 	scrums_sprint_bug_map sbm
