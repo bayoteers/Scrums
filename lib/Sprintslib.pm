@@ -184,15 +184,40 @@ sub status_summary {
     my ($open_status, $count);
     my %summary;
     while (($open_status, $count) = $sth->fetchrow_array) {
-        if($open_status == 1) {
+        if ($open_status == 1) {
             $summary{"open"} = $count;
         }
         else {
             $summary{"closed"} = $count;
         }
-        
+
+    }
+
+    $sth = $dbh->prepare(
+        "select
+	    b.bug_status,
+	    count(b.bug_id)
+        from
+	    bugs b
+        inner join
+	    scrums_sprint_bug_map sbm on sbm.bug_id = b.bug_id
+        inner join
+	    scrums_sprints s on s.id = sbm.sprint_id
+        where
+	    s.id = ?
+        group by
+	    b.bug_status");
+        $sth->execute($sprint_id);
+    my @slist;
+    my ($status, $count);
+    while (($status, $count) = $sth->fetchrow_array) {
+        my @row;
+        push(@row, $status);
+        push(@row, $count);
+        push(@slist, \@row);
     }
     $vars->{'summary'} = \%summary;
+    $vars->{'slist'} = \@slist;
 }
 
 sub burndown_plot {
