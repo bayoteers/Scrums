@@ -36,8 +36,14 @@ var rem = [[% FOREACH plot IN remaining_plot %][[% plot.0 %], [% plot.1 %]],[% E
 var work = [[% FOREACH plot IN worktime_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
 
 var open_closed = [
-		{ label: "Open items",  data: [% summary.open %]},
-		{ label: "Closed items",  data: [% summary.closed %]} ];
+[% IF summary.open %]
+		{ label: "Open items",  data: [% summary.open %]}
+[% END %]
+[% IF summary.open && summary.closed %],[% END %]
+[% IF summary.closed %]
+		{ label: "Closed items",  data: [% summary.closed %]} 
+[% END %]
+];
 
 var status_list = [
 	[% FOREACH status IN slist %]
@@ -46,9 +52,6 @@ var status_list = [
 	];
 
 var max_ts, min_ts, max_str, min_str;
-</script>
-
-<script type="text/javascript">
 
 var options = {
     xaxis: { mode: "time", tickLength: 5 },
@@ -223,16 +226,10 @@ function make_time(str_with_dashes, is_upper_limit)
       Team '[% team_name %]' sprint '[% sprint_name %]'
 </div>
 
-<hr>
 
-[% FOREACH plot IN chart_plot %]
-[% FOREACH coord IN plot %]
-[% coord %], 
-[% END %]
+
+[% IF slist.size > 0 %]
 <br>
-[% END %]
-</p>
-
 <table><tr><td>
 
     <div id="placeholder" style="width:800px;height:400px;"></div>
@@ -247,8 +244,12 @@ Show days: <input type="edit" id="range_begin" size="8" onchange="gettime();"/>-
 
 <div id="pie1" style="width:200px;height:200px;"></div>
 <table>
+[% IF summary.open %]
 <tr><td>Open items:</td><td>[% summary.open %]</td></tr>
+[% END %]
+[% IF summary.closed %]
 <tr><td>Closed items:</td><td> [% summary.closed %]</td></tr>
+[% END %]
 </table>
 
 </td><td style="padding-left: 50px;">
@@ -261,6 +262,12 @@ Show days: <input type="edit" id="range_begin" size="8" onchange="gettime();"/>-
 </table>
 </td>
 </tr></table>
+
+[% ELSE %]
+<br>
+Sprint contains no items.<br>
+<br><br>
+[% END %]
 
 <a href="page.cgi?id=scrums/createteam.html&teamid=[% team_id %]">back to team</a>
 [% PROCESS global/footer.html.tmpl %]
