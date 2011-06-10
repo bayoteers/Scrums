@@ -393,9 +393,7 @@ sub _show_team_bugs {
     $vars->{'team'}               = $team;
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
 
-    #    $vars->{'sprints'} = [Bugzilla::Extension::Scrums::Sprint->get_all()];
     my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 1 });
-    #    $vars->{'sprints'} = $sprints;
 
     my %sprint_bug_map;
     my @team_sprints_array;
@@ -656,7 +654,7 @@ sub _sanitise_sprint_data {
         $name = "";
     }
 
-    if ($nominalschedule =~ /^(\d{4}\.\d{1,2}\.\d{1,2})/) {
+    if ($nominalschedule =~ /^(\d{4}-\d{1,2}-\d{1,2})/) {
         $nominalschedule = $1;    # $data now untainted
     }
     else {
@@ -672,20 +670,20 @@ sub _sanitise_sprint_data {
         $description = "";
     }
 
-    if ($start_date =~ /^(\d{4}\.\d{1,2}\.\d{1,2})/) {
+    if ($start_date =~ /^(\d{4}-\d{1,2}-\d{1,2})/) {
         $start_date = $1;         # $data now untainted
     }
     else {
         $error .= "Illegal start date. ";
-        $start_date = "";
+        $start_date = undef;
     }
 
-    if ($end_date =~ /^(\d{4}\.\d{1,2}\.\d{1,2})/) {
+    if ($end_date =~ /^(\d{4}-\d{1,2}-\d{1,2})/) {
         $end_date = $1;           # $data now untainted
     }
     else {
         $error .= "Illegal end date. ";
-        $end_date = "";
+        $end_date = undef;
     }
 
     return ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date);

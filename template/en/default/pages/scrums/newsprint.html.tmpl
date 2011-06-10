@@ -23,62 +23,75 @@
     title = "Create new sprint" 
 %]
 
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.5.1.min.js"></script>
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.12.custom.min.js"></script>
+
 <script scripttype="text/javascript">
+$(function () {
+    init();
+});
+
+var range_begin = "";
+var range_end = "";
+var nominal_date = "";
+
+function init()
+{
+    $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
+    $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
+    $("#datepicker_nominal").datepicker({ dateFormat: 'yy-mm-dd' });
+}
+
+function gettime() 
+{
+    range_begin = $('#datepicker_min').val();
+    range_end = $('#datepicker_max').val();
+    nominal_date = $('#datepicker_nominal').val();
+}
+
 function archive()
 {
- 	var start = window.document.forms['newsprint'].elements['start_date'].value;
-	var end = window.document.forms['newsprint'].elements['end_date'].value;
-	if(end == "")
-	{
-		alert("End date is empty. Archived sprint must be stopped before archiving.");
-		return false;
-	}
-	if(start == "")
-	{
-		alert("Sprint start date is empty");
-		return false;
-	}
+    gettime();
+    if(range_end == "")
+    {
+	alert("End date is empty. Archived sprint must be stopped before archiving.");
+	return false;
+    }
+    if(range_begin == "")
+    {
+	alert("Sprint start date is empty");
+	return false;
+    }
 
-	if(start.match(/^\d{4}\.\d{1,2}\.\d{1,2}$/) == null)
-	{
-		alert("Date field: '" + start + "'. Date field must be given in form 'yyyy.mm.dd'");
-		return false;
-	}
-	if(end.match(/^\d{4}\.\d{1,2}\.\d{1,2}$/) == null)
-	{
-		alert("Date field: '" + end + "'. Date field must be given in form 'yyyy.mm.dd'");
-		return false;
-	}
-
-	return confirm("Are you sure you want to permanently deactivate and archive sprint '[% sprintname %]' \nOperation can not be undone");
+    return confirm("Are you sure you want to permanently deactivate and archive sprint '[% sprintname %]' \nOperation can not be undone");
 }
 
 function cancel()
 {
-	window.location = "page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]";	
+    window.location = "page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]";	
 }
 
 function checkvalues()
 {
-        var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
-        var nominalschedule = window.document.forms['newsprint'].elements['nominalschedule'].value;
-	if(sprintname == '')
-	{
-		alert("Sprint must have name.");
-		return false;
-	}
-	if(sprintname.match(/^\S/) == null)
-	{
-		alert("Sprint name can not start with whitespace");
-		return false;
-	}
-	if(nominalschedule.match(/^\d{4}\.\d{1,2}\.\d{1,2}$/) == null)
-	{
-		alert("Schedule must be given as ready date in form 'yyyy.mm.dd'");
-		return false;
-	}
+    gettime();
 
-	return true;
+    var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
+    if(sprintname == '')
+    {
+	alert("Sprint must have name.");
+	return false;
+    }
+    if(sprintname.match(/^\S/) == null)
+    {
+	alert("Sprint name can not start with whitespace");
+	return false;
+    }
+    if(nominal_date == "")
+    {
+	alert("Sprint must have nominal schedule.");
+	return false;
+    }
+    return true;
 }
 
 function askconfirm()
@@ -97,7 +110,6 @@ function askconfirm()
 <input type="hidden" name="newsprint" value="true"/>
 [% END %]
 
-<!-- <input type="hidden" name="userid" value="[% ownerid %]"/> -->
 <table>
   <tr>
 	<td><b>Sprint name:</b></td>
@@ -106,7 +118,7 @@ function askconfirm()
   </tr>
   <tr>
 	<td><b>Nominal schedule:</b></td>
-	<td><input type="text" name="nominalschedule" value="[% nominalschedule %]"></td>
+	<td><input onchange="gettime();" type="text" value="[% nominalschedule %]" name="nominalschedule" id="datepicker_nominal" size="08"></td>
 	<td colspan="2">&nbsp</td>
   </tr>
   <tr>
@@ -116,7 +128,8 @@ function askconfirm()
   </tr>
   <tr>
 	<td><b>Actual duration:</b></td>
-	<td><input type="text" name="start_date" value="[% start_date %]"></td>-<td><input type="text" name="end_date" value="[% end_date %]"></td>
+	<td><input onchange="gettime();" type="text" value="[% start_date %]" name="start_date" id="datepicker_min" size="08"></td>-
+	<td><input onchange="gettime();" type="text" value="[% end_date %]" name="end_date" id="datepicker_max" size="08"></td>
 	<td colspan="2">&nbsp</td>
   </tr>
   <tr>
@@ -141,7 +154,6 @@ function askconfirm()
 	<td colspan="4">&nbsp</td>
 	[% END %]
   </tr>
-
 </table>
 </form>
 

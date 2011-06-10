@@ -159,7 +159,7 @@ sub scheduled_bugs {
 
     my $dbh = Bugzilla->dbh;
     my ($scheduled_bugs) = $dbh->selectall_arrayref(
-    'select
+        'select
 	b.bug_id,
         b.bug_status,
         b.bug_severity,
@@ -187,7 +187,8 @@ sub scheduled_bugs {
 	where b.bug_id = sbm_b.bug_id and
 	s_b.nominal_schedule > s_a.nominal_schedule)
     order by
-	rlease', undef, $self->id);
+	rlease', undef, $self->id
+    );
     return $scheduled_bugs;
 }
 

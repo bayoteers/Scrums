@@ -137,33 +137,18 @@ sub description { return $_[0]->{'description'}; }
 sub team_id     { return $_[0]->{'team_id'}; }
 
 sub nominal_schedule {
-    my $self     = shift;
-    my $str_date = $self->{'nominal_schedule'};
-    return $self->replace_dash_with_dot($str_date);
+    my $self = shift;
+    return $self->{'nominal_schedule'};
 }
 
 sub start_date {
-    my $self     = shift;
-    my $str_date = $self->{'start_date'};
-    return $self->replace_dash_with_dot($str_date);
+    my $self = shift;
+    return $self->{'start_date'};
 }
 
 sub end_date {
-    my $self     = shift;
-    my $str_date = $self->{'end_date'};
-    return $self->replace_dash_with_dot($str_date);
-}
-
-sub replace_dash_with_dot {
-    my $self            = shift;
-    my $str_with_dashes = shift;
-    my $str_with_dots   = $str_with_dashes;
-    if ($str_with_dashes ne "") {
-        if ($str_with_dashes =~ /^(\d{4})-(\d{1,2})-(\d{1,2})/) {
-            $str_with_dots = "$1.$2.$3";
-        }
-    }
-    return $str_with_dots;
+    my $self = shift;
+    return $self->{'end_date'};
 }
 
 1;

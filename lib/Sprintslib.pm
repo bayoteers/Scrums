@@ -156,9 +156,9 @@ sub process_team_orders() {
 sub sprint_summary {
     my ($vars, $sprint_id) = @_;
 
-    my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    my $sprint  = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
     my $team_id = $sprint->team_id();
-    my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+    my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
     _burndown_plot($vars, $sprint_id);
     _status_summary($vars, $sprint_id);
     $vars->{'team_name'}   = $team->name();
