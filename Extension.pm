@@ -570,5 +570,20 @@ sub _bug_check_resolution {
     }
 }
 
+sub config {
+    my ($self, $args) = @_;
+
+    my $config = $args->{config};
+    $config->{Scrums} = "Bugzilla::Extension::Scrums::ConfigScrums";
+}
+
+sub config_add_panels {
+    my ($self, $args) = @_;
+
+    my $modules = $args->{panel_modules};
+    $modules->{Scrums} = "Bugzilla::Extension::Scrums::ConfigScrums";
+}
+
+
 # This must be the last line of your extension.
 __PACKAGE__->NAME;

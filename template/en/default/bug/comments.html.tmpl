@@ -240,10 +240,15 @@
         # user is a feature admin.
       %]
 
-      [% IF (bug.bug_severity == "task" || bug.bug_severity == "feature") %]
-	[% is_feature = 1 %]
+      [% editable = Param('bug_comment_editable_item_types') %]
+      [% editable_severity = 0 %]
+      [% FOREACH type IN editable %]
+      [% IF (bug.bug_severity == type) %]
+      [% editable_severity = 1 %]
       [% END %]
-      [% IF (user.in_group('setfeature') && is_feature) %]
+      [% END %]
+
+      [% IF (user.in_group('setfeature') && editable_severity) %]
         [% can_edit_description = 1 %]
       [% ELSE %]
         [% can_edit_description = 0 %]
