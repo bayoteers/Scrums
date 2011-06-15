@@ -584,6 +584,5 @@ sub config_add_panels {
     $modules->{Scrums} = "Bugzilla::Extension::Scrums::ConfigScrums";
 }
 
-
 # This must be the last line of your extension.
 __PACKAGE__->NAME;

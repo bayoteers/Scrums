@@ -240,7 +240,7 @@
         # user is a feature admin.
       %]
 
-      [% editable = Param('bug_comment_editable_item_types') %]
+      [% editable = Param('scrums_bug_comment_editable_item_types') %]
       [% editable_severity = 0 %]
       [% FOREACH type IN editable %]
       [% IF (bug.bug_severity == type) %]
