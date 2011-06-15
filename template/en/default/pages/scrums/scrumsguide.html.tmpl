@@ -22,6 +22,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
+
+><style>
+<!--
+p { max-width: 1000px; }
+-->
+</style
+
 ><TITLE
 >Scrums</TITLE
 ><META
@@ -202,14 +209,30 @@ Clicking any individual team shows information of team.
 </P
 ><P>
 Team information page shows basic information of a team and also components, that team is responsible, and team members.
-Any information can be edited in team information page. Team planning pages can be selected from team information page.
+Any information can be edited in team information page. Team planning pages and pages for team daily activities can be selected from team information page.
+There are two pages for daily activities:
+</P
+><UL
+COMPACT="COMPACT"
+><LI
+><P
+>&#13;            Active sprint tasks
+          </P
+></LI
+><LI
+><P
+>&#13;            New bugs
+          </P
+></LI
+></UL
+><P>
 There are four different planning pages for team:
 </P
 ><UL
 COMPACT="COMPACT"
 ><LI
 ><P
->&#13;            Daily planning
+>&#13;            Sprint burndown chart
           </P
 ></LI
 ><LI
@@ -219,7 +242,7 @@ COMPACT="COMPACT"
 ></LI
 ><LI
 ><P
->&#13;            Backlog planning
+>&#13;            Team product back-log
           </P
 ></LI
 ><LI
@@ -238,9 +261,9 @@ NAME="teamplanning"
 ><H3>Steps of planning</H3>
 <p>
 Any individual item weather it is bug or other item, can be in different states depending on plans, that team has.
-Item can be in unplanned state, backlog, sprint plan or elapsed. 
+Item can be, in Scrums point of view, in unplanned state, in backlog, in sprint plan or elapsed. 
 Every item is forced into pre-defined path through different stages. This has purpose of enforcing product and team management.
-Control of workflow is gained by dividing tasks into separate roles.
+Control of workflow is gained by dividing tasks into separate roles.<br>
 <img src="extensions/Scrums/template/en/default/pages/scrums/Item-path.png"/>
 </p
 <p>
@@ -256,10 +279,12 @@ also items inside individual sprint can be ordered.
 After sprint has ended it is archived<sup>3</sup>. 
 It is notable, that item, which remains open, while sprint is archived, becomes unplanned once more.
 </p
-><H3>Backlog planning</H3
+><H3>Team product back-log planning</H3
 ><P>
-View consists of two lists of items. 'Unordered bugs'-list contains any open item, that belongs to team, but which
-has not been taken into other lists. 'Backlog'-list contains items, that are in product backlog, but which are not
+Team is assigned components, whence all tasks and but related to assigned components are fixed to team.
+Set of components, that team is responsible, form virtual product, team product.
+View for back-log planning consists of two lists of items. 'Unordered bugs'-list contains any open item, that belongs to team, but which
+has not been taken into other lists. 'Backlog'-list contains items, that are in team product backlog, but which are not
 scheduled in sprint. Taking items into backlog is managing product. Product means in here those components, that the team
 in question has responsibility. Product backlog is common to any responsibilities, that team might have.
 </P
@@ -286,7 +311,39 @@ items can be sorted.
 Items can be also moved in opposite direction from sprint to backlog.
 </P
 
-><H3>Daily planning</H3
+><H3>Archived sprints</H3
+><P>
+Archived sprints-view shows ended sprints of team. Sprints are shown in time order. Newest sprint is shown first.
+</P
+
+><H2
+CLASS="section"
+><A
+NAME="teamplanning"
+>1.5. Team's daily tasks</A
+</H2
+
+><H3>Active sprint tasks</H3
+><P>
+View consists of list of items. List contains all items in active sprint, that are currently open. As long as items are open,
+they remain visible in list.
+</P
+><i
+><H4>Using InlineEditor-extension in combination of item list</H4
+><P>
+InlineEditor is stand-alone extension. It is utility, that can be used in combination with Scrums-extension.
+InlineEditor enhances Active sprint tasks-view. It makes each item in list editable, so that user does not need
+to open each item individually, but can edit all items in list in same page.
+</P
+><P>
+Fields, that are possible to edit in list with InlineEditor-extension, are bug_severity, priority, assigned_to, estimated_time and remaining_time. System administrator can choose, which fields are allowed to be edited in item list, by setting parameter inline_editor_bug_list_editable_fields. Only estimated_time is selected by default.
+</P
+><P>
+
+</P
+></i
+
+><H3>New bugs</H3
 ><P>
 View consists of two lists of items. Sprint list contains all items in sprint. Shown sprint is currently active sprint, that
 team has, since team can have only one active sprint simultaneously.
@@ -302,10 +359,7 @@ Bugs are taken into sprint by dragging lines from one list to another. Order of 
 items can be sorted. 
 Bugs can be also moved in opposite direction from sprint to unordered.
 </P
-><H3>Archived sprints</H3
-><P>
-Archived sprints-view shows ended sprints of team. Sprints are shown in time order. Newest sprint is shown first.
-</P
+
 
 
 ><DIV
