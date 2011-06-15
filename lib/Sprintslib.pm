@@ -222,7 +222,7 @@ sub _status_summary {
                         );
     $sth->execute($sprint_id);
     my @slist;
-    my ($status, $count);
+    my $status;
     while (($status, $count) = $sth->fetchrow_array) {
         my @row;
         push(@row,   $status);
