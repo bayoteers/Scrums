@@ -147,7 +147,7 @@ sub buglist_columns {
     $columns->{'scrums_release_order'} = { 'name' => 'scrums_bug_order.rlease',  'title' => 'Release Order' };
     $columns->{'scrums_program_order'} = { 'name' => 'scrums_bug_order.program', 'title' => 'Program Order' };
 
-    $columns->{'scrums_blocked'} = { 'name' => 'dependencies.blocked', 'title' => 'Parent item' };
+    $columns->{'scrums_blocked'} = { 'name' => 'dependencies.blocked', 'title' => 'Parent' };
 
     $columns->{'sprint_name'} = { 'name' => 'scrums_sprints.name', 'title' => 'Sprint' };
 }
