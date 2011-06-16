@@ -74,7 +74,7 @@ sub bug_end_of_update {
     # This ensures we only apply this change to the bug that
     # is being updated. Not, for example, a bug that is having
     # duplicate notation added to it.
-    if ($bug->bug_id == $cgi->param('id')) {
+    if ($bug->bug_id eq $cgi->param('id')) {
         if (Bugzilla->user->in_group('setfeature')) {
             # Current bug description
             my $description = ${ @{ $bug->comments }[0] }{'thetext'};
