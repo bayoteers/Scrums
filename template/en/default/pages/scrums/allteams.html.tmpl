@@ -20,9 +20,11 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Teams" 
+    title = "Manage Teams" 
     style_urls = ['skins/standard/admin.css']
 %]
+
+<h1>Manage Teams</h1>
 
 <table border=1 cellpadding=4 cellspacing=0>
 [% IF teamlist.size > 0 %]
@@ -92,7 +94,7 @@
 
 
 <hr>
-<a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">Scrums user's guide</a>. 
+<a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>. 
 [% IF user.in_group('admin') %]
 <a href="page.cgi?id=scrums/newteam.html">Add team</a>
 [% END %]
