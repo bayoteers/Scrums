@@ -19,15 +19,15 @@ use Bugzilla::Extension::Scrums::Team;
 
 use base qw(Exporter);
 
-use Date::Calc qw(Week_Number Today Add_Delta_Days);
+use Date::Calc qw(Today Add_Delta_Days Delta_Days Today Week_Number);
 
 our @EXPORT = qw(
   load_test_data
   );
 
-use constant TEAMCOUNT   => 7;
-use constant TEAMSIZE    => 7;
-use constant SPRINTCOUNT => 7;
+use constant TEAMCOUNT    => 10;
+use constant TEAMSIZE     => 10;
+use constant SPRINTCOUNT  => 10;
 use constant SPRINTLENGTH => 14;
 
 use vars qw(%data);
@@ -66,26 +66,35 @@ sub load_test_data($) {
             $team->set_component($component->id);
         }
 
-        # Create sprints counting back two weeks from now.
-        
-        my ($s_year,$s_month,$s_day) = Today(time());
-        ($s_year,$s_month,$s_day) = Add_Delta_Days($s_year, $s_month, $s_day, -((SPRINTCOUNT*SPRINTLENGTH)/2));
+        # Create sprints.
+
+        # Figure out our starting point: the first day we're going to create a sprint for.
+        my ($s_year, $s_month, $s_day) = Today(time());
+        ($s_year, $s_month, $s_day) = Add_Delta_Days($s_year, $s_month, $s_day, -((SPRINTCOUNT * SPRINTLENGTH) / 2));
 
         for my $i_sprint (1 .. SPRINTCOUNT) {
-             my ($year, $month, $day) = Add_Delta_Days($s_year, $s_month, $s_day, 14);
-             
-             my $s_week_number = Week_Number($s_year,$s_month,$s_day);
-             my $e_week_number = Week_Number($year,$month,$day);
-             
-             my $is_active = 1;
-             
-             $vars->{'output'} .= "Creating Sprint $i_sprint Week $s_week_number -> $e_week_number<br />";
+            # Make the end of the sprint SPRINTLENGTH after our starting point.
+            my ($year, $month, $day) = Add_Delta_Days($s_year, $s_month, $s_day, SPRINTLENGTH);
 
-             _create_sprint($team->id,"NEW", 1, "Sprint WK $s_week_number-$e_week_number", "", "Sprint for Week $s_week_number to Week $e_week_number", $is_active);
-             
-             ($s_year, $s_month, $s_day) = ($year, $month, $day);
+            my $s_week_number = Week_Number($s_year, $s_month, $s_day);
+            my $e_week_number = Week_Number($year,   $month,   $day);
+
+            # Mark sprints that end before today as not being active: ie. archived.
+            my $is_active = 0;
+
+            if (Delta_Days($year, $month, $day, Today()) < 0) {
+                # Mark sprints that start after today as being active.
+                $is_active = 1;
+            }
+
+            $vars->{'output'} .= "Creating Sprint $i_sprint Week $s_week_number -> $e_week_number Is Active? $is_active<br />";
+
+            _create_sprint($team->id, "NEW", 1, "Week $s_week_number-$e_week_number", "", "Sprint for Week $s_week_number to Week $e_week_number", $is_active);
+
+            # Move the starting point along by SPRINTLENGTH.
+            ($s_year, $s_month, $s_day) = ($year, $month, $day);
         }
-        
+
         $vars->{'output'} .= "</p>";
     }
 
@@ -94,17 +103,18 @@ sub load_test_data($) {
 
 sub _create_backlog($) {
     my ($team_id) = @_;
-    
+
     # Create a backlog, which is actually just a sprint in thin disguise.
 
-    my ($backlog) = _create_sprint($team_id, "NEW", 2, "Product Backlog", "2000-01-01", "Automatically generated sprint that represents the Product Backlog", 1);
-    
+    my ($backlog) =
+      _create_sprint($team_id, "NEW", 2, "Product Backlog", "2000-01-01", "Automatically generated sprint that represents the Product Backlog", 1);
+
     return $backlog;
 }
 
 sub _create_sprint(@) {
     my ($team_id, $status, $item_type, $name, $nominal_schedule, $description, $is_active) = @_;
-    
+
     # Create a sprint.
 
     my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
@@ -124,7 +134,7 @@ sub _create_sprint(@) {
 
 sub _drop_existing_data() {
     my $dbh = Bugzilla->dbh;
-    
+
     # Drop all existing data in scrums_* tables.
 
     my @tables = (
@@ -143,7 +153,7 @@ sub _drop_existing_data() {
 
 sub _get_random_user() {
     my $dbh = Bugzilla->dbh;
-    
+
     # Get random user, that hasn't been previously used during this run.
 
     my $user_id;
@@ -161,7 +171,7 @@ sub _get_random_user() {
 
 sub _get_random_product() {
     my $dbh = Bugzilla->dbh;
-    
+
     # Get random product, that hasn't been previously used during this run.
 
     my ($id, $name);
@@ -169,7 +179,7 @@ sub _get_random_product() {
     do {
         my $query = "SELECT id,name FROM products ORDER BY rand() limit 1;";
         ($id, $name) = Bugzilla->dbh->selectrow_array($query);
-        
+
     } until !$data{'product'}{$id};
 
     $data{'product'}{$id} = 1;
