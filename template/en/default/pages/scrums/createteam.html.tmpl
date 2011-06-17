@@ -58,12 +58,11 @@ Error msg: [% error %]
 Team created!
 [% END %]
 
-<div class="bz_title_container">
+<h1>
       Team '[% team.name %]'
-</div>
+</h1>
 
-<li><a href="page.cgi?id=scrums/allteams.html">Teams main page</a>
-<h3>Team daily tasks</h3>
+<h2>Daily Tasks</h2>
 <ul>
 [% IF active_sprint_id %]
 <li><a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
@@ -71,7 +70,7 @@ Active sprint tasks</a>
 [% END %]
 <li><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">New bugs</a></li>
 </ul>
-<h3>Team planning</h3>
+<h2>Team Planning</h2>
 <ul>
 [% IF active_sprint_id %]
 <li><a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">Sprint burndown chart</a>
@@ -83,7 +82,7 @@ Active sprint tasks</a>
 
 [% owner = team.owner_user() %]
 [% scrum_master = team.scrum_master_user() %]
-<h3>Team</h3>
+<h2>Team</h2>
 <table class="main">
 <tr>
 <th>Name:</th>
@@ -123,11 +122,10 @@ Active sprint tasks</a>
 <td>[% team.weekly_velocity_end %]</td>
 </tr>
 </table>
-<br><br>
 
 [% components = team.components() %]
 [% IF components.size() > 0 %]
-<h3>Responsibilities:</h3>
+<h2>Responsibilities</h2>
 <table class="main"><tr><th>&nbsp;</th><td>
 <table border=1 cellpadding=4 cellspacing=0>
 <tr bgcolor="#6666ff">
@@ -156,16 +154,13 @@ Active sprint tasks</a>
 <tr>
 <th>Responsibility:</th>
 <td colspan="3">
-Not responsible for sub-components<br>
+Not responsible for sub-components
 </td>
 </tr>
 </table>
 [% END %]
 
-
-<br><br>
-
-<h3>Members:</h3>
+<h2>Members</h2>
 
 [% members = team.members() %]
 [% IF members.size() > 0 %]
@@ -195,10 +190,8 @@ Remove
 </table>
 </td></tr></table>
 [% ELSE %]
-Team has no members.
+This team has no members.
 [% END %]
-
-
 </td>
 
 </tr>
@@ -214,7 +207,7 @@ Team has no members.
 </form>
 
 <hr>
-<a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">Scrums user's guide</a>. 
+<a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
 [% IF user.in_group('editteams') %]
 <a href="page.cgi?id=scrums/choose-classification.html&teamid=[% team.id %]">Add sub-component</a>&nbsp;to '[% team.name %]'.
 [% END %]
@@ -229,4 +222,4 @@ Edit team&nbsp;
 
 [% END %]
 
-
+<a href="page.cgi?id=scrums/allteams.html">Manage Teams</a>

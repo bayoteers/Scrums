@@ -20,32 +20,24 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Ultimate Scrum extension main page" 
+    title = "Scrums Extension Home" 
 %]
 
+<h1>Scrums Extension Home</h1>
 <table>
     <tr>
-	<th>Ultimate Scrum extension
-	</th>
-	<th>&nbsp;</th>
-    </tr>
-    <tr>
 	<td>&nbsp;</td>
 	<td>
-		<a href="page.cgi?id=scrums/allteams.html">Teams<a/>
+		<a href="page.cgi?id=scrums/allteams.html">Manage Teams<a/>
 	</td>
   </tr>
   <tr>
 	<td>&nbsp;</td>
 	<td>
-		<a href="page.cgi?id=scrums/allreleases.html">Releases<a/>
+  	<a href="page.cgi?id=scrums/allreleases.html">Manage Releases<a/>
 	</td>
-  </tr>
-  <tr>
-	<td colspan="2"><a href="page.cgi?id=scrums/scrumsguide.html">Scrums user's guide</a></td>
   </tr>
 </table>
 </form>
 
-<p>
-
+[% PROCESS global/footer.html.tmpl %]

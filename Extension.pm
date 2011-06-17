@@ -74,7 +74,7 @@ sub bug_end_of_update {
     # This ensures we only apply this change to the bug that
     # is being updated. Not, for example, a bug that is having
     # duplicate notation added to it.
-    if ($bug->bug_id == $cgi->param('id')) {
+    if ($bug->bug_id eq $cgi->param('id')) {
         if (Bugzilla->user->in_group('setfeature')) {
             # Current bug description
             my $description = ${ @{ $bug->comments }[0] }{'thetext'};
@@ -147,7 +147,7 @@ sub buglist_columns {
     $columns->{'scrums_release_order'} = { 'name' => 'scrums_bug_order.rlease',  'title' => 'Release Order' };
     $columns->{'scrums_program_order'} = { 'name' => 'scrums_bug_order.program', 'title' => 'Program Order' };
 
-    $columns->{'scrums_blocked'} = { 'name' => 'dependencies.blocked', 'title' => 'Parent item' };
+    $columns->{'scrums_blocked'} = { 'name' => 'dependencies.blocked', 'title' => 'Parent' };
 
     $columns->{'sprint_name'} = { 'name' => 'scrums_sprints.name', 'title' => 'Sprint' };
 }
