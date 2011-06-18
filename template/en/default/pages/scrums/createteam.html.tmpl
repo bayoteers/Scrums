@@ -19,8 +19,9 @@
   #   Visa Korhonen <visa.korhonen@symbio.com>
   #%]
 
+[% title = "Team " _ team.name %]
 [% PROCESS global/header.html.tmpl
-    title = "Team" 
+    title = title 
 %]
 
 <link rel="stylesheet" href="extensions/Scrums/web/css/scrums.css">
@@ -44,7 +45,7 @@
 
   function removal(component, product, team)
   {
-    return confirm("Do you wan to remove component " + component + " (" + product + ")" + " from team " + team);
+    return confirm("Do you want to remove component " + component + " (" + product + ")" + " from team " + team + "?");
   }
 </script>
 
@@ -59,55 +60,22 @@
     Team [% team.name %]
   </h1>
 
-  <h2>Daily Tasks</h2>
-
-  <ul>
-    [% IF active_sprint_id %]
-      <li>
-        <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
-          Show Remaining Items In Sprint
-        </a>
-      </li>
-    [% END %]
-
-    <li><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">Show Unprioritized Items</a></li>
-  </ul>
-
-  <h2>Team Planning</h2>
-  <ul>
-    [% IF active_sprint_id %]
-      <li><a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">Sprint Burndown Chart</a>
-    [% END %]
-
-    <li><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% team.id %]">Sprint Planning</a>
-    <li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Product Backlog</a>
-    <li><a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">Archived Sprints</a>
-  </ul>
-
   [% owner = team.owner_user() %]
   [% scrum_master = team.scrum_master_user() %]
 
-  <h2>Team Summary</h2>
+  <h2>Summary</h2>
   <table>
     <tr>
-      <th>Name:</th>
+      <th>Team Name:</th>
       <td colspan="3">[% team.name %]</td>
     </tr>
     <tr>
-      <th>Owner:</th>
+      <th>Product Owner:</th>
       <td colspan="3">[% owner.name() %]</td>
     </tr>
     <tr>
-      <th>&nbsp</th>
-      <td colspan="3">[% owner.login() %]</td>
-    </tr>
-    <tr>
-      <th><b>Scrum Master:</b></th>
+      <th>Scrum Master:</th>
       <td colspan="3">[% scrum_master.name() %]</td>
-    </tr>
-    <tr>
-      <th>&nbsp</th>
-      <td colspan="3">[% scrum_master.login() %]</td>
     </tr>
     <tr>
       <th>Weekly Velocity:</th>
@@ -117,11 +85,35 @@
     </tr>
   </table>
 
+  <h2>Current Sprint</h2>
+
+  <ul>
+    [% IF active_sprint_id %]
+      <li>
+        <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
+          Remaining Stories
+        </a>
+      </li>
+      <li>
+        <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">Burndown Chart</a>
+      </li>
+    [% END %]
+
+    <li style="margin-top: 10px;"><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">Unprioritized Stories</a></li>
+  </ul>
+
+  <h2>Planning</h2>
+  <ul>
+    <li><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% team.id %]">Sprint Planning</a>
+    <li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Product Backlog</a>
+    <li><a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">Archived Sprints</a>
+  </ul>
+
+  <h2>Responsibilities</h2>
+
   [% components = team.components() %]
 
   [% IF components.size() > 0 %]
-    <h2>Responsibilities</h2>
-
     <table>
       <tr>
         <th>Product</th>
@@ -144,14 +136,9 @@
       [% END %]
     </table>
   [% ELSE %]
-    <table>
-      <tr>
-        <th>Responsibility:</th>
-        <td colspan="3">
-          Not responsible for any components.
-        </td>
-      </tr>
-    </table>
+    <p>
+      Not responsible for any components.
+    </p>
   [% END %]
 
   <h2>Members</h2>
@@ -181,15 +168,9 @@
       [% END %]
     </table>
   [% ELSE %]
-    <table>
-      <tr>
-        <th>Members:</th>
-        <td colspan="3">
-          This team has no members.
-        </td>
-      </tr>
-    </table>
-    This team has no members.
+    <p>
+      This team has no members.
+    </p>
   [% END %]
 
   <form name="addmember" method="post" action="page.cgi" onsubmit="alert('submit');">
@@ -203,19 +184,18 @@
 
   <hr />
 
-  <a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
   [% IF user.in_group('editteams') %]
-    <a href="page.cgi?id=scrums/choose-classification.html&teamid=[% team.id %]">Add sub-component</a>&nbsp;to '[% team.name %]'.
-  [% END %]
-
-  [% IF user.in_group('editteams') %]
-    <a href="" onclick="return searchperson();">Add member</a>&nbsp;to '[% team.name %]'.
-  [% END %]
-
-  [% IF user.in_group('editteams') %]
-    Edit team&nbsp; 
-   <a href="page.cgi?id=scrums/newteam.html&editteam='true'&teamid=[% team.id %]&teamname=[% team.name() %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&ownerid=[% owner.id() %]&scrummasterrealname=[% scrum_master.name() %]&scrummasterloginname=[% scrum_master.login() %]&scrummasterid=[% scrum_master.id() %]">[% team.name() %]</a>.
+    <p>
+        <a href="page.cgi?id=scrums/choose-classification.html&teamid=[% team.id %]">Add Responsibility</a>
+      | <a href="" onclick="return searchperson();">Add Team Member</a>
+      | <a href="page.cgi?id=scrums/newteam.html&editteam='true'&teamid=[% team.id %]&teamname=[% team.name() %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&ownerid=[% owner.id() %]&scrummasterrealname=[% scrum_master.name() %]&scrummasterloginname=[% scrum_master.login() %]&scrummasterid=[% scrum_master.id() %]">Edit Team</a>
+    </p>
   [% END %]
 [% END %]
 
-<a href="page.cgi?id=scrums/allteams.html">Manage Teams</a>
+<p>
+  <a href="page.cgi?id=scrums/allteams.html">Manage Teams</a>
+| <a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
+</p>
+
+[% PROCESS global/footer.html.tmpl %]
