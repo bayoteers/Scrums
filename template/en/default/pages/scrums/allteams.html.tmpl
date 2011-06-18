@@ -93,13 +93,15 @@
 
 [% IF user.in_group('admin') %]
   <p>
-    <a href="page.cgi?id=scrums/newteam.html">Add Team</a>
+    <a href="page.cgi?id=scrums/newteam.html">Create Team</a>
   </p>
 [% END %]
 
 <hr />
 
-<a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
-
+<p>
+  <a href="page.cgi?id=scrums/allreleases.html">Manage Releases</a>
+| <a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
+</p>
 
 [% PROCESS global/footer.html.tmpl %]

@@ -66,6 +66,12 @@
   }
 </script>
 
+[% IF teamid %]
+  <h1>Edit Team</h1>
+[% ELSE %]
+  <h1>Create Team</h1>
+[% END %]
+
 <form method="post" name="newteam" action="page.cgi?id=scrums/createteam.html">
   <input type="hidden" name="teamid" value="[% teamid %]"/>
   <input type="hidden" name="editteam" value="[% editteam %]"/>

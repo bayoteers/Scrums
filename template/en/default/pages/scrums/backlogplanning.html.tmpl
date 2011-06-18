@@ -67,14 +67,9 @@
   });
 </script>
 
-<!--
-        <select onChange='offset_step = parseInt($(this).val()); update_lists(ordered_bugs); update_lists(unordered_bugs);'> -->
-
 <div class="bz_title_container">
   [% team.name %] Product Backlog
 </div>
-
-<input id='save' type='button' value='Save' OnClick='save_all();'/> 
 
 <table>
   <tr>
@@ -83,10 +78,17 @@
     <td valign='top' id='unordered'>
     </td>
   </tr>
+  <tr>
+    <td colspan="2" align="right">
+      <input id='save' type='button' value='Save' OnClick='save_all();'/> 
+    </td>
+  </tr>
 </table>
 
-<br />
+<hr />
 
-<a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Back To Team</a>
+<p>
+  <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Manage Team</a>
+</p>
 
 [% PROCESS global/footer.html.tmpl %]

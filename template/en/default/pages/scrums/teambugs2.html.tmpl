@@ -84,8 +84,6 @@
   [% team.name %] Sprint
 </div>
 
-<input type='button' value='Save' OnClick='save_all();'/> 
-
 <table>
   <tr>
     <td valign='top' id='sprints'>
@@ -93,18 +91,24 @@
     <td valign='top' id='unordered'>
     </td>
   </tr>
+  <tr>
+    <td colspan="2" align="right">
+      <input type='button' value='Save' OnClick='save_all();'/> 
+    </td>
+  </tr>
 </table>
 
 [% team_sprint = team_sprints_array.first() %]
 
+<p>
   <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add Sprint</a> 
 | <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&status='[% team_sprint.sprint.status() %]'&sprintname='[% team_sprint.sprint.name() %]'&nominalschedule='[% team_sprint.sprint.nominal_schedule() %]'&description='[% team_sprint.sprint.description() %]'&editsprint=true">Edit Sprint</a>
+</p>
 
 <hr />
 
-<a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Back To Team</a><br>
-
-
-
+<p>
+  <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Manage Team</a><br>
+</p>
 
 [% PROCESS global/footer.html.tmpl %]
