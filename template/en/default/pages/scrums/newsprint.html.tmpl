@@ -27,30 +27,30 @@
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.12.custom.min.js"></script>
 
 <script scripttype="text/javascript">
-$(function () {
-    init();
-});
+  $(function () {
+      init();
+  });
 
-var range_begin = "";
-var range_end = "";
-var nominal_date = "";
+  var range_begin = "";
+  var range_end = "";
+  var nominal_date = "";
 
-function init()
-{
+  function init()
+  {
     $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
     $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
     $("#datepicker_nominal").datepicker({ dateFormat: 'yy-mm-dd' });
-}
+  }
 
-function gettime() 
-{
+  function gettime() 
+  {
     range_begin = $('#datepicker_min').val();
     range_end = $('#datepicker_max').val();
     nominal_date = $('#datepicker_nominal').val();
-}
+  }
 
-function archive()
-{
+  function archive()
+  {
     gettime();
     if(range_end == "")
     {
@@ -63,98 +63,99 @@ function archive()
         return false;
     }
 
-    return confirm("Are you sure you want to permanently deactivate and archive sprint '[% sprintname %]' \nOperation can not be undone");
-}
+    return confirm("Are you sure you want to archive sprint '[% sprintname %]'?");
+  }
 
-function cancel()
-{
+  function cancel()
+  {
     window.location = "page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]";  
-}
+  }
 
-function checkvalues()
-{
+  function checkvalues()
+  {
     gettime();
 
     var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
+
     if(sprintname == '')
     {
-        alert("Sprint must have name.");
-        return false;
+      alert("Sprint must have name.");
+      return false;
     }
+
     if(sprintname.match(/^\S/) == null)
     {
-        alert("Sprint name can not start with whitespace");
-        return false;
+      alert("Sprint name can not start with whitespace");
+      return false;
     }
+
     if(nominal_date == "")
     {
-        alert("Sprint must have nominal schedule.");
-        return false;
+      alert("Sprint must have nominal schedule.");
+      return false;
     }
-    return true;
-}
 
-function askconfirm()
-{
-        return confirm("Are you sure you want to permanently delete sprint '[% sprintname %]' \nOperation can not be undone");
-}
+    return true;
+  }
+
+  function askconfirm()
+  {
+    return confirm("Are you sure you want to delete sprint '[% sprintname %]'?");
+  }
 </script>
 
 <form method="post" name="newsprint" action="page.cgi">
-<input type="hidden" name="id" value="scrums/teambugs2.html"/>
-<input type="hidden" name="teamid" value="[% teamid %]"/>
-<input type="hidden" name="sprintid" value="[% sprintid %]"/>
+  <input type="hidden" name="id" value="scrums/teambugs2.html" />
+  <input type="hidden" name="teamid" value="[% teamid %]" />
+  <input type="hidden" name="sprintid" value="[% sprintid %]" />
+
+  [% IF editsprint %]
+    <input type="hidden" name="editsprint" value="true" />
+  [% ELSE %]
+    <input type="hidden" name="newsprint" value="true" />
+  [% END %]
+
+  <table>
+    <tr>
+      <th>Sprint Name:</th>
+      <td colspan="2"><input type="text" name="sprintname" value="[% sprintname %]"></td>
+    </tr>
+    <tr>
+      <th>Nominal Schedule:</th>
+      <td><input onchange="gettime();" type="text" value="[% nominalschedule %]" name="nominalschedule" id="datepicker_nominal" size="08"></td>
+    </tr>
+    <tr>
+      <th>Description:</th>
+      <td colspan="2"><input size="40" type="text" name="description" value="[% description %]"></td>
+    </tr>
+    <tr>
+      <th>Actual Duration:</th>
+      <td colspan=3">
+         <input onchange="gettime();" type="text" value="[% start_date %]" name="start_date" id="datepicker_min" size="08">-
+         <input onchange="gettime();" type="text" value="[% end_date %]" name="end_date" id="datepicker_max" size="08">
+      </td>
+    </tr>
+    <tr><td colspan="4"></td></tr>
+    <tr>
+      <td colspan="4" align="right">
+        [% submittext = (editsprint != "" ? "Save" : "Create") %]
+
+        <input type="button" value="Cancel" onclick="cancel()"/>
+        <input type="submit" value="[% submittext %]" onclick="return checkvalues()"/>
+      </td>
+    </tr>
+  </table>
+</form>
+
 [% IF editsprint %]
-<input type="hidden" name="editsprint" value="true"/>
-[% ELSE %]
-<input type="hidden" name="newsprint" value="true"/>
+  <a href="page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]&archivesprint=[% sprintid %]" onclick='return archive();'>Archive Sprint</a>
 [% END %]
 
-<table>
-  <tr>
-        <td><b>Sprint name:</b></td>
-        <td><input type="text" name="sprintname" value="[% sprintname %]"></td>
-        <td colspan="2">&nbsp</td>
-  </tr>
-  <tr>
-        <td><b>Nominal schedule:</b></td>
-        <td><input onchange="gettime();" type="text" value="[% nominalschedule %]" name="nominalschedule" id="datepicker_nominal" size="08"></td>
-        <td colspan="2">&nbsp</td>
-  </tr>
-  <tr>
-        <td><b>Description:</b></td>
-        <td><input type="text" name="description" value="[% description %]"></td>
-        <td colspan="2">&nbsp</td>
-  </tr>
-  <tr>
-        <td><b>Actual duration:</b></td>
-        <td><input onchange="gettime();" type="text" value="[% start_date %]" name="start_date" id="datepicker_min" size="08"></td>-
-        <td><input onchange="gettime();" type="text" value="[% end_date %]" name="end_date" id="datepicker_max" size="08"></td>
-        <td colspan="2">&nbsp</td>
-  </tr>
-  <tr>
-        <td>&nbsp</td>
-        <td colspan="3">
-                <input type="button" value="Cancel" onclick="cancel()"/>
-                [% submittext = (editsprint != "" ? "Save" : "Create") %]
-                <input type="submit" value="[% submittext %]" onclick="return checkvalues()"/>
-        </td>
-  </tr>
-        [% IF editsprint %]
-  <tr>
-        <td colspan="3">
-                <a href="page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]&archivesprint=[% sprintid %]" onclick='return archive();'>[archive sprint]<a/>
-        </td>
-  </tr>
-        [% END %]
-  <tr>
-        [% IF sprintid %]
-        <td colspan="4"><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]&deletesprint=[% sprintid %]" onclick='return askconfirm()'>[delete sprint]</a></td>
-        [% ELSE %]
-        <td colspan="4">&nbsp</td>
-        [% END %]
-  </tr>
-</table>
-</form>
+[% IF sprintid %]
+  [% IF editsprint %]
+    |
+  [% END %]
+  <a href="page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]&deletesprint=[% sprintid %]" onclick='return askconfirm()'>Delete Sprint</a>
+[% END %]
 
 [% PROCESS global/footer.html.tmpl %]

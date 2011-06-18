@@ -95,13 +95,16 @@
   </tr>
 </table>
 
-<a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Back To Team</a><br>
+[% team_sprint = team_sprints_array.first() %]
+
+  <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add Sprint</a> 
+| <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&status='[% team_sprint.sprint.status() %]'&sprintname='[% team_sprint.sprint.name() %]'&nominalschedule='[% team_sprint.sprint.nominal_schedule() %]'&description='[% team_sprint.sprint.description() %]'&editsprint=true">Edit Sprint</a>
 
 <hr />
 
-<a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add</a> sprint for team '[% team.name %]'. 
+<a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Back To Team</a><br>
 
-[% team_sprint = team_sprints_array.first() %]
-<a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&status='[% team_sprint.sprint.status() %]'&sprintname='[% team_sprint.sprint.name() %]'&nominalschedule='[% team_sprint.sprint.nominal_schedule() %]'&description='[% team_sprint.sprint.description() %]'&editsprint=true">Edit</a>' sprint '[% team_sprint.sprint.name() %]'.
+
+
 
 [% PROCESS global/footer.html.tmpl %]

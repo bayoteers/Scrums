@@ -77,14 +77,10 @@
           </a>
         </td>
         <td>
-          <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">
-            [% owner.name %]
-          </a>
+          [% owner.name %]
         </td>
         <td>
-          <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">
-            [% scrum_master.name %]
-          </a>
+          [% scrum_master.name %]
         </td>
       </tr>
     [% END %]
@@ -95,12 +91,15 @@
   [% END %]
 </table>
 
-<hr>
-
-<a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>. 
-
 [% IF user.in_group('admin') %]
-  <a href="page.cgi?id=scrums/newteam.html">Add Team</a>
+  <p>
+    <a href="page.cgi?id=scrums/newteam.html">Add Team</a>
+  </p>
 [% END %]
+
+<hr />
+
+<a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
+
 
 [% PROCESS global/footer.html.tmpl %]
