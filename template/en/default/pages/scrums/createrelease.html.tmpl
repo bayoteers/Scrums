@@ -26,7 +26,7 @@
 <script scripttype="text/javascript">
 function askconfirm(releasename, flagtypename)
 {
-	return confirm("Are you sure you want to remove flag type '" + flagtypename + "' from release '" + releasename + "'");
+        return confirm("Are you sure you want to remove flag type '" + flagtypename + "' from release '" + releasename + "'");
 }
 </script>
 
@@ -159,8 +159,8 @@ No flagtypes for release<br>
 <a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&addflagtype=true">Add</a>&nbsp;a flagtype to '[% release.name %]'.
 Edit release 
 '<a href="page.cgi?id=scrums/newrelease.html&editrelease='true'&releaseid=[% release.id %]&releasename=[% release.name %]&mr_begin=[% release.target_milestone_begin %]&
-	mr_end=[% release.target_milestone_end %]&algorithm=[% release.capacity_algorithm %]&original=[% release.original_capacity %]&remaining=[% release.remaining_capacity %]">
-	[% release.name %]</a>'.
+        mr_end=[% release.target_milestone_end %]&algorithm=[% release.capacity_algorithm %]&original=[% release.original_capacity %]&remaining=[% release.remaining_capacity %]">
+        [% release.name %]</a>'.
 [% END %]
 [% END %]
 

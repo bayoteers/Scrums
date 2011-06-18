@@ -26,17 +26,17 @@
 <script scripttype="text/javascript">
 function select(userid, realname, login)
 {
-	// alert("Select: " + userid + " " + realname + " " + login);
-	window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]id'].value=userid;
-	window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]realname'].value=realname;
-	window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]login'].value=login;
-	// alert("Select");
-	[% IF submit %]
-	// alert('Kutsutaan metodia submit');
-	window.opener.document.forms['[% formname %]'].submit();
-	[% END %]
-	window.close();
-	return false;
+        // alert("Select: " + userid + " " + realname + " " + login);
+        window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]id'].value=userid;
+        window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]realname'].value=realname;
+        window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]login'].value=login;
+        // alert("Select");
+        [% IF submit %]
+        // alert('Kutsutaan metodia submit');
+        window.opener.document.forms['[% formname %]'].submit();
+        [% END %]
+        window.close();
+        return false;
 }
 </script>
 
@@ -74,7 +74,7 @@ submit: [% submit %] -->
 <tr>
 [% IF thisuser.disabledtext %]
 <td class="bz_inactive">
- [% thisuser.realname 	  %]
+ [% thisuser.realname     %]
 </td>
 <td class="bz_inactive">
  [% thisuser.login_name   %]

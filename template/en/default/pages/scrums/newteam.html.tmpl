@@ -26,39 +26,39 @@
 <script scripttype="text/javascript">
 function cancel()
 {
-	window.location = "page.cgi?id=scrums/allteams.html";	
+        window.location = "page.cgi?id=scrums/allteams.html";   
 }
 
 function searchuser()
 {
-	window.open('page.cgi?id=scrums/searchperson.html&formname=newteam&formfieldprefix=user', '_blanck', 'directories=no,location=no,height=400');
-	return false;
+        window.open('page.cgi?id=scrums/searchperson.html&formname=newteam&formfieldprefix=user', '_blanck', 'directories=no,location=no,height=400');
+        return false;
 }
 
 function searchscrummaster()
 {
-	window.open('page.cgi?id=scrums/searchperson.html&formname=newteam&formfieldprefix=scrummaster', '_blanck', 'directories=no,location=no,height=400');
-	return false;
+        window.open('page.cgi?id=scrums/searchperson.html&formname=newteam&formfieldprefix=scrummaster', '_blanck', 'directories=no,location=no,height=400');
+        return false;
 }
 
 function checkvalues()
 {
-	if(window.document.forms['newteam'].elements['name'].value == '')
-	{
-		alert("Team must have name.");
-		return false;
-	}
-	if(window.document.forms['newteam'].elements['userid'].value == '')
-	{
-		alert("Team must have owner.");
-		return false;
-	}
-	return true;
+        if(window.document.forms['newteam'].elements['name'].value == '')
+        {
+                alert("Team must have name.");
+                return false;
+        }
+        if(window.document.forms['newteam'].elements['userid'].value == '')
+        {
+                alert("Team must have owner.");
+                return false;
+        }
+        return true;
 }
 
 function askconfirm()
 {
-	return confirm("Are you sure you want to permanently delete team '[% teamname %]' owner '[% realname %]'\nOperation can not be undone");
+        return confirm("Are you sure you want to permanently delete team '[% teamname %]' owner '[% realname %]'\nOperation can not be undone");
 }
 </script>
 
@@ -69,46 +69,46 @@ function askconfirm()
 <input type="hidden" name="scrummasterid" value="[% scrummasterid %]"/>
 <table>
   <tr>
-	<td><b>Team name:</b></td>
-	<td><input type="text" name="name" value="[% teamname %]"></td>
-	<td colspan="2">&nbsp</td>
+        <td><b>Team name:</b></td>
+        <td><input type="text" name="name" value="[% teamname %]"></td>
+        <td colspan="2">&nbsp</td>
   </tr>
   <tr>
-	<td><b>Team owner:</b></td>
-	<td>Real name</td>
-	<td colspan="2">Login</td>
+        <td><b>Team owner:</b></td>
+        <td>Real name</td>
+        <td colspan="2">Login</td>
   </tr>
   <tr>
-	<td>&nbsp</td>
-	<td><input type="text" name="userrealname" value="[% realname %]" disabled="true"/></td>
-	<td><input type="text" name="userlogin"value="[% loginname %]" disabled="true"/></td>
-	<td><input type="button" value="Search user" onclick="searchuser()"/>
+        <td>&nbsp</td>
+        <td><input type="text" name="userrealname" value="[% realname %]" disabled="true"/></td>
+        <td><input type="text" name="userlogin"value="[% loginname %]" disabled="true"/></td>
+        <td><input type="button" value="Search user" onclick="searchuser()"/>
   </tr>
   <tr>
-	<td><b>Scrum master:</b></td>
-	<td>Real name</td>
-	<td colspan="2">Login</td>
+        <td><b>Scrum master:</b></td>
+        <td>Real name</td>
+        <td colspan="2">Login</td>
   </tr>
   <tr>
-	<td>&nbsp</td>
-	<td><input type="text" name="scrummasterrealname" value="[% scrummasterrealname %]" disabled="true"/></td>
-	<td><input type="text" name="scrummasterlogin"value="[% scrummasterloginname %]" disabled="true"/></td>
-	<td><input type="button" value="Search user" onclick="searchscrummaster()"/>
+        <td>&nbsp</td>
+        <td><input type="text" name="scrummasterrealname" value="[% scrummasterrealname %]" disabled="true"/></td>
+        <td><input type="text" name="scrummasterlogin"value="[% scrummasterloginname %]" disabled="true"/></td>
+        <td><input type="button" value="Search user" onclick="searchscrummaster()"/>
   </tr>
   <tr>
-	<td>&nbsp</td>
-	<td colspan="3">
-		<input type="button" value="Cancel" onclick="cancel()"/>
-		[% submittext = (editteam != "" ? "Save" : "Create") %]
-		<input type="submit" value="[% submittext %]" onclick="return checkvalues()"/>
-	</td>
+        <td>&nbsp</td>
+        <td colspan="3">
+                <input type="button" value="Cancel" onclick="cancel()"/>
+                [% submittext = (editteam != "" ? "Save" : "Create") %]
+                <input type="submit" value="[% submittext %]" onclick="return checkvalues()"/>
+        </td>
   </tr>
   <tr>
-	[% IF teamid %]
-	<td colspan="4"><a href="page.cgi?id=scrums/allteams.html&deleteteam=[% teamid %]" onclick='return askconfirm()'>[delete team]</a></td>
-	[% ELSE %]
-	<td colspan="4">&nbsp</td>
-	[% END %]
+        [% IF teamid %]
+        <td colspan="4"><a href="page.cgi?id=scrums/allteams.html&deleteteam=[% teamid %]" onclick='return askconfirm()'>[delete team]</a></td>
+        [% ELSE %]
+        <td colspan="4">&nbsp</td>
+        [% END %]
   </tr>
 </table>
 </form>

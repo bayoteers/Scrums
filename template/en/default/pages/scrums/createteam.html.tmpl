@@ -40,13 +40,13 @@ table.main th {
 <script scripttype="text/javascript">
 function searchperson()
 {
-	window.open('page.cgi?id=scrums/searchperson.html&formname=addmember&formfieldprefix=user&submit=true', '_blanck', 'directories=no,location=no,height=400');
-	return false;
+        window.open('page.cgi?id=scrums/searchperson.html&formname=addmember&formfieldprefix=user&submit=true', '_blanck', 'directories=no,location=no,height=400');
+        return false;
 }
 
 function removal(component, product, team)
 {
-	return confirm("Do you wan to remove component " + component + " (" + product + ")" + " from team " + team);
+        return confirm("Do you wan to remove component " + component + " (" + product + ")" + " from team " + team);
 }
 </script>
 
@@ -142,7 +142,7 @@ Active sprint tasks</a>
 <td>[% subcomponent.product().name() %]</td>
 [% IF user.in_group('editteams') %]
 <td><a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id() %]&removedcomponent=[% subcomponent.id %]"
-	onclick="return removal('[% subcomponent.name() %]', '[% subcomponent.product().name() %]', '[% team.name() %]');">Remove</a></td>
+        onclick="return removal('[% subcomponent.name() %]', '[% subcomponent.product().name() %]', '[% team.name() %]');">Remove</a></td>
 [% END %]
 </tr>
 [% END %]

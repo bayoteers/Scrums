@@ -26,22 +26,22 @@
 <script scripttype="text/javascript">
 function cancel()
 {
-	window.location = "page.cgi?id=scrums/allreleases.html";	
+        window.location = "page.cgi?id=scrums/allreleases.html";        
 }
 
 function checkvalues()
 {
-	if(window.document.forms['newrelease'].elements['name'].value == '')
-	{
-		alert("Release must have name.");
-		return false;
-	}
-	return true;
+        if(window.document.forms['newrelease'].elements['name'].value == '')
+        {
+                alert("Release must have name.");
+                return false;
+        }
+        return true;
 }
 
 function askconfirm()
 {
-	return confirm("Are you sure you want to permanently delete release '[% releasename %]' \nOperation can not be undone");
+        return confirm("Are you sure you want to permanently delete release '[% releasename %]' \nOperation can not be undone");
 }
 </script>
 
@@ -51,51 +51,51 @@ function askconfirm()
 <input type="hidden" name="userid" value="[% ownerid %]"/>
 <table>
   <tr>
-	<td><b>Release name:</b></td>
-	<td><input type="text" name="releasename" value="[% releasename %]"></td>
-	<td colspan="2">&nbsp</td>
+        <td><b>Release name:</b></td>
+        <td><input type="text" name="releasename" value="[% releasename %]"></td>
+        <td colspan="2">&nbsp</td>
   </tr>
   <tr>
-	<td><b>Target milestone:</b></td>
-	<td><input type="text" name="mr_begin" value="[% mr_begin %]"/></td>
-	<td>-</td>
-	<td><input type="text" name="mr_end" value="[% mr_end %]"/></td>
+        <td><b>Target milestone:</b></td>
+        <td><input type="text" name="mr_begin" value="[% mr_begin %]"/></td>
+        <td>-</td>
+        <td><input type="text" name="mr_end" value="[% mr_end %]"/></td>
   </tr>
   <tr>
-	<td><b>Capacity algorithm:</b></td>
-	<td><input type="text" name="algorithm" value="[% algorithm %]" disabled="true"></td>
+        <td><b>Capacity algorithm:</b></td>
+        <td><input type="text" name="algorithm" value="[% algorithm %]" disabled="true"></td>
 <!-- <td><input type="text" name="algorithm" value="[% algorithm %]"></td> -->
 
-	<td colspan="2">&nbsp</td>
+        <td colspan="2">&nbsp</td>
   </tr>
   <tr>
-	<td><b>Original capacity:</b></td>
-	<td><input type="text" name="original" value="[% original %]" disabled="true"></td>
+        <td><b>Original capacity:</b></td>
+        <td><input type="text" name="original" value="[% original %]" disabled="true"></td>
 <!-- <td><input type="text" name="original" value="[% original %]"></td> -->
 
-	<td colspan="2">&nbsp</td>
+        <td colspan="2">&nbsp</td>
   </tr>
   <tr>
-	<td><b>Remaining capacity:</b></td>
-	<td><input type="text" name="remaining" value="[% remaining %]" disabled="true"></td>
+        <td><b>Remaining capacity:</b></td>
+        <td><input type="text" name="remaining" value="[% remaining %]" disabled="true"></td>
 <!-- <td><input type="text" name="remaining" value="[% remaining %]"></td> -->
 
-	<td colspan="2">&nbsp</td>
+        <td colspan="2">&nbsp</td>
   </tr>
   <tr>
-	<td>&nbsp</td>
-	<td colspan="3">
-		<input type="button" value="Cancel" onclick="cancel()"/>
-		[% submittext = (editrelease != "" ? "Save" : "Create") %]
-		<input type="submit" value="[% submittext %]" onclick="return checkvalues()"/>
-	</td>
+        <td>&nbsp</td>
+        <td colspan="3">
+                <input type="button" value="Cancel" onclick="cancel()"/>
+                [% submittext = (editrelease != "" ? "Save" : "Create") %]
+                <input type="submit" value="[% submittext %]" onclick="return checkvalues()"/>
+        </td>
   </tr>
   <tr>
-	[% IF releaseid %]
-	<td colspan="4"><a href="page.cgi?id=scrums/allreleases.html&deleterelease=[% releaseid %]" onclick='return askconfirm()'>[delete release]</a></td>
-	[% ELSE %]
-	<td colspan="4">&nbsp</td>
-	[% END %]
+        [% IF releaseid %]
+        <td colspan="4"><a href="page.cgi?id=scrums/allreleases.html&deleterelease=[% releaseid %]" onclick='return askconfirm()'>[delete release]</a></td>
+        [% ELSE %]
+        <td colspan="4">&nbsp</td>
+        [% END %]
   </tr>
 
 </table>
