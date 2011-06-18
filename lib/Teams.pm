@@ -495,7 +495,7 @@ sub show_team_and_sprints {
                 $error = _update_sprint($vars, $sprint_id);
             }
             else {
-                $error = "Invalid sprint id";
+                $error = "Invalid Sprint ID";
             }
         }
     }
