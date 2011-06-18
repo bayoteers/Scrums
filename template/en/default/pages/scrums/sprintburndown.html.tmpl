@@ -21,8 +21,7 @@
 
 [% PROCESS global/header.html.tmpl
     title = "Sprint burndown"
-     style_urls = 
-['skins/standard/admin.css','extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css'] 
+    style_urls = ['skins/standard/admin.css','extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css'] 
 %]
 
 <link rel="stylesheet" href="extensions/Scrums/web/css/scrums.css">
@@ -33,33 +32,33 @@
 <script language="javascript" type="text/javascript" src="extensions/Scrums/web/js/jquery.flot.pie.js"></script>
 
 <script type="text/javascript">
-var rem = [[% FOREACH plot IN remaining_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
-var work = [[% FOREACH plot IN worktime_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
+  var rem = [[% FOREACH plot IN remaining_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
+  var work = [[% FOREACH plot IN worktime_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
 
-var open_closed = [
-[% IF summary.open %]
+  var open_closed = [
+  [% IF summary.open %]
                 { label: "Open items",  data: [% summary.open %]}
-[% END %]
-[% IF summary.open && summary.closed %],[% END %]
-[% IF summary.closed %]
+  [% END %]
+  [% IF summary.open && summary.closed %],[% END %]
+  [% IF summary.closed %]
                 { label: "Closed items",  data: [% summary.closed %]} 
-[% END %]
-];
+  [% END %]
+  ];
 
-var status_list = [
+  var status_list = [
         [% FOREACH status IN slist %]
                 { label: "[% status.0 %]", data: [% status.1 %]},
         [% END %]
         ];
 
-var max_ts, min_ts, max_date, min_date;
+  var max_ts, min_ts, max_date, min_date;
 
-var options = {
+  var options = {
     xaxis: { mode: "time", tickLength: 5 },
     selection: { mode: "x" }
-};
+  };
 
-var pie_options = {
+  var pie_options = {
         series: {
             pie: {
                 show: true,
@@ -80,23 +79,23 @@ var pie_options = {
         legend: {
             show: false
         }
-};
+  };
 
-$(function () {
+  $(function () {
     var ch = $("#testi_id");
     ch[0].checked = false;
 
     init();
-});
+  });
 
-function init()
-{
-/**
- * Flot library, which draws chart, will always show time scale in UTC. We do not want to
- * look at timescale in UTC. Because this can not be set into Flot library, we do a trick
- * in which we shift time data with timezone offset. Then we pretend, that time, which is
- * shown in UTC, is apparent server time.
- */
+  function init()
+  {
+    /**
+     * Flot library, which draws chart, will always show time scale in UTC. We do not want to
+     * look at timescale in UTC. Because this can not be set into Flot library, we do a trick
+     * in which we shift time data with timezone offset. Then we pretend, that time, which is
+     * shown in UTC, is apparent server time.
+     */
     var d = new Date();
     var tzo = -d.getTimezoneOffset() * 60 * 1000; // Timezone offset in milliseconds
 
@@ -118,19 +117,19 @@ function init()
     $("#datepicker_max").datepicker({ minDate: min_date, maxDate: max_date, dateFormat: 'yy-mm-dd' });
 
     reset_range();
-}
+  }
 
-function reset_range()
-{
+  function reset_range()
+  {
     $('#datepicker_min').val(format_date(min_date));
     $('#datepicker_max').val(format_date(max_date));
 
     scale_chart();
     refresh();
-}
+  }
 
-function refresh()
-{
+  function refresh()
+  {
     var ch = $("#testi_id");
     var work_selected = ch[0].checked;
     if(work_selected)
@@ -145,10 +144,10 @@ function refresh()
     $.plot($("#pie1"), open_closed, pie_options);
 
     $.plot($("#pie2"), status_list, pie_options);
-}
+  }
 
-function gettime() 
-{
+  function gettime() 
+  {
     var range_begin = make_time($('#datepicker_min').val());
     var range_end = make_time($('#datepicker_max').val(), true);
 
@@ -163,10 +162,10 @@ function gettime()
         scale_chart(range_begin, range_end); 
     }
     refresh();
-}
+  }
 
-function scale_chart(range_begin, range_end) 
-{
+  function scale_chart(range_begin, range_end) 
+  {
     var min_value = min_ts;
     if(range_begin && range_begin >= min_ts) 
     {
@@ -180,10 +179,10 @@ function scale_chart(range_begin, range_end)
         max_value = range_end;
     }
     options.xaxis.max = max_value;
-}
+  }
 
-function make_time(str_with_dashes, is_upper_limit) 
-{
+  function make_time(str_with_dashes, is_upper_limit) 
+  {
     var str_with_dots = "";
     var y, m, d;
     var str1 = str_with_dashes.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
@@ -206,10 +205,10 @@ function make_time(str_with_dashes, is_upper_limit)
         else
             return date.getTime();
     }
-}
+  }
 
-function format_date(date)
-{
+  function format_date(date)
+  {
     var y = date.getFullYear();
     var m = date.getMonth()+1;
     var d = date.getDate();
@@ -219,55 +218,56 @@ function format_date(date)
         d = "0" + d;
     var str = y + "-" + m + "-" + d;
     return str;
-}
+  }
 </script>
 
 <div class="bz_title_container">
-      Team '[% team_name %]' sprint '[% sprint_name %]'
+  [% team_name %] Sprint [% sprint_name %]
 </div>
 
-
-
 [% IF slist.size > 0 %]
-<br>
-<table><tr><td>
+  <table>
+    <tr>
+      <td>
+        <div id="placeholder" style="width:800px;height:400px;"></div>
 
-    <div id="placeholder" style="width:800px;height:400px;"></div>
-<input type="checkbox" id="testi_id" onclick="refresh();">
-<label for="testi_id">Show total work amount</label>
-</input>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Show days: <input onchange="gettime();" type="text" value="" id="datepicker_min" size="08">-<input onchange="gettime();" type="text" value="" id="datepicker_max" size="08">
-&nbsp;<button onclick="reset_range();">Reset</button>
+        <input type="checkbox" id="testi_id" onclick="refresh();">
+          <label for="testi_id">Show total work amount</label>
+        </input>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Show days: <input onchange="gettime();" type="text" value="" id="datepicker_min" size="08">-<input onchange="gettime();" type="text" value="" id="datepicker_max" size="08">
+        &nbsp;<button onclick="reset_range();">Reset</button>
+      </td>
+      <td style="padding-left: 50px;">
+        <div id="pie1" style="width:200px;height:200px;"></div>
 
-</td><td style="padding-left: 50px;">
+        <table>
+          [% IF summary.open %]
+            <tr><td>Open items:</td><td>[% summary.open %]</td></tr>
+          [% END %]
 
-<div id="pie1" style="width:200px;height:200px;"></div>
-<table>
-[% IF summary.open %]
-<tr><td>Open items:</td><td>[% summary.open %]</td></tr>
-[% END %]
-[% IF summary.closed %]
-<tr><td>Closed items:</td><td> [% summary.closed %]</td></tr>
-[% END %]
-</table>
-
-</td><td style="padding-left: 50px;">
-
-<div id="pie2" style="width:200px;height:200px;"></div>
-<table>
-[% FOREACH status IN slist %]
-<tr><td>[% status.0 %]</td><td>[% status.1 %]</td></tr>
-[% END %]
-</table>
-</td>
-</tr></table>
-
+          [% IF summary.closed %]
+            <tr><td>Closed items:</td><td> [% summary.closed %]</td></tr>
+          [% END %]
+        </table>
+      </td>
+      <td style="padding-left: 50px;">
+        <div id="pie2" style="width:200px;height:200px;"></div>
+      
+        <table>
+          [% FOREACH status IN slist %]
+            <tr><td>[% status.0 %]</td><td>[% status.1 %]</td></tr>
+          [% END %]
+        </table>
+      </td>
+    </tr>
+  </table>
 [% ELSE %]
-<br>
-Sprint contains no items.<br>
-<br><br>
+  <p>
+    Sprint contains no items.
+  </p>
 [% END %]
 
-<a href="page.cgi?id=scrums/createteam.html&teamid=[% team_id %]">back to team</a>
+<a href="page.cgi?id=scrums/createteam.html&teamid=[% team_id %]">Back To Team</a>
+
 [% PROCESS global/footer.html.tmpl %]

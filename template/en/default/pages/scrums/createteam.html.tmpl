@@ -25,201 +25,197 @@
 
 <link rel="stylesheet" href="extensions/Scrums/web/css/scrums.css">
 
-<style>
-<!--
-
-table.main th {
+<style type="text/css">
+  <!--
+  table.main th {
     text-align: right;
     min-width: 200px;
     white-space: nowrap;
-}
--->
+  }
+  -->
 </style>
 
-
 <script scripttype="text/javascript">
-function searchperson()
-{
-        window.open('page.cgi?id=scrums/searchperson.html&formname=addmember&formfieldprefix=user&submit=true', '_blanck', 'directories=no,location=no,height=400');
-        return false;
-}
+  function searchperson()
+  {
+    window.open('page.cgi?id=scrums/searchperson.html&formname=addmember&formfieldprefix=user&submit=true', '_blanck', 'directories=no,location=no,height=400');
+    return false;
+  }
 
-function removal(component, product, team)
-{
-        return confirm("Do you wan to remove component " + component + " (" + product + ")" + " from team " + team);
-}
+  function removal(component, product, team)
+  {
+    return confirm("Do you wan to remove component " + component + " (" + product + ")" + " from team " + team);
+  }
 </script>
 
 [% IF error %]
-Error msg: [% error %]
+  Error msg: [% error %]
 [% ELSE %]
+  [% IF teamisnew %]
+    Team created!
+  [% END %]
 
-[% IF teamisnew %]
-Team created!
-[% END %]
+  <h1>
+    Team [% team.name %]
+  </h1>
 
-<h1>
-      Team '[% team.name %]'
-</h1>
+  <h2>Daily Tasks</h2>
 
-<h2>Daily Tasks</h2>
-<ul>
-[% IF active_sprint_id %]
-<li><a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
-Active sprint tasks</a>
-[% END %]
-<li><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">New bugs</a></li>
-</ul>
-<h2>Team Planning</h2>
-<ul>
-[% IF active_sprint_id %]
-<li><a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">Sprint burndown chart</a>
-[% END %]
-<li><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% team.id %]">Sprint planning</a>
-<li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Team product back-log</a>
-<li><a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">Archived sprints</a>
-</ul>
+  <ul>
+    [% IF active_sprint_id %]
+      <li>
+        <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
+          Show Remaining Items In Sprint
+        </a>
+      </li>
+    [% END %]
 
-[% owner = team.owner_user() %]
-[% scrum_master = team.scrum_master_user() %]
-<h2>Team</h2>
-<table class="main">
-<tr>
-<th>Name:</th>
-<td colspan="2">[% team.name %]</td>
-<td>
-&nbsp
-</td>
-</tr>
-<tr>
-<th>Owner:</th>
-<td colspan="2">[% owner.name() %]</td>
-<td>&nbsp</td>
-</tr>
-<tr>
-<th>&nbsp</th>
-<td colspan="2">[% owner.login() %]</td>
-<td>&nbsp</td>
-</tr>
-<tr>
-<th><b>Scrum master:</b></th>
-<td colspan="2">[% scrum_master.name() %]</td>
-<td>&nbsp</td>
-</tr>
-<tr>
-<th>&nbsp</th>
-<td colspan="2">[% scrum_master.login() %]</td>
-<td>&nbsp</td>
-</tr>
+    <li><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">Show Unprioritized Items</a></li>
+  </ul>
 
-<tr>
-<td colspan="4">&nbsp</td>
-</tr>
-<tr>
-<th>Weekly velocity:</th>
-<td>[% team.weekly_velocity_value %]</td>
-<td>[% team.weekly_velocity_start %]</td>
-<td>[% team.weekly_velocity_end %]</td>
-</tr>
-</table>
+  <h2>Team Planning</h2>
+  <ul>
+    [% IF active_sprint_id %]
+      <li><a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">Sprint Burndown Chart</a>
+    [% END %]
 
-[% components = team.components() %]
-[% IF components.size() > 0 %]
-<h2>Responsibilities</h2>
-<table class="main"><tr><th>&nbsp;</th><td>
-<table border=1 cellpadding=4 cellspacing=0>
-<tr bgcolor="#6666ff">
-<td><b>Sub-component</b></td>
-<td><b>Product</b></td>
-[% IF user.in_group('editteams') %]
-<td><b>Action</b></td>
-[% END %]
-</tr>
+    <li><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% team.id %]">Sprint Planning</a>
+    <li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Product Backlog</a>
+    <li><a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">Archived Sprints</a>
+  </ul>
 
-[% FOREACH subcomponent IN components %]
-<tr>
-<td>[% subcomponent.name() %]</td>
-<td>[% subcomponent.product().name() %]</td>
-[% IF user.in_group('editteams') %]
-<td><a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id() %]&removedcomponent=[% subcomponent.id %]"
-        onclick="return removal('[% subcomponent.name() %]', '[% subcomponent.product().name() %]', '[% team.name() %]');">Remove</a></td>
-[% END %]
-</tr>
-[% END %]
-</table>
-</td></tr></table>
+  [% owner = team.owner_user() %]
+  [% scrum_master = team.scrum_master_user() %]
 
-[% ELSE %]
-<table class="main">
-<tr>
-<th>Responsibility:</th>
-<td colspan="3">
-Not responsible for sub-components
-</td>
-</tr>
-</table>
-[% END %]
+  <h2>Team Summary</h2>
+  <table>
+    <tr>
+      <th>Name:</th>
+      <td colspan="3">[% team.name %]</td>
+    </tr>
+    <tr>
+      <th>Owner:</th>
+      <td colspan="3">[% owner.name() %]</td>
+    </tr>
+    <tr>
+      <th>&nbsp</th>
+      <td colspan="3">[% owner.login() %]</td>
+    </tr>
+    <tr>
+      <th><b>Scrum Master:</b></th>
+      <td colspan="3">[% scrum_master.name() %]</td>
+    </tr>
+    <tr>
+      <th>&nbsp</th>
+      <td colspan="3">[% scrum_master.login() %]</td>
+    </tr>
+    <tr>
+      <th>Weekly Velocity:</th>
+      <td>[% team.weekly_velocity_value %]</td>
+      <td>[% team.weekly_velocity_start %]</td>
+      <td>[% team.weekly_velocity_end %]</td>
+    </tr>
+  </table>
 
-<h2>Members</h2>
+  [% components = team.components() %]
 
-[% members = team.members() %]
-[% IF members.size() > 0 %]
-<table class="main"><tr><th>&nbsp;</th><td>
-<table border=1 cellpadding=4 cellspacing=0>
-  <tr bgcolor="#6666ff">
-    <td><b>User name</b></td>
-[% IF user.in_group('editteams') %]
-    <td><b>Action</b></td>
-[% END %]
-  </tr>
-[% FOREACH member IN members %]
-<tr>
-<td>
-[% member.name() %]
-</td>
-[% IF user.in_group('editteams') %]
-<td>
-<a href="page.cgi?id=scrums/createteam.html&userid=[% member.id() %]&teamid=[% team.id() %]&username=[% member.name() %]&userlogin=[% member.login() %]">
-Remove
-</a>
-</td>
-[% END %]
+  [% IF components.size() > 0 %]
+    <h2>Responsibilities</h2>
 
-</tr>
-[% END %]
-</table>
-</td></tr></table>
-[% ELSE %]
-This team has no members.
-[% END %]
-</td>
+    <table>
+      <tr>
+        <th>Product</th>
+        <th>Component</th>
+        [% IF user.in_group('editteams') %]
+          <th>Action</th>
+        [% END %]
+      </tr>
 
-</tr>
-</table>
+      [% FOREACH subcomponent IN components %]
+        <tr>
+          <td>[% subcomponent.product().name() %]</td>
+          <td>[% subcomponent.name() %]</td>
+          [% IF user.in_group('editteams') %]
+            <td>
+              <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id() %]&removedcomponent=[% subcomponent.id %]" onclick="return removal('[% subcomponent.name() %]', '[% subcomponent.product().name() %]', '[% team.name() %]');">Remove</a>
+            </td>
+          [% END %]
+        </tr>
+      [% END %]
+    </table>
+  [% ELSE %]
+    <table>
+      <tr>
+        <th>Responsibility:</th>
+        <td colspan="3">
+          Not responsible for any components.
+        </td>
+      </tr>
+    </table>
+  [% END %]
 
-<form name="addmember" method="post" action="page.cgi" onsubmit="alert('submit');">
-<input type="hidden" name="id" value="scrums/addintoteam.html"/>
-<input type="hidden" name="teamid" value="[% team.id %]"/>
-<input type="hidden" name="teamname" value="[% team.name %]"/>
-<input type="hidden" name="userid" />
-<input type="hidden" name="userrealname" />
-<input type="hidden" name="userlogin" />
-</form>
+  <h2>Members</h2>
 
-<hr>
-<a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
-[% IF user.in_group('editteams') %]
-<a href="page.cgi?id=scrums/choose-classification.html&teamid=[% team.id %]">Add sub-component</a>&nbsp;to '[% team.name %]'.
-[% END %]
-[% IF user.in_group('editteams') %]
-<a href="" onclick="return searchperson();">Add member</a>&nbsp;to '[% team.name %]'.
-[% END %]
-[% IF user.in_group('editteams') %]
-Edit team&nbsp; 
-<a href="page.cgi?id=scrums/newteam.html&editteam='true'&teamid=[% team.id %]&teamname=[% team.name() %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&ownerid=[% owner.id() %]&scrummasterrealname=[% scrum_master.name() %]&scrummasterloginname=[% scrum_master.login() %]&scrummasterid=[% scrum_master.id() %]">[% team.name() %]</a>.
-[% END %]
+  [% members = team.members() %]
 
+  [% IF members.size() > 0 %]
+    <table>
+      <tr>
+        <th>Username</th>
+        [% IF user.in_group('editteams') %]
+          <th>Action</th>
+        [% END %]
+      </tr>
 
+      [% FOREACH member IN members %]
+        <tr>
+          <td>
+            [% member.name() %]
+          </td>
+          [% IF user.in_group('editteams') %]
+            <td>
+              <a href="page.cgi?id=scrums/createteam.html&userid=[% member.id() %]&teamid=[% team.id() %]&username=[% member.name() %]&userlogin=[% member.login() %]">Remove</a>
+            </td>
+          [% END %]
+        </tr>
+      [% END %]
+    </table>
+  [% ELSE %]
+    <table>
+      <tr>
+        <th>Members:</th>
+        <td colspan="3">
+          This team has no members.
+        </td>
+      </tr>
+    </table>
+    This team has no members.
+  [% END %]
+
+  <form name="addmember" method="post" action="page.cgi" onsubmit="alert('submit');">
+    <input type="hidden" name="id" value="scrums/addintoteam.html"/>
+    <input type="hidden" name="teamid" value="[% team.id %]"/>
+    <input type="hidden" name="teamname" value="[% team.name %]"/>
+    <input type="hidden" name="userid" />
+    <input type="hidden" name="userrealname" />
+    <input type="hidden" name="userlogin" />
+  </form>
+
+  <hr />
+
+  <a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
+  [% IF user.in_group('editteams') %]
+    <a href="page.cgi?id=scrums/choose-classification.html&teamid=[% team.id %]">Add sub-component</a>&nbsp;to '[% team.name %]'.
+  [% END %]
+
+  [% IF user.in_group('editteams') %]
+    <a href="" onclick="return searchperson();">Add member</a>&nbsp;to '[% team.name %]'.
+  [% END %]
+
+  [% IF user.in_group('editteams') %]
+    Edit team&nbsp; 
+   <a href="page.cgi?id=scrums/newteam.html&editteam='true'&teamid=[% team.id %]&teamname=[% team.name() %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&ownerid=[% owner.id() %]&scrummasterrealname=[% scrum_master.name() %]&scrummasterloginname=[% scrum_master.login() %]&scrummasterid=[% scrum_master.id() %]">[% team.name() %]</a>.
+  [% END %]
 [% END %]
 
 <a href="page.cgi?id=scrums/allteams.html">Manage Teams</a>

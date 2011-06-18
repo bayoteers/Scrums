@@ -20,7 +20,7 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Team daily tasks" 
+    title = "Team Daily Tasks" 
     style_urls = ['skins/standard/admin.css']
 %]
 
@@ -30,7 +30,7 @@
 
 <script>
 
-var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Bugs', $("#TeamBugLiTmpl"));
+var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', $("#TeamBugLiTmpl"));
 
 var all_lists = [];
 
@@ -88,10 +88,10 @@ $(document).ready(function() {
 </script>
 
   <div class="bz_title_container">
-      Team '[% team.name %]' daily tasks
+      [% team.name %] Daily Tasks
   </div>
 
-<input type='button' value='save' OnClick='save_all();'/> 
+<input type='button' value='Save' OnClick='save_all();'/> 
 
 <table>
     <tr>
