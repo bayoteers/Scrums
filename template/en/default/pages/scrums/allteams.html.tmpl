@@ -26,77 +26,81 @@
 
 <h1>Manage Teams</h1>
 
-<table border=1 cellpadding=4 cellspacing=0>
-[% IF teamlist.size > 0 %]
-  <tr bgcolor="#6666ff">
-    <th>
-    [% IF sort == 1 %] 
-    <a href="page.cgi?id=scrums/allteams.html&sort=2">Name</a>
-    <span class="bz_sort_order_primary">&#x25B2;</span>
-    [% ELSIF sort == 2 %]
-    <a href="page.cgi?id=scrums/allteams.html&sort=1">Name</a>
-    <span class="bz_sort_order_primary">&#x25BC;</span>
-    [% ELSE %]
-    <a href="page.cgi?id=scrums/allteams.html&sort=1">Name</a>
+<table>
+  [% IF teamlist.size > 0 %]
+    <tr>
+      <th>
+        [% IF sort == 1 %] 
+          <a href="page.cgi?id=scrums/allteams.html&sort=2">Name</a>
+          <span class="bz_sort_order_primary">&#x25B2;</span>
+        [% ELSIF sort == 2 %]
+          <a href="page.cgi?id=scrums/allteams.html&sort=1">Name</a>
+          <span class="bz_sort_order_primary">&#x25BC;</span>
+        [% ELSE %]
+          <a href="page.cgi?id=scrums/allteams.html&sort=1">Name</a>
+        [% END %]
+      </th>
+
+      <th>
+        [% IF sort == 3 %] 
+          <a href="page.cgi?id=scrums/allteams.html&sort=4">Owner</a>
+          <span class="bz_sort_order_primary">&#x25B2;</span>
+        [% ELSIF sort == 4 %]
+          <a href="page.cgi?id=scrums/allteams.html&sort=3">Owner</a>
+          <span class="bz_sort_order_primary">&#x25BC;</span>
+        [% ELSE %]
+          <a href="page.cgi?id=scrums/allteams.html&sort=3">Owner</a>
+        [% END %]
+      </th>
+
+      <th>
+        [% IF sort == 5 %] 
+          <a href="page.cgi?id=scrums/allteams.html&sort=6">Scrum Master</a>
+          <span class="bz_sort_order_primary">&#x25B2;</span>
+        [% ELSIF sort == 6 %]
+          <a href="page.cgi?id=scrums/allteams.html&sort=5">Scrum Master</a>
+          <span class="bz_sort_order_primary">&#x25BC;</span>
+        [% ELSE %]
+          <a href="page.cgi?id=scrums/allteams.html&sort=5">Scrum Master</a>
+        [% END %]
+      </th>
+    </tr>
+
+    [% FOREACH team IN teamlist %]
+      [% owner = team.owner_user() %]
+      [% scrum_master = team.scrum_master_user() %]
+
+      <tr>
+        <td>
+          <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">
+            [% team.name %]
+          </a>
+        </td>
+        <td>
+          <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">
+            [% owner.name %]
+          </a>
+        </td>
+        <td>
+          <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">
+            [% scrum_master.name %]
+          </a>
+        </td>
+      </tr>
     [% END %]
-    </th>
-
-    <th>
-    [% IF sort == 3 %] 
-    <a href="page.cgi?id=scrums/allteams.html&sort=4">Owner</a>
-    <span class="bz_sort_order_primary">&#x25B2;</span>
-    [% ELSIF sort == 4 %]
-    <a href="page.cgi?id=scrums/allteams.html&sort=3">Owner</a>
-    <span class="bz_sort_order_primary">&#x25BC;</span>
-    [% ELSE %]
-    <a href="page.cgi?id=scrums/allteams.html&sort=3">Owner</a>
-    [% END %]
-    </th>
-
-    <th>
-    [% IF sort == 5 %] 
-    <a href="page.cgi?id=scrums/allteams.html&sort=6">Login</a>
-    <span class="bz_sort_order_primary">&#x25B2;</span>
-    [% ELSIF sort == 6 %]
-    <a href="page.cgi?id=scrums/allteams.html&sort=5">Login</a>
-    <span class="bz_sort_order_primary">&#x25BC;</span>
-    [% ELSE %]
-    <a href="page.cgi?id=scrums/allteams.html&sort=5">Login</a>
-    [% END %]
-    </th>
-
-  </tr>
-[% FOREACH team IN teamlist %]
-[% owner = team.owner_user() %]
-<tr>
-<td>
-<a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">
-[% team.name %]
-</a>
-</td>
-<td>
-<a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">
-[% owner.name %]
-</a>
-</td>
-<td>
-<a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">
-[% owner.login %]
-</a>
-</td>
-</tr>
-
-[% END %]
-[% ELSE %]
-<tr><td>Zero teams!</td></tr>
-[% END %]
+  [% ELSE %]
+    <tr>
+      <td>Zero teams!</td>
+    </tr>
+  [% END %]
 </table>
 
-
 <hr>
+
 <a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>. 
+
 [% IF user.in_group('admin') %]
-<a href="page.cgi?id=scrums/newteam.html">Add team</a>
+  <a href="page.cgi?id=scrums/newteam.html">Add Team</a>
 [% END %]
 
 [% PROCESS global/footer.html.tmpl %]
