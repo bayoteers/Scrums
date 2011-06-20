@@ -54,11 +54,22 @@ sub bug_end_of_update {
             my $estimated_time = $bug->estimated_time();
             my $actual_time    = $bug->actual_time();
 
-            if ($estimated_time == 0) {
-                ThrowUserError("scrums_estimated_time_required");
+            my $filling_forced = 0;
+            my $precondition_enabled_severity = Bugzilla->params->{"scrums_precondition_enabled_severity"};
+
+            foreach my $enabled_severity (@$precondition_enabled_severity) {
+                if ($enabled_severity eq $bug->bug_severity()) {
+                    $filling_forced = 1;
+                }
             }
-            elsif ($actual_time == 0) {
-                ThrowUserError("scrums_actual_time_required");
+
+            if($filling_forced) {
+                if ($estimated_time == 0) {
+                    ThrowUserError("scrums_estimated_time_required");
+                }
+                elsif ($actual_time == 0) {
+                    ThrowUserError("scrums_actual_time_required");
+                }
             }
         }
     }

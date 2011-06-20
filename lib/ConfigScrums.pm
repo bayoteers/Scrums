@@ -35,6 +35,13 @@ sub get_param_list {
                         type    => 'm',
                         choices => [ 'blocker', 'change_request', 'critical', 'feature', 'major', 'minor', 'normal', 'task' ],
                         default => [ 'task', 'feature' ]
+                      },
+                      {
+                        name    => 'scrums_precondition_enabled_severity',
+                        desc    => 'List of severities of those bugs, that are required to have estimated time and worked time when closing bug.',
+                        type    => 'm',
+                        choices => [ 'task', 'feature' ],
+                        default => [ 'task', 'feature' ]
                       }
                      );
     return @param_list;
