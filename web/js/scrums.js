@@ -156,10 +156,10 @@ function update_lists(bugs_list, move_pos, data) {
 
     var template;
     if(bugs_list.li_tmpl) {
-	template = bugs_list.li_tmpl
+        template = bugs_list.li_tmpl
     }
     else {
-	template = $("#BugLiTmpl");
+        template = $("#BugLiTmpl");
     } 
           html += parseTemplate(template.html(), {
           bug: bugs_list.list[bugs_list.visible[i]],
@@ -167,7 +167,13 @@ function update_lists(bugs_list, move_pos, data) {
         });
 
     } // for
-    $("#" + bugs_list.ul_id).html(html);
+    if (html)
+    {
+        $("#" + bugs_list.ul_id).html(html);
+    } else
+    {
+        $("#" + bugs_list.ul_id).html('<tr><td colspan="6"><h2 style="text-align: center;">NO ITEMS</h2></td></tr>');
+    }
     $('#items_' + bugs_list.id).html(bugs_list.list.length);
 }
 
