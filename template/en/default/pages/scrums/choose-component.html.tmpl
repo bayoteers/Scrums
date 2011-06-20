@@ -32,15 +32,16 @@
 [% DEFAULT title = "Choose a sub-component" %]
 [% PROCESS global/header.html.tmpl %]
 
+<h1>Add Responsibility</h1>
+
 <h2>[% h2 FILTER html %]</h2>
 
 <table>
-
-
   [% IF product %]
     <tr>
-      <th colspan="2" align="left">[% product.name FILTER html %]:
-      [%+ product.description FILTER html_light %]</th>
+      <th colspan="2" align="left">
+        [% product.name FILTER html %]: [%+ product.description FILTER html_light %]
+      </th>
     </tr>
   [% END %]
 
@@ -54,12 +55,6 @@
       <td valign="top">[% comp.description FILTER html_light %]</td>
     </tr>
   [% END %]
-
-  <tr>
-    <th colspan="2">&nbsp;</th>
-  </tr>
-
-
 </table>
 
 [% PROCESS global/footer.html.tmpl %]

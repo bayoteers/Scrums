@@ -20,151 +20,135 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Release" 
+    title = "Release " _ release.name
 %]
 
 <script scripttype="text/javascript">
-function askconfirm(releasename, flagtypename)
-{
-	return confirm("Are you sure you want to remove flag type '" + flagtypename + "' from release '" + releasename + "'");
-}
+  function askconfirm(releasename, flagtypename)
+  {
+    return confirm("Are you sure you want to remove flag type '" + flagtypename + "' from release '" + releasename + "'?");
+  }
 </script>
 
-<style>
-<!--
-.future_use {
-    font-size: smaller;
-    font-style: italic;
-    color: #aaa;
-}
+<style type="text/css">
+  <!--
+    .future_use {
+      font-size: smaller;
+      font-style: italic;
+      color: #aaa;
+    }
 
-table.main th {
-    text-align: right;
-    min-width: 200px;
-    white-space: nowrap;
-}
--->
+    table.main th {
+      text-align: right;
+      min-width: 200px;
+      white-space: nowrap;
+    }
+  -->
 </style>
 
-<br>
-
 [% IF error %]
-Error msg: [% error %]
+  Error msg: [% error %]
 [% ELSE %]
+  [% IF releaseisnew %]
+    Release Created!
+  [% END %]
 
-[% IF releaseisnew %]
-Release created!
+  <h1>Release [% release.name %]</h1>
+
+  <h2>Summary</h2>
+
+  <table>
+    <tr>
+      <th>Name:</th>
+      <td colspan="2">[% release.name %]</td>
+    </tr>
+    <tr>
+      <th>Milestone:</th>
+      <td colspan="2">[% release.target_milestone_begin %] - [% release.target_milestone_end %]</td>
+    </tr>
+    <tr class="future_use">
+      <th>Algorithm:</th>
+      <td colspan="2">[% release.capacity_algorithm %]</td>
+    </tr>
+    <tr class="future_use">
+      <th>Original Capacity:</th>
+      <td colspan="2">[% release.original_capacity %]</td>
+    </tr>
+    <tr class="future_use">
+      <th>Remaining Capacity:</th>
+      <td colspan="2">[% release.remaining_capacity %]</td>
+    </tr>
+    <tr>
+      <td colspan="3" align="right">
+        <a href="page.cgi?id=scrums/releasebugs.html&releaseid=[% release.id %]">Items In Release</a>
+      </td>
+    </tr>
+  </table>
+
+  <h2>Flag Types For Release:</h2>
+
+  [% IF flagtypelist.size > 0 %]
+    <table>
+      <tr>
+        <th>Flag Type</th>
+        <th>Action</th>
+      </tr>
+
+      [% FOREACH flagtype IN flagtypelist %]
+        <tr>
+          <td>
+            [% IF (user.in_group('release_managers')) %]
+              <a href="editflagtypes.cgi?action=edit&id=[% flagtype.id %]">[% flagtype.name %]</a>
+            [% ELSE %]
+              [% flagtype.name %]
+            [% END %]
+          </td>
+          <td>
+            [% IF (user.in_group('release_managers')) %]
+              <a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&removeflagtype=[% flagtype.id %]" onclick="return askconfirm('[% release.name %]', '[% flagtype.name %]');">Remove</a>
+            [% ELSE %]
+              &nbsp;
+            [% END %]
+          </td>
+        </tr>
+      [% END %]
+    </table>
+  [% ELSE %]
+    <p>
+      No flag types for release.
+    </p>
+  [% END %]
+
+  [% IF addflagtype %]
+    <form method="post" action="page.cgi">
+      <input type="hidden" name="id" value="scrums/createrelease.html" />
+      <input type="hidden" name="releaseid" value="[% release.id %]" />
+
+      <select name="newflagtype">
+        [% FOREACH flagtype IN allflagtypes %]
+          <option value="[% flagtype.id %]">[% flagtype.name %]</option>
+        [% END %]
+      </select>
+      &nbsp;
+      <input type="submit" value="Add" />
+    </form>
+  [% END %]
+
+  [% IF NOT addflagtype %]
+    [% IF (user.in_group('release_managers')) %]
+      <p>
+          <a href="page.cgi?id=scrums/newrelease.html&editrelease='true'&releaseid=[% release.id %]&releasename=[% release.name %]&mr_begin=[% release.target_milestone_begin %]&mr_end=[% release.target_milestone_end %]&algorithm=[% release.capacity_algorithm %]&original=[% release.original_capacity %]&remaining=[% release.remaining_capacity %]">Edit Release</a>
+        | <a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&addflagtype=true">Add Flag Type</a>
+      </p>
+    [% END %]
+  [% END %]
+
+  <hr />
+
+  <p>
+      <a href="page.cgi?id=scrums/allreleases.html">Manage Releases</a>
+    | <a href="page.cgi?id=scrums/allteams.html">Manage Teams</a>
+  </p>
 [% END %]
 
-<h3>Release</h3>
-
-<!-- <table border="true"> -->
-<table class="main">
-<tr>
-<th>Name:</th>
-<td colspan="2">[% release.name %]</td>
-<td>
-</tr><tr>
-<th>Milestone:</th>
-<td colspan="2">[% release.target_milestone_begin %] - [% release.target_milestone_end %]</td>
-</tr><tr class="future_use">
-<th>Algorithm:</th>
-<td colspan="2">[% release.capacity_algorithm %]</td>
-</tr><tr class="future_use">
-<th>Original capacity:</th>
-<td colspan="2">[% release.original_capacity %]</td>
-</tr><tr class="future_use">
-<th>Remaining capacity:</th>
-<td colspan="2">[% release.remaining_capacity %]</td>
-</tr>
-<tr><th>&nbsp;</th><td colspan="2"><a href="page.cgi?id=scrums/releasebugs.html&releaseid=[% release.id %]">items in release</a>
-</table>
-
-<br><br>
-<h3>Flagtypes for release:</h3>
-<table class="main">
-
-[% IF flagtypelist.size > 0 %]
-
-<tr>
-<th>&nbsp</th>
-<td>
-<table border=1 cellpadding=4 cellspacing=0>
-<tr bgcolor="#6666ff">
-<td><b>Flagtype</b></td>
-<td><b>Action</b></td>
-</tr>
-
-[% FOREACH flagtype IN flagtypelist %]
-<tr>
-<td>
-[% IF (user.in_group('release_managers')) %]
-<a href="editflagtypes.cgi?action=edit&id=[% flagtype.id %]">[% flagtype.name %]</a>
-[% ELSE %]
-[% flagtype.name %]
-[% END %]
-</td>
-<td>
-[% IF (user.in_group('release_managers')) %]
-<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&removeflagtype=[% flagtype.id %]" onclick="return askconfirm('[% release.name %]', '[% flagtype.name %]');">Remove</a>
-[% ELSE %]
-&nbsp;
-[% END %]
-</td>
-</tr>
-[% END %]
-
-</table>
-</td></tr></table>
-
-[% ELSE %]
-<tr>
-<td colspan="3">
-No flagtypes for release<br>
-</td>
-</tr>
-[% END %]
-
-[% IF addflagtype %]
-<tr>
-<td colspan="3">
-<form method=post action="page.cgi">
-<input type="hidden" name="id" value="scrums/createrelease.html"/>
-<input type="hidden" name="releaseid" value="[% release.id %]"/>
-<select name="newflagtype">
-[% FOREACH flagtype IN allflagtypes %]
-<option value=[% flagtype.id %]>[% flagtype.name %]</option>
-[% END %]
-</select>
-<input type=submit value="Add"/>
-<form>
-</td>
-</tr>
-[% END %]
-
-</table>
-<p>
-
-</p>
-
-<p>
-<a href="page.cgi?id=scrums/allreleases.html">releases main page</a>
-</p>
-<hr>
-
-
-[% IF NOT addflagtype %]
-[% IF (user.in_group('release_managers')) %]
-
-<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]&addflagtype=true">Add</a>&nbsp;a flagtype to '[% release.name %]'.
-Edit release 
-'<a href="page.cgi?id=scrums/newrelease.html&editrelease='true'&releaseid=[% release.id %]&releasename=[% release.name %]&mr_begin=[% release.target_milestone_begin %]&
-	mr_end=[% release.target_milestone_end %]&algorithm=[% release.capacity_algorithm %]&original=[% release.original_capacity %]&remaining=[% release.remaining_capacity %]">
-	[% release.name %]</a>'.
-[% END %]
-[% END %]
-
-[% END %]
-
-
-
+[% PROCESS global/footer.html.tmpl %]

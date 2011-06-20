@@ -20,34 +20,30 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Bugs in team" 
+    title = "Sprint Planning " _ team.name 
     style_urls = ['skins/standard/admin.css']
 %]
 
-
 [% PROCESS global/lists.html.tmpl %]
 
-<script>
+<script type="text/javascript">
+  var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog', $("#TeamBugLiTmpl"));
 
-var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog', $("#TeamBugLiTmpl"));
+  var all_lists = [];
 
-var all_lists = [];
+  function save_all()
+  {
+     //save_lists(sprint_lists, backlog, 'team', [% team.id %]);
+     save(all_lists, 'team', [% team.id %]);
+  }
 
-function save_all()
-{
-    //save_lists(sprint_lists, backlog, 'team', [% team.id %]);
-    save(all_lists, 'team', [% team.id %]);
-}
+  // data from backend
+ var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+ var backlog_bugs = [[% FOREACH bug IN backlog.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
 
-// data from backend
-var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+ var sprint_lists = [];
 
-var backlog_bugs = [[% FOREACH bug IN backlog.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
-
-
-var sprint_lists = [];
-$(document).ready(function() {
-
+ $(document).ready(function() {
     var html = '';
     for (id in sprint_list_data)
     {
@@ -81,31 +77,38 @@ $(document).ready(function() {
     all_lists = $.extend(true, [], sprint_lists);
     all_lists.push(backlog);
     bind_sortable_lists(all_lists);
-
-
-});
-
-
+  });
 </script>
 
-  <div class="bz_title_container">
-      Team '[% team.name %]' sprint
-  </div>
-
-<input type='button' value='save' OnClick='save_all();'/> 
+<div class="bz_title_container">
+  [% team.name %] Sprint
+</div>
 
 <table>
-    <tr>
-        <td valign='top' id='sprints'>
-        </td>
-        <td valign='top' id='unordered'>
-        </td>
-    </tr>
+  <tr>
+    <td valign='top' id='sprints'>
+    </td>
+    <td valign='top' id='unordered'>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="right">
+      <input type='button' value='Save' OnClick='save_all();'/> 
+    </td>
+  </tr>
 </table>
-<br>
-<a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">back to team</a><br>
-<hr>
-<a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add</a> sprint for team '[% team.name %]'. 
+
 [% team_sprint = team_sprints_array.first() %]
-        <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&status='[% team_sprint.sprint.status() %]'&sprintname='[% team_sprint.sprint.name() %]'&nominalschedule='[% team_sprint.sprint.nominal_schedule() %]'&description='[% team_sprint.sprint.description() %]'&editsprint=true">Edit</a>' sprint '[% team_sprint.sprint.name() %]'.
+
+<p>
+  <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add Sprint</a> 
+| <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&status='[% team_sprint.sprint.status() %]'&sprintname='[% team_sprint.sprint.name() %]'&nominalschedule='[% team_sprint.sprint.nominal_schedule() %]'&description='[% team_sprint.sprint.description() %]'&editsprint=true">Edit Sprint</a>
+</p>
+
+<hr />
+
+<p>
+  <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Manage Team</a><br>
+</p>
+
 [% PROCESS global/footer.html.tmpl %]

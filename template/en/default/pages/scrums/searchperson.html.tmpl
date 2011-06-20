@@ -24,88 +24,80 @@
 %]
 
 <script scripttype="text/javascript">
-function select(userid, realname, login)
-{
-	// alert("Select: " + userid + " " + realname + " " + login);
-	window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]id'].value=userid;
-	window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]realname'].value=realname;
-	window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]login'].value=login;
-	// alert("Select");
-	[% IF submit %]
-	// alert('Kutsutaan metodia submit');
-	window.opener.document.forms['[% formname %]'].submit();
-	[% END %]
-	window.close();
-	return false;
-}
+  function select(userid, realname, login)
+  {
+    // alert("Select: " + userid + " " + realname + " " + login);
+    window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]id'].value=userid;
+    window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]realname'].value=realname;
+    window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]login'].value=login;
+    // alert("Select");
+    [% IF submit %]
+      // alert('Kutsutaan metodia submit');
+      window.opener.document.forms['[% formname %]'].submit();
+    [% END %]
+    window.close();
+
+    return false;
+  }
 </script>
 
-<!-- formname: [% formname %]
-submit: [% submit %] -->
-
-<!-- query: [% query %] -->
-
 <form name="f" method="get" action="page.cgi">
-<input type="hidden" name="id" value="scrums/searchperson.html" />
-<input type="hidden" name="action" value="list" />
-<input type="hidden" name="formname" value="[% formname %]" />
-<input type="hidden" name="formfieldprefix" value="[% formfieldprefix %]" />
-<input type="hidden" name="submit" value="[% submit %]" />
-<p><label for="matchvalue">List users with</label>
-<select id="matchvalue" name="matchvalue">
-  <option value="login_name">login name</option>
-  <option value="realname">real name</option>
-  <option value="userid">user id</option>
-</select>
-<label for="matchstr">matching</label>
-<input size="32" name="matchstr" id="matchstr" />
-<select name="matchtype">
-  <option value="substr" selected="selected">case-insensitive substring</option>
-  <option value="regexp">case-insensitive regexp</option>
-  <option value="notregexp">not (case-insensitive regexp)</option>
-  <option value="exact">exact (find this user)</option>
-</select>
-<input type="submit" id="search" value="Search" /></p>
+  <input type="hidden" name="id" value="scrums/searchperson.html" />
+  <input type="hidden" name="action" value="list" />
+  <input type="hidden" name="formname" value="[% formname %]" />
+  <input type="hidden" name="formfieldprefix" value="[% formfieldprefix %]" />
+  <input type="hidden" name="submit" value="[% submit %]" />
 
-[% IF users %]
-[% IF users.size > 0 %]
-<table>
-[% FOREACH thisuser = users %]
-<tr>
-[% IF thisuser.disabledtext %]
-<td class="bz_inactive">
- [% thisuser.realname 	  %]
-</td>
-<td class="bz_inactive">
- [% thisuser.login_name   %]
-</td>
-[% ELSE %]
-<td>
-<a href="" onclick="return select('[% thisuser.userid %]', '[% thisuser.realname %]', '[% thisuser.login_name %]');">
- [% thisuser.realname %]
-</a>
-</td>
-<td>
- [% thisuser.login_name   %]
-</td>
-[% END %]
+  <p><label for="matchvalue">List users with</label>
+  <select id="matchvalue" name="matchvalue">
+    <option value="login_name">login name</option>
+    <option value="realname">real name</option>
+    <option value="userid">user id</option>
+  </select>
 
-</td></tr>
-[% END %]
-</table>
-[% ELSE %]
-No users found.
-[% END %]
-[% END %]
+  <label for="matchstr">matching</label>
+  <input size="32" name="matchstr" id="matchstr" />
 
-<!-- <input type="button" value="testaa" onClick="window.opener.document.forms['testiformi'].elements['testikentta'].value='Tulos';"/> -->
+  <select name="matchtype">
+    <option value="substr" selected="selected">case-insensitive substring</option>
+    <option value="regexp">case-insensitive regexp</option>
+    <option value="notregexp">not (case-insensitive regexp)</option>
+    <option value="exact">exact (find this user)</option>
+  </select>
+ 
+  <input type="submit" id="search" value="Search" /></p>
 
-[% IF personlist %]
-Search results: (max. 50 results)
-[% END %]
+  [% IF users %]
+    [% IF users.size > 0 %]
+      <table>
+        [% FOREACH thisuser = users %]
+          <tr>
+            [% IF thisuser.disabledtext %]
+              <td class="bz_inactive">
+                [% thisuser.realname %]
+              </td>
+              <td class="bz_inactive">
+                [% thisuser.login_name %]
+              </td>
+            [% ELSE %]
+              <td>
+                <a href="" onclick="return select('[% thisuser.userid %]', '[% thisuser.realname %]', '[% thisuser.login_name %]');">[% thisuser.realname %]</a>
+              </td>
+              <td>
+                [% thisuser.login_name %]
+              </td>
+            [% END %]
+          </tr>
+        [% END %]
+      </table>
+    [% ELSE %]
+      No users found.
+    [% END %]
+  [% END %]
 
-
+  [% IF personlist %]
+    Search results: (max. 50 results)
+  [% END %]
 </form>
 
-<p>
-
+[% PROCESS global/footer.html.tmpl %]

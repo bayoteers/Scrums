@@ -65,8 +65,13 @@ sub show_all_teams($) {
     }
 
     my $sort = $cgi->param('sort');
-    my $team_list;
-    $team_list = Bugzilla::Extension::Scrums::Team->all_teams($sort);
+
+    if (!$sort) {
+        # Set default sort to be by name.
+        $sort = 1;
+    }
+
+    my $team_list = Bugzilla::Extension::Scrums::Team->all_teams($sort);
 
     $vars->{'sort'}     = $sort;
     $vars->{'teamlist'} = $team_list;
@@ -495,7 +500,7 @@ sub show_team_and_sprints {
                 $error = _update_sprint($vars, $sprint_id);
             }
             else {
-                $error = "Invalid sprint id";
+                $error = "Invalid Sprint ID";
             }
         }
     }

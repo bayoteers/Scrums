@@ -167,6 +167,7 @@ function update_lists(bugs_list, move_pos, data) {
 
     } // for
     $("#" + bugs_list.ul_id).html(html);
+    $('#items_' + bugs_list.id).html(bugs_list.list.length);
 }
 
 function list_filter(header, list, bugs_list) { // header is any element, list is an unordered list
@@ -189,7 +190,7 @@ function list_filter(header, list, bugs_list) { // header is any element, list i
             bugs_list.visible = [];
             for (var i = 0; i < bugs_list.list.length; i++) {
                 // search against desc and bug id
-                if (bugs_list.list[i][3].toLowerCase().match("^" + filter.toLowerCase()) == filter.toLowerCase() || String(bugs_list.list[i][0]).match("^" + filter) == filter) {
+                if (bugs_list.list[i][5].toLowerCase().match("^" + filter.toLowerCase()) == filter.toLowerCase() || String(bugs_list.list[i][0]).match("^" + filter) == filter) {
                     //filtered_bugs.list.push(bugs_list.list[i]);
                     bugs_list.visible.push(i);
                 }

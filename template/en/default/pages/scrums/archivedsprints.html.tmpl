@@ -20,24 +20,21 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Bugs in team" 
+    title = "Archived Sprints " _ team.name
     style_urls = ['skins/standard/admin.css']
 %]
 
-
 [% PROCESS global/lists.html.tmpl %]
 
+<script type="text/javascript">
 
-<script>
+  var all_lists = [];
 
-var all_lists = [];
+  // data from backend
+  var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+  var sprint_lists = [];
 
-// data from backend
-var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
-
-var sprint_lists = [];
-$(document).ready(function() {
-
+  $(document).ready(function() {
     var html = '';
     for (id in sprint_list_data)
     {
@@ -70,23 +67,22 @@ $(document).ready(function() {
     //$('#sprints').html(html);
     all_lists = $.extend(true, [], sprint_lists);
     // No binding for unsortable lists
-
-});
-
-
+  });
 </script>
 
-  <div class="bz_title_container">
-      Team '[% team.name %]' archived sprints
-  </div>
+<div class="bz_title_container">
+  [% team.name %] Archived Sprints
+</div>
 
 <table>
-    <tr>
-        <td valign='top' id='sprints'>
-        </td>
-    </tr>
+  <tr>
+    <td valign='top' id='sprints'>
+    </td>
+  </tr>
 </table>
 
-<a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Back To Team</a>
+<p>
+  <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Manage Team</a>
+</p>
 
 [% PROCESS global/footer.html.tmpl %]
