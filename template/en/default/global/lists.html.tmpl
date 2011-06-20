@@ -9,7 +9,7 @@
   # implied. See the License for the specific language governing
   # rights and limitations under the License.
   #
-  # The Original Code is the Ultimate Scrum Bugzilla Extension.
+  # The Original Code is the Scrums Bugzilla Extension.
   #
   # The Initial Developer of the Original Code is "Nokia Corporation"
   # Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -25,69 +25,103 @@
 <script type="text/javascript" src="extensions/Scrums/web/js/scrums.js"></script>
 <link rel="stylesheet" href="extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
 
-    <style>
+<style type="text/css">
+  .colA { min-width:190px; }
+  .colB { min-width:100px; }
+  .colC { min-width: 70px; }
+  .colD { min-width: 60px; }
+  .colE { min-width: 40px; }
+  .colF { min-width: 15px; }
+  .sortable table tr td { margin: 0px; padding: 0px; }
 
-    .sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 600px; text-align: left; }
-    .sortable li { background: #eeeeee; margin: 5px; padding: 5px; font-size: 1em; width: 580px; }
-    .disabled { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 600px; text-align: left; }
-    .disabled li { background: #eeeeee; margin: 3px; padding: 7px; font-size: 1em; width: 580px; }
-    .number { background: #eee; color: #000000; border: 1px solid #dddddd;  }
-    .content { text-align: center; }
-    h3 { text-align: center; }
+  .sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }
+  .sortable li { background: #eeeeee; margin: 5px; padding: 5px; width: 680px; }
+  .disabled { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }
+  .disabled li { background: #eeeeee; margin: 3px; padding: 5px; font-size: 1em; width: 680px; }
+  .number { background: #eee; color: #000000; border: 1px solid #dddddd;  }
+  .content { text-align: center; }
+  h3 { text-align: center; }
 
-    .bz_title_container {
+  .bz_title_container {
     margin: 8px 0; 
     padding: 0.3em; 
     background-color: rgb(208, 208, 208); 
     -moz-border-radius: 0.5em; 
     font-size: 125%; 
-    font-weight: bold; }
+    font-weight: bold;
+  }
 </style>
 
-    </style>
-<script id="BugLiTmpl" type="text/html">
-    <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span ><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #> <#= bug[4] #></span></li>
+<script id="ReleaseBugLiTmpl" type="text/html">
+  <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
+    <table>
+      <tr>
+        <td class="colF"><span class="number"><#= counter #></span></td>
+        <td class="colD"><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
+        <td class="colC"> <#= bug[1] #></td>
+        <td class="colD"> <#= bug[2] #></td>
+        <td class="colA"> <#= bug[3] #></td> 
+        <td class="colB"> <a href="page.cgi?id=scrums/createteam.html&teamid=<#= bug[6] #>"><#= bug[4] #></a></td>
+        <td> <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=<#= bug[7] #>"><#= bug[5] #></a></td>
+      </tr>
+    </table>
+  </li>
 </script>
 
+<script id="TeamBugLiTmpl" type="text/html">
+  <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
+    <table>
+      <tr>
+        <td class="colF"> <span class="number"><#= counter #></span></td>
+        <td class="colD"> <a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
+        <td class="colF"> <#= bug[1] #></td>
+        <td class="colC"> <#= bug[2] #></td>
+        <td class="colA"> <#= bug[3] #></td>
+        <td title="<#= bug[5] #>"> <#= bug[4] #></td>
+      </tr>
+    </table>
+  </li>
+</script>
 
+<script id="BugLiTmpl" type="text/html">
+  <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #> <#= bug[4] #></span></li>
+</script>
 
 <script id="ListTmpl" type="text/html">
-    <h3 id="<#= list.h_id #>"><#= list.name #></h3>
-    <div class='content'>
+  <h3 id="<#= list.h_id #>"><#= list.name #></h3>
+
+  <div class='content'>
     <p>
-    <input type='button' value='previous' OnClick='move_list_left("<#= list.id #>");'/>
+      <input type='button' value='Previous' OnClick='move_list_left("<#= list.id #>");'/>
+      <#= extra_middle #>
 
-    <#= extra_middle #>
+      <input type='button' value='Next' OnClick='move_list_right("<#= list.id #>");'/>
 
-    <input type='button' value='next' OnClick='move_list_right("<#= list.id #>");'/>
-    <select id="<#= list.id #>" onchange='select_step("<#= list.id #>");'>
-    <option selected="true">10</option>
-    <option>20</option>		
-    <option>50</option>		
-    <option>all</option>				
-    </select>
+      Show
+      <select id="<#= list.id #>" onchange='select_step("<#= list.id #>");'>
+        <option selected="selected">10</option>
+        <option>20</option>         
+        <option>50</option>         
+        <option>All</option>                                
+      </select>
     </p>
 
     <ul id="<#= list.ul_id #>" class="connectedSortable sortable">
     </ul>
-    </div>
-    <br />
+  </div>
 </script>
 
 <script id="StaticTmpl" type="text/html">
-    <h3 id="<#= list.h_id #>"><#= list.name #></h3>
-    <div class='content'>
+  <h3 id="<#= list.h_id #>"><#= list.name #></h3>
+
+  <div class='content'>
     <p>
-    <input type='button' value='previous' OnClick='move_list_left("<#= list.id #>");'/>
-
-    <#= extra_middle #>
-
-    <input type='button' value='next' OnClick='move_list_right("<#= list.id #>");'/>
+      <input type='button' value='Previous' OnClick='move_list_left("<#= list.id #>");'/>
+      <#= extra_middle #>
+      <input type='button' value='Next' OnClick='move_list_right("<#= list.id #>");'/>
     </p>
 
     <ul id="<#= list.ul_id #>" class="connectedSortable disabled">
     </ul>
-    </div>
-    <br />
+  </div>
 </script>
-

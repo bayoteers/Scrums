@@ -10,7 +10,7 @@
 # implied. See the License for the specific language governing
 # rights and limitations under the License.
 #
-# The Original Code is the Ultimate Scrum Bugzilla Extension.
+# The Original Code is the Scrums Bugzilla Extension.
 #
 # The Initial Developer of the Original Code is "Nokia corporation"
 # Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -164,16 +164,28 @@ sub scheduled_bugs {
         b.bug_status,
         b.bug_severity,
         left(b.short_desc, 40),
+        t.name,
+        s_a.name,
+        t.id,
+        s_a.id,
 	bo.rlease
     from
 	scrums_flagtype_release_map rfm
 	inner join flags f on rfm.flagtype_id = f.type_id
 	inner join bugs b on f.bug_id = b.bug_id
 	inner join scrums_bug_order bo on f.bug_id = bo.bug_id
+        left join scrums_componentteam ct on b.component_id = ct.component_id
+        left join scrums_team t on ct.teamid = t.id
+        left join scrums_sprint_bug_map sbm_a on b.bug_id = sbm_a.bug_id
+        left join scrums_sprints s_a on s_a.id = sbm_a.sprint_id and s_a.item_type = 1
     where
 	f.status = "+" and
         bo.rlease > 0 and
-	rfm.release_id = ?
+	rfm.release_id = ? and
+	not exists (select null from scrums_sprint_bug_map sbm_b
+        inner join scrums_sprints s_b on s_b.id = sbm_b.sprint_id and s_b.item_type = 1 
+	where b.bug_id = sbm_b.bug_id and
+	s_b.nominal_schedule > s_a.nominal_schedule)
     order by
 	rlease', undef, $self->id
     );
@@ -189,14 +201,26 @@ sub unprioritised_bugs {
 	b.bug_id,
         b.bug_status,
         b.bug_severity,
-        left(b.short_desc, 40)
+        left(b.short_desc, 40),
+        t.name,
+        s_a.name,
+        t.id,
+        s_a.id
     from
 	scrums_flagtype_release_map rfm
 	inner join flags f on rfm.flagtype_id = f.type_id
 	inner join bugs b on f.bug_id = b.bug_id
         inner join bug_status bs on b.bug_status = bs.value
+        left join scrums_componentteam ct on b.component_id = ct.component_id
+        left join scrums_team t on ct.teamid = t.id
+        left join scrums_sprint_bug_map sbm_a on b.bug_id = sbm_a.bug_id
+        left join scrums_sprints s_a on s_a.id = sbm_a.sprint_id and s_a.item_type = 1
     where
 	not exists (select null from scrums_bug_order bo where f.bug_id = bo.bug_id and bo.rlease > 0) and
+	not exists (select null from scrums_sprint_bug_map sbm_b
+        inner join scrums_sprints s_b on s_b.id = sbm_b.sprint_id and s_b.item_type = 1 
+	where b.bug_id = sbm_b.bug_id and
+	s_b.nominal_schedule > s_a.nominal_schedule) and
 	f.status = "+" and
 	bs.is_open = 1 and
 	rfm.release_id = ?', undef, $self->id

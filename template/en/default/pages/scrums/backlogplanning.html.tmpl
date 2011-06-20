@@ -9,7 +9,7 @@
   # implied. See the License for the specific language governing
   # rights and limitations under the License.
   #
-  # The Original Code is the Ultimate Scrum Bugzilla Extension.
+  # The Original Code is the Scrums Bugzilla Extension.
   #
   # The Initial Developer of the Original Code is "Nokia corporation"
   # Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -20,41 +20,37 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Bugs in team" 
+    title = "Backlog " _ team.name
     style_urls = ['skins/standard/admin.css']
 %]
 
-
 [% PROCESS global/lists.html.tmpl %]
 
+<script type="text/javascript">
+  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', $("#TeamBugLiTmpl"));
+  var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog', $("#TeamBugLiTmpl"));
 
-<script>
+  var all_lists = [];
 
-var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Bugs');
-var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog');
-
-var all_lists = [];
-
-function save_all()
-{
+  function save_all()
+  {
     //$("#save").attr('disabled', 'disabled');
     function call_back()
     {
     //    $("#save").removeAttr('disabled');
     }
     save_lists([backlog], unordered_bugs, 'backlog', [% team.id %], call_back);
-}
+  }
 
-// data from backend
-var unordered_list_data = [[% FOREACH bug IN unprioritised_items %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]",[% bug.4 %]],[% END %]];
-//var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]", "[% bug.3 | replace( '"', '\"' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+  // data from backend
+  var unordered_list_data = [[% FOREACH bug IN unprioritised_items %]
+  [[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],
+  [% END %]];
 
-var backlog_bugs = [[% FOREACH bug IN backlog.bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]", "[% bug.3 | replace( '"', '\"' ) %]",[% bug.4 %]],[% END %]];
+  var backlog_bugs = [[% FOREACH bug IN backlog.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
+  var sprint_lists = [];
 
-
-var sprint_lists = [];
-$(document).ready(function() {
-
+  $(document).ready(function() {
     var html = '';
 
     $('#sprints').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
@@ -68,31 +64,31 @@ $(document).ready(function() {
     all_lists.push(unordered_bugs);
 
     bind_sortable_lists(all_lists);
-
-
-});
-
-
+  });
 </script>
-<!--
-        <select onChange='offset_step = parseInt($(this).val()); update_lists(ordered_bugs); update_lists(unordered_bugs);'> -->
 
-  <div class="bz_title_container">
-      Team '[% team.name %]' backlog
-  </div>
-
-<input id='save' type='button' value='save' OnClick='save_all();'/> 
+<div class="bz_title_container">
+  [% team.name %] Product Backlog
+</div>
 
 <table>
-    <tr>
-        <td valign='top' id='sprints'>
-        </td>
-        <td valign='top' id='unordered'>
-        </td>
-    </tr>
+  <tr>
+    <td valign='top' id='sprints'>
+    </td>
+    <td valign='top' id='unordered'>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="right">
+      <input id='save' type='button' value='Save' OnClick='save_all();'/> 
+    </td>
+  </tr>
 </table>
-<br>
-<a href="page.cgi?id=createteam.html&teamid=[% team.id %]">back to team</a><br>
-<hr>
-<a href="page.cgi?id=scrums/scrumsguide.html#teamplanning">Scrums user's guide</a>. 
+
+<hr />
+
+<p>
+  <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Manage Team</a>
+</p>
+
 [% PROCESS global/footer.html.tmpl %]

@@ -1,0 +1,275 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "Burndown Chart"
+    style_urls = ['skins/standard/admin.css','extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css'] 
+%]
+
+<link rel="stylesheet" href="extensions/Scrums/web/css/scrums.css">
+
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.5.1.min.js"></script>
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.12.custom.min.js"></script>
+<script language="javascript" type="text/javascript" src="extensions/Scrums/web/js/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="extensions/Scrums/web/js/jquery.flot.pie.js"></script>
+
+<script type="text/javascript">
+  var rem = [[% FOREACH plot IN remaining_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
+  var work = [[% FOREACH plot IN worktime_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
+
+  var open_closed = [
+  [% IF summary.open %]
+                { label: "Open items",  data: [% summary.open %]}
+  [% END %]
+  [% IF summary.open && summary.closed %],[% END %]
+  [% IF summary.closed %]
+                { label: "Closed items",  data: [% summary.closed %]} 
+  [% END %]
+  ];
+
+  var status_list = [
+        [% FOREACH status IN slist %]
+                { label: "[% status.0 %]", data: [% status.1 %]},
+        [% END %]
+        ];
+
+  var max_ts, min_ts, max_date, min_date;
+
+  var options = {
+    xaxis: { mode: "time", tickLength: 5 },
+    selection: { mode: "x" }
+  };
+
+  var pie_options = {
+        series: {
+            pie: {
+                show: true,
+                radius: 1,
+                label: {
+                    show: true,
+                    radius: 3/4,
+                    formatter: function(label, series){
+                        return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+label+'<br/>'+Math.round(series.percent)+'%</div>';
+                    },
+                    background: {
+                        opacity: 0.5,
+                        color: '#000'
+                    }
+                }
+            }
+        },
+        legend: {
+            show: false
+        }
+  };
+
+  $(function () {
+    var ch = $("#testi_id");
+    ch[0].checked = false;
+
+    init();
+  });
+
+  function init()
+  {
+    /**
+     * Flot library, which draws chart, will always show time scale in UTC. We do not want to
+     * look at timescale in UTC. Because this can not be set into Flot library, we do a trick
+     * in which we shift time data with timezone offset. Then we pretend, that time, which is
+     * shown in UTC, is apparent server time.
+     */
+    var d = new Date();
+    var tzo = -d.getTimezoneOffset() * 60 * 1000; // Timezone offset in milliseconds
+
+    var i = 0;
+    for(i = 0; i < rem.length; i++)
+    {
+        rem[i][0] = rem[i][0] + tzo;
+    }
+    for(i = 0; i < work.length; i++)
+    {
+        work[i][0] = work[i][0] + tzo;
+    }
+
+    max_ts = rem[0][0];
+    min_ts = rem[rem.length-1][0];
+    max_date = new Date(max_ts);
+    min_date = new Date(min_ts);
+    $("#datepicker_min").datepicker({ minDate: min_date, maxDate: max_date, dateFormat: 'yy-mm-dd' });
+    $("#datepicker_max").datepicker({ minDate: min_date, maxDate: max_date, dateFormat: 'yy-mm-dd' });
+
+    reset_range();
+  }
+
+  function reset_range()
+  {
+    $('#datepicker_min').val(format_date(min_date));
+    $('#datepicker_max').val(format_date(max_date));
+
+    scale_chart();
+    refresh();
+  }
+
+  function refresh()
+  {
+    var ch = $("#testi_id");
+    var work_selected = ch[0].checked;
+    if(work_selected)
+    {
+        $.plot($("#placeholder"), [ { label: "Remaining work", data: rem }, { label: "Total amount of work", data: work } ], options);
+    }
+    else
+    {
+        $.plot($("#placeholder"), [ { label: "Remaining work", data: rem } ], options);
+    }
+
+    $.plot($("#pie1"), open_closed, pie_options);
+
+    $.plot($("#pie2"), status_list, pie_options);
+  }
+
+  function gettime() 
+  {
+    var range_begin = make_time($('#datepicker_min').val());
+    var range_end = make_time($('#datepicker_max').val(), true);
+
+    if(range_begin > range_end)
+    {
+        alert('Start time is bigger than end time');
+        $('#datepicker_max').val(format_date(max_date));
+        scale_chart(range_begin, max_ts); 
+    }
+    else
+    {
+        scale_chart(range_begin, range_end); 
+    }
+    refresh();
+  }
+
+  function scale_chart(range_begin, range_end) 
+  {
+    var min_value = min_ts;
+    if(range_begin && range_begin >= min_ts) 
+    {
+         min_value = range_begin;
+    }
+    options.xaxis.min = min_value;
+
+    var max_value = max_ts;
+    if(range_end && range_end <= max_ts) 
+    {
+        max_value = range_end;
+    }
+    options.xaxis.max = max_value;
+  }
+
+  function make_time(str_with_dashes, is_upper_limit) 
+  {
+    var str_with_dots = "";
+    var y, m, d;
+    var str1 = str_with_dashes.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (str1) 
+    {
+        y = str1[1];
+        m = str1[2];
+        d = str1[3];
+        if(y < 1970 || y > 2030 || m < 1 || m > 12 || d < 1 || d > 31)
+            return null;
+        if(is_upper_limit)
+            d++;
+        var date = new Date(y, m-1, d, 0, 0, 0, 0);
+        date.setUTCHours(0);
+        date.setUTCDate(d);
+        date.setUTCMonth(m-1);
+        // Upper limit is end of day, which is 1 day - 1 second bigger than beginning of day
+        if(is_upper_limit)
+            return date.getTime() - 1000; 
+        else
+            return date.getTime();
+    }
+  }
+
+  function format_date(date)
+  {
+    var y = date.getFullYear();
+    var m = date.getMonth()+1;
+    var d = date.getDate();
+    if(m < 10)
+        m = "0" + m;
+    if(d < 10)
+        d = "0" + d;
+    var str = y + "-" + m + "-" + d;
+    return str;
+  }
+</script>
+
+<div class="bz_title_container">
+  [% team_name %] Sprint [% sprint_name %]
+</div>
+
+[% IF slist.size > 0 %]
+  <table>
+    <tr>
+      <td>
+        <div id="placeholder" style="width:800px;height:400px;"></div>
+
+        <input type="checkbox" id="testi_id" onclick="refresh();">
+          <label for="testi_id">Show total work amount</label>
+        </input>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Show days: <input onchange="gettime();" type="text" value="" id="datepicker_min" size="08">-<input onchange="gettime();" type="text" value="" id="datepicker_max" size="08">
+        &nbsp;<button onclick="reset_range();">Reset</button>
+      </td>
+      <td style="padding-left: 50px;">
+        <div id="pie1" style="width:200px;height:200px;"></div>
+
+        <table>
+          [% IF summary.open %]
+            <tr><td>Open items:</td><td>[% summary.open %]</td></tr>
+          [% END %]
+
+          [% IF summary.closed %]
+            <tr><td>Closed items:</td><td> [% summary.closed %]</td></tr>
+          [% END %]
+        </table>
+      </td>
+      <td style="padding-left: 50px;">
+        <div id="pie2" style="width:200px;height:200px;"></div>
+      
+        <table>
+          [% FOREACH status IN slist %]
+            <tr><td>[% status.0 %]</td><td>[% status.1 %]</td></tr>
+          [% END %]
+        </table>
+      </td>
+    </tr>
+  </table>
+[% ELSE %]
+  <p>
+    Sprint contains no items.
+  </p>
+[% END %]
+
+<p>
+  <a href="page.cgi?id=scrums/createteam.html&teamid=[% team_id %]">Manage Team</a>
+</p>
+
+[% PROCESS global/footer.html.tmpl %]

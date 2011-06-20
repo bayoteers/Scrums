@@ -18,9 +18,12 @@
   # Contributor(s):
   #   Visa Korhonen <visa.korhonen@symbio.com>
   #%]
-[% IF object == "team" %]
-team
-[% ELSIF object == "release" %]
-release
-[% END %]
+[%
+    title = "Scrums"
+    desc = "Scrums extension"
+%]
 
+[% param_descs = {
+  bug_comment_editable_item_types => "List of severities of those bugs, that are possible to edit. Item comment is editable description."
+}
+%]

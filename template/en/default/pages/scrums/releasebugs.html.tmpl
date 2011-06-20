@@ -9,7 +9,7 @@
   # implied. See the License for the specific language governing
   # rights and limitations under the License.
   #
-  # The Original Code is the Ultimate Scrum Bugzilla Extension.
+  # The Original Code is the Scrums Bugzilla Extension.
   #
   # The Initial Developer of the Original Code is "Nokia Corporation"
   # Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -20,30 +20,28 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Bugs in release" 
+    title = "Items in release" 
     style_urls = ['skins/standard/admin.css']
 %]
 
 [% PROCESS global/lists.html.tmpl %]
 
-<script>
+<script type="text/javascript">
+  var ordered_bugs = new listObject("sortable1", "headers", '0', 'Item Order', $("#ReleaseBugLiTmpl"));
+  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', $("#ReleaseBugLiTmpl"));
 
-var ordered_bugs = new listObject("sortable1", "headers", '0', 'Bug Order');
-var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unordered Bugs');
+  var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]", [% bug.6 %], [% bug.7 %]], [% END %]];
+  var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]", [% bug.6 %], [% bug.7 %]], [% END %]];
 
-var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]"],[% END %]];
-var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]"],[% END %]];
-
-function save_all()
-{
+  function save_all()
+  {
     //save([ordered_bugs], 'release', [% release.id %]);
     save_lists([ordered_bugs], unordered_bugs, 'release', [% release.id %]);
-}
+  }
 
+  var all_lists = [];
 
-var all_lists = [];
-
-$(document).ready(function() {
+  $(document).ready(function() {
     $('#left').html(html = parseTemplate($('#ListTmpl').html(), { list: ordered_bugs, extra_middle: '' }));
     $('#right').html(html = parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
     update_lists(unordered_bugs, 0, unordered_list_data);
@@ -51,26 +49,29 @@ $(document).ready(function() {
     all_lists.push(unordered_bugs);
     all_lists.push(ordered_bugs);
     bind_sortable_lists(all_lists);
-});
-
-
+  });
 </script>
 
-  <div class="bz_title_container">
-  Release '[% release.name %]' bugs
-  </div>
-
-<input type='button' value='save' OnClick='save_all();'/> 
+<div class="bz_title_container">
+  Release [% release.name %]
+</div>
 
 <table>
-    <tr>
-        <th valign='top' id='left'>
-        </th>
-        <th valign='top' id='right'>
-        </th>
-    </tr>
+  <tr>
+    <td valign='top' id='left'>
+    </td>
+    <td valign='top' id='right'>
+    </td>
+    <td colspan="2" align="right">
+      <input type='button' value='save' OnClick='save_all();'/> 
+    </td>
+  </tr>
 </table>
 
-<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]">back to release</a><br>
+<hr />
+
+<p>
+  <a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]">Manage Release</a>
+</p>
 
 [% PROCESS global/footer.html.tmpl %]

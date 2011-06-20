@@ -1,0 +1,204 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% title = "Team " _ team.name %]
+[% PROCESS global/header.html.tmpl
+    title = title 
+%]
+
+<link rel="stylesheet" href="extensions/Scrums/web/css/scrums.css">
+
+<style type="text/css">
+  <!--
+  table.main th {
+    text-align: right;
+    min-width: 200px;
+    white-space: nowrap;
+  }
+  -->
+</style>
+
+<script scripttype="text/javascript">
+  function searchperson()
+  {
+    window.open('page.cgi?id=scrums/searchperson.html&formname=addmember&formfieldprefix=user&submit=true', '_blanck', 'directories=no,location=no,height=400');
+    return false;
+  }
+
+  function removal(component, product, team)
+  {
+    return confirm("Do you want to remove component " + component + " (" + product + ")" + " from team " + team + "?");
+  }
+</script>
+
+[% IF error %]
+  Error message: [% error %]
+[% ELSE %]
+  [% IF teamisnew %]
+    Team created!
+  [% END %]
+
+  <h1>
+    Team [% team.name %]
+  </h1>
+
+  [% owner = team.owner_user() %]
+  [% scrum_master = team.scrum_master_user() %]
+
+  <h2>Summary</h2>
+  <table>
+    <tr>
+      <th>Team Name:</th>
+      <td colspan="3">[% team.name %]</td>
+    </tr>
+    <tr>
+      <th>Product Owner:</th>
+      <td colspan="3">[% owner.name() %]</td>
+    </tr>
+    <tr>
+      <th>Scrum Master:</th>
+      <td colspan="3">[% scrum_master.name() %]</td>
+    </tr>
+    <tr>
+      <th>Weekly Velocity:</th>
+      <td>[% team.weekly_velocity_value %]</td>
+      <td>[% team.weekly_velocity_start %]</td>
+      <td>[% team.weekly_velocity_end %]</td>
+    </tr>
+  </table>
+
+  <h2>Current Sprint</h2>
+
+  <ul>
+    [% IF active_sprint_id %]
+      <li>
+        <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
+          Remaining Items
+        </a>
+      </li>
+      <li>
+        <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">Burndown Chart</a>
+      </li>
+    [% END %]
+
+    <li style="margin-top: 10px;"><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">Unprioritized Items</a></li>
+  </ul>
+
+  <h2>Planning</h2>
+  <ul>
+    <li><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% team.id %]">Sprint Planning</a>
+    <li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Product Backlog</a>
+    <li><a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">Archived Sprints</a>
+  </ul>
+
+  <h2>Responsibilities</h2>
+
+  [% components = team.components() %]
+
+  [% IF components.size() > 0 %]
+    <table>
+      <tr>
+        <th>Product</th>
+        <th>Component</th>
+        [% IF user.in_group('editteams') %]
+          <th>Action</th>
+        [% END %]
+      </tr>
+
+      [% FOREACH subcomponent IN components %]
+        <tr>
+          <td>[% subcomponent.product().name() %]</td>
+          <td>[% subcomponent.name() %]</td>
+          [% IF user.in_group('editteams') %]
+            <td>
+              <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id() %]&removedcomponent=[% subcomponent.id %]" onclick="return removal('[% subcomponent.name() %]', '[% subcomponent.product().name() %]', '[% team.name() %]');">Remove</a>
+            </td>
+          [% END %]
+        </tr>
+      [% END %]
+    </table>
+  [% ELSE %]
+    <p>
+      Not responsible for any components.
+    </p>
+  [% END %]
+
+  <h2>Members</h2>
+
+  [% members = team.members() %]
+
+  [% IF members.size() > 0 %]
+    <table>
+      <tr>
+        <th>Username</th>
+        [% IF user.in_group('editteams') %]
+          <th>Action</th>
+        [% END %]
+      </tr>
+
+      [% FOREACH member IN members %]
+        <tr>
+          <td>
+            [% member.name() %]
+          </td>
+          [% IF user.in_group('editteams') %]
+            <td>
+              <a href="page.cgi?id=scrums/createteam.html&userid=[% member.id() %]&teamid=[% team.id() %]&username=[% member.name() %]&userlogin=[% member.login() %]">Remove</a>
+            </td>
+          [% END %]
+        </tr>
+      [% END %]
+    </table>
+  [% ELSE %]
+    <p>
+      This team has no members.
+    </p>
+  [% END %]
+
+  <form name="addmember" method="post" action="page.cgi" onsubmit="alert('submit');">
+    <input type="hidden" name="id" value="scrums/addintoteam.html"/>
+    <input type="hidden" name="teamid" value="[% team.id %]"/>
+    <input type="hidden" name="teamname" value="[% team.name %]"/>
+    <input type="hidden" name="userid" />
+    <input type="hidden" name="userrealname" />
+    <input type="hidden" name="userlogin" />
+  </form>
+
+  <hr />
+
+  [% IF user.in_group('editteams') %]
+    <p>
+        <a href="page.cgi?id=scrums/newteam.html&editteam='true'&teamid=[% team.id %]&teamname=[% team.name() %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&ownerid=[% owner.id() %]&scrummasterrealname=[% scrum_master.name() %]&scrummasterloginname=[% scrum_master.login() %]&scrummasterid=[% scrum_master.id() %]">Edit Team</a>
+      | <a href="page.cgi?id=scrums/choose-classification.html&teamid=[% team.id %]">Add Responsibility</a>
+      | <a href="" onclick="return searchperson();">Add Team Member</a>
+    </p>
+  [% END %]
+[% END %]
+
+<hr />
+
+<p>
+  <a href="page.cgi?id=scrums/allteams.html">Manage Teams</a>
+| <a href="page.cgi?id=scrums/allreleases.html">Manage Releases</a>
+| <a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
+</p>
+
+[% PROCESS global/footer.html.tmpl %]

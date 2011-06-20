@@ -28,24 +28,22 @@
 [% DEFAULT title = "Choose the classification" %]
 [% PROCESS global/header.html.tmpl %]
 
+<h1>Add Responsibility</h1>
+
 <table>
-  <tr>
-    <th colspan="2">&nbsp;</th>
-  </tr>
+  [% FOREACH class = classifications %]
+    <tr>
+      <th align="right">
+        <a href="[% target %]&amp;classification=[% class.name FILTER url_quote -%]">
+          [% class.name FILTER html %]
+        </a>:
+      </th>
 
-[% FOREACH class = classifications %]
-  <tr>
-    <th align="right">
-      <a href="[% target %]&amp;classification=[% class.name FILTER url_quote -%]">
-      [% class.name FILTER html %]</a>:
-    </th>
-
-    [% IF class.description %]
-      <td valign="top">&nbsp;[% class.description FILTER html_light %]</td>
-    [% END %]
-  </tr>
-[% END %]
-
+      [% IF class.description %]
+        <td valign="top">&nbsp;[% class.description FILTER html_light %]</td>
+      [% END %]
+    </tr>
+  [% END %]
 </table>
 
 [% PROCESS global/footer.html.tmpl %]

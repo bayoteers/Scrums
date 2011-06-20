@@ -9,7 +9,7 @@
   * implied. See the License for the specific language governing
   * rights and limitations under the License.
   *
-  * The Original Code is the Ultimate Scrum Bugzilla Extension.
+  * The Original Code is the Scrums Bugzilla Extension.
   *
   * The Initial Developer of the Original Code is "Nokia Corporation"
   * Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -19,7 +19,7 @@
   *   Eero Heino <eero.heino@nokia.com>
   */
 
-function listObject(ul_id, h_id, id, name) {
+function listObject(ul_id, h_id, id, name, li_tmpl) {
     this.ul_id = ul_id;
     this.id = id;
     this.h_id = h_id;
@@ -29,6 +29,7 @@ function listObject(ul_id, h_id, id, name) {
     this.offset = 0;
     this.offset_step = 10; // default value
     this.name = name;
+    this.li_tmpl = li_tmpl;
 }
 
 var from_list_ul_id = '';
@@ -152,11 +153,19 @@ function update_lists(bugs_list, move_pos, data) {
             break;
         }
 
-        html += parseTemplate($("#BugLiTmpl").html(), {
-            bug: bugs_list.list[bugs_list.visible[i]],
-            counter: (bugs_list.visible[i] + 1)
-        });
+    var template;
+    if(bugs_list.li_tmpl) {
+	template = bugs_list.li_tmpl
     }
+    else {
+	template = $("#BugLiTmpl");
+    } 
+          html += parseTemplate(template.html(), {
+          bug: bugs_list.list[bugs_list.visible[i]],
+          counter: (bugs_list.visible[i] + 1)
+        });
+
+    } // for
     $("#" + bugs_list.ul_id).html(html);
 }
 

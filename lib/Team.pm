@@ -10,7 +10,7 @@
 # implied. See the License for the specific language governing
 # rights and limitations under the License.
 #
-# The Original Code is the Ultimate Scrum Bugzilla Extension.
+# The Original Code is the Scrums Bugzilla Extension.
 #
 # The Initial Developer of the Original Code is "Nokia corporation"
 # Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -305,10 +305,11 @@ sub unprioritised_bugs {
     my ($unscheduled_bugs) = $dbh->selectall_arrayref(
         'select
 	b.bug_id,
-        p.realname,
+        b.remaining_time,
 	b.bug_status,
+        p.realname,
         left(b.short_desc, 40),
-        b.remaining_time
+        b.short_desc
     from 
 	scrums_componentteam sct
     inner join
@@ -341,10 +342,11 @@ sub unprioritised_items {
     my ($unscheduled_items) = $dbh->selectall_arrayref(
         'select
 	b.bug_id,
-        p.realname,
+        b.remaining_time,
 	b.bug_status,
+        p.realname,
         left(b.short_desc, 40),
-        b.remaining_time
+        b.short_desc
     from 
 	scrums_componentteam sct
     inner join

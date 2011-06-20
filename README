@@ -1,14 +1,17 @@
 
-    BUS - Bugzilla Ultimate Scrum
+    Scrums - Bugzilla extension
 
-Ultimate Scrum is extension to Bugzilla reporting system. Ultimate Scrum-extension allows you to have holistic view into items in Bugzilla. Viewpoints are of two types, release and team.
+Scrums is extension to Bugzilla reporting system. Scrums-extension allows you to have holistic view into items in Bugzilla. Viewpoints are of two types, release and team.
 
-Ultimate Scrum-extension has the purpose of supporting agile software development methods.
+Scrums-extension has the purpose of supporting agile software development methods.
 
 
     INSTALLATION
 
 Install extension by extracting files from archive. Switch to 'extension' directory below Bugzilla root directory and extract files from archive.
+
+Patch the core Bugzilla with patch file. Copy patch file into Bugzilla root directory. Switch into Bugzilla root directory and run patching with command: 
+patch -p1 < bus_into_bz_v3_6_2.patch
 
 
     LICENCE

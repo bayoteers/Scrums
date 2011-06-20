@@ -10,7 +10,7 @@
 # implied. See the License for the specific language governing
 # rights and limitations under the License.
 #
-# The Original Code is the Ultimate Scrum Bugzilla Extension.
+# The Original Code is the Scrums Bugzilla Extension.
 #
 # The Initial Developer of the Original Code is "Nokia corporation"
 # Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -99,10 +99,11 @@ sub get_bugs {
     my ($sprint_bugs) = $dbh->selectall_arrayref(
         'select
 	b.bug_id,
-        p.realname,
-        b.bug_status,
-        left(b.short_desc, 40),
         b.remaining_time,
+        b.bug_status,
+        p.realname,
+        left(b.short_desc, 40),
+        b.short_desc,
 	bo.team
     from
 	scrums_sprint_bug_map sbm
@@ -133,35 +134,21 @@ sub name        { return $_[0]->{'name'}; }
 sub status      { return $_[0]->{'status'}; }
 sub is_active   { return $_[0]->{'is_active'}; }
 sub description { return $_[0]->{'description'}; }
+sub team_id     { return $_[0]->{'team_id'}; }
 
 sub nominal_schedule {
-    my $self     = shift;
-    my $str_date = $self->{'nominal_schedule'};
-    return $self->replace_dash_with_dot($str_date);
+    my $self = shift;
+    return $self->{'nominal_schedule'};
 }
 
 sub start_date {
-    my $self     = shift;
-    my $str_date = $self->{'start_date'};
-    return $self->replace_dash_with_dot($str_date);
+    my $self = shift;
+    return $self->{'start_date'};
 }
 
 sub end_date {
-    my $self     = shift;
-    my $str_date = $self->{'end_date'};
-    return $self->replace_dash_with_dot($str_date);
-}
-
-sub replace_dash_with_dot {
-    my $self            = shift;
-    my $str_with_dashes = shift;
-    my $str_with_dots   = $str_with_dashes;
-    if ($str_with_dashes ne "") {
-        if ($str_with_dashes =~ /^(\d{4})-(\d{1,2})-(\d{1,2})/) {
-            $str_with_dots = "$1.$2.$3";
-        }
-    }
-    return $str_with_dots;
+    my $self = shift;
+    return $self->{'end_date'};
 }
 
 1;

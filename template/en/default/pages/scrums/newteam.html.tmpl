@@ -1,0 +1,113 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia Corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% PROCESS global/header.html.tmpl
+    title = "Manage Team" 
+%]
+
+<script scripttype="text/javascript">
+  function cancel()
+  {
+    window.location = "page.cgi?id=scrums/allteams.html";   
+  }
+
+  function searchuser()
+  {
+    window.open('page.cgi?id=scrums/searchperson.html&formname=newteam&formfieldprefix=user', '_blanck', 'directories=no,location=no,height=400');
+
+    return false;
+  }
+
+  function searchscrummaster()
+  {
+    window.open('page.cgi?id=scrums/searchperson.html&formname=newteam&formfieldprefix=scrummaster', '_blanck', 'directories=no,location=no,height=400');
+
+    return false;
+  }
+
+  function checkvalues()
+  {
+    if(window.document.forms['newteam'].elements['name'].value == '')
+    {
+      alert("Team must have name.");
+      return false;
+    }
+    
+    if(window.document.forms['newteam'].elements['userid'].value == '')
+    {
+      alert("Team must have owner.");
+      return false;
+    }
+
+    return true;
+  }
+
+  function askconfirm()
+  {
+    return confirm("Are you sure you want to delete the '[% teamname %]' team?");
+  }
+</script>
+
+[% IF teamid %]
+  <h1>Edit Team</h1>
+[% ELSE %]
+  <h1>Create Team</h1>
+[% END %]
+
+<form method="post" name="newteam" action="page.cgi?id=scrums/createteam.html">
+  <input type="hidden" name="teamid" value="[% teamid %]"/>
+  <input type="hidden" name="editteam" value="[% editteam %]"/>
+  <input type="hidden" name="userid" value="[% ownerid %]"/>
+  <input type="hidden" name="scrummasterid" value="[% scrummasterid %]"/>
+
+  <table>
+    <tr>
+      <td><b>Team Name:</b></td>
+      <td><input type="text" name="name" value="[% teamname %]"></td>
+    </tr>
+    <tr>
+      <td><b>Team Owner:</b></td>
+      <td><input type="text" name="userrealname" value="[% realname %]" disabled="true"/></td>
+      <td><input type="button" value="Search For User" onclick="searchuser()"/>
+    </tr>
+    <tr>
+      <td><b>Scrum Master:</b></td>
+      <td><input type="text" name="scrummasterrealname" value="[% scrummasterrealname %]" disabled="true"/></td>
+      <td><input type="button" value="Search For User" onclick="searchscrummaster()"/>
+    </tr>
+    <tr><td colspan="3"></td></tr>
+    <tr>
+      <td colspan="3" align="right">
+        <input type="button" value="Cancel" onclick="cancel()"/>
+        [% submittext = (editteam != "" ? "Save" : "Create") %]
+        <input type="submit" value="[% submittext %]" onclick="return checkvalues()"/>
+      </td>
+    </tr>
+  </table>
+</form>
+
+[% IF teamid %]
+  <p>
+    <a href="page.cgi?id=scrums/allteams.html&deleteteam=[% teamid %]" onclick='return askconfirm()'>Delete Team</a>
+  </p>
+[% END %]
+
+[% PROCESS global/footer.html.tmpl %]

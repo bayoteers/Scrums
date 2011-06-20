@@ -9,7 +9,7 @@
   # implied. See the License for the specific language governing
   # rights and limitations under the License.
   #
-  # The Original Code is the Ultimate Scrum Bugzilla Extension.
+  # The Original Code is the Scrums Bugzilla Extension.
   #
   # The Initial Developer of the Original Code is "Nokia Corporation"
   # Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -20,32 +20,14 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Ultimate Scrum extension main page" 
+    title = "Scrums Extension Home" 
 %]
 
-<table>
-    <tr>
-	<th>Ultimate Scrum extension
-	</th>
-	<th>&nbsp;</th>
-    </tr>
-    <tr>
-	<td>&nbsp;</td>
-	<td>
-		<a href="page.cgi?id=allteams.html">Teams<a/>
-	</td>
-  </tr>
-  <tr>
-	<td>&nbsp;</td>
-	<td>
-		<a href="page.cgi?id=scrums/allreleases.html">Releases<a/>
-	</td>
-  </tr>
-  <tr>
-	<td colspan="2"><a href="page.cgi?id=scrums/scrumsguide.html">Scrums user's guide</a></td>
-  </tr>
-</table>
-</form>
+<h1>Scrums</h1>
 
-<p>
+<ul>
+  <li><a href="page.cgi?id=scrums/allteams.html">Manage Teams</a></li>
+  <li><a href="page.cgi?id=scrums/allreleases.html">Manage Releases</a></li>
+</ul>
 
+[% PROCESS global/footer.html.tmpl %]

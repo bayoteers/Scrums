@@ -9,7 +9,7 @@
   # implied. See the License for the specific language governing
   # rights and limitations under the License.
   #
-  # The Original Code is the Ultimate Scrum Bugzilla Extension.
+  # The Original Code is the Scrums Bugzilla Extension.
   #
   # The Initial Developer of the Original Code is "Nokia Corporation"
   # Portions created by the Initial Developer are Copyright (C) 2011 the
@@ -24,67 +24,80 @@
     style_urls = ['skins/standard/admin.css']
 %]
 
-<style>
-<!--
-.future_use {
-    font-size: smaller;
-    font-style: italic;
-    color: #aaa;
-}
--->
+<style type="text/css">
+  <!--
+    .future_use {
+      font-size: smaller;
+      font-style: italic;
+      color: #aaa;
+    }
+  -->
 </style>
 
-<table border=1 cellpadding=4 cellspacing=0>
-[% IF releaselist.size > 0 %]
-  <tr bgcolor="#6666ff">
-    <th>Name</th>
-    <th colspan="2">Milestone</th>
-    <th class="future_use">Algorithm</th>
-    <th class="future_use">Original cap.</th>
-    <th class="future_use">Remaining cap.</th>
-  </tr>
-[% FOREACH release IN releaselist %]
+<h1>Manage Releases</h1>
 
-<tr>
-<td>
-<a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]">
-[% release.name %]
-</a>
-</td>
-<td>[% release.target_milestone_begin %]</td>
-<td>[% release.target_milestone_end %]</td>
-<td class="future_use">
-[% IF release.capacity_algorithm %]
-[% release.capacity_algorithm %]
-[% ELSE %]
-none
-[% END %]
-</td>
-<td class="future_use">
-[% IF release.original_capacity %]
-[% release.original_capacity %]
-[% ELSE %]
-none
-[% END %]
-</td>
-<td class="future_use">
-[% IF release.remaining_capacity %]
-[% release.remaining_capacity %]
-[% ELSE %]
-none
-[% END %]
-</td>
-</tr>
+<table>
+  [% IF releaselist.size > 0 %]
+    <tr>
+      <th>Name</th>
+      <th colspan="2">Milestone</th>
+      <th class="future_use">Algorithm</th>
+      <th class="future_use">Original cap.</th>
+      <th class="future_use">Remaining cap.</th>
+    </tr>
 
-[% END %]
-[% ELSE %]
-<tr><td>Zero releases!</td></tr>
-[% END %]
+    [% FOREACH release IN releaselist %]
+      <tr>
+        <td>
+          <a href="page.cgi?id=scrums/createrelease.html&releaseid=[% release.id %]">
+            [% release.name %]
+          </a>
+        </td>
+        <td>[% release.target_milestone_begin %]</td>
+        <td>[% release.target_milestone_end %]</td>
+        <td class="future_use">
+          [% IF release.capacity_algorithm %]
+            [% release.capacity_algorithm %]
+          [% ELSE %]
+            none
+          [% END %]
+        </td>
+        <td class="future_use">
+          [% IF release.original_capacity %]
+            [% release.original_capacity %]
+          [% ELSE %]
+            none
+          [% END %]
+        </td>
+        <td class="future_use">
+          [% IF release.remaining_capacity %]
+            [% release.remaining_capacity %]
+          [% ELSE %]
+            none
+          [% END %]
+        </td>
+      </tr>
+    [% END %]
+  [% ELSE %]
+    <tr>
+      <td>
+        Zero Releases!
+      </td>
+    </tr>
+  [% END %]
 </table>
 
 [% class = user.in_group('admin') ? "" : "forbidden" %]
-<table><tr><td class="admin_links"> 
-<dl><dt class="[%class%]">
-<a href="page.cgi?id=scrums/newrelease.html">Add release</a>
-</dt></dl></td></tr></table>
+
+<p>
+  <a href="page.cgi?id=scrums/newrelease.html">Create Release</a>
+</p>
+
+<hr />
+
+<p>
+  <a href="page.cgi?id=scrums/allteams.html">Manage Teams</a>
+| <a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
+</p>
+
 [% PROCESS global/footer.html.tmpl %]
