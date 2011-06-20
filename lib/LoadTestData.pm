@@ -47,7 +47,7 @@ our @EXPORT = qw(
   load_test_data
   );
 
-use constant TEAMCOUNT        => 1;
+use constant TEAMCOUNT        => 30;
 use constant TEAMSIZE         => 5;
 use constant SPRINTCOUNT      => 7;
 use constant SPRINTLENGTH     => 14;
@@ -173,6 +173,9 @@ sub load_test_data($) {
                             if ($work_done < 0) {
                                 $work_done = 0;
                             }
+                            else{
+                                _set_work_time($bug_id, $work_done, $today_date, 1);
+                            }
 
                             if ($work_done) {
                                 my $new_remaining_time = $bug->remaining_time - $work_done;
@@ -205,6 +208,21 @@ sub load_test_data($) {
     $vars->{'output'} .= '<p>Loaded Complete</p>';
 }
 
+sub _set_work_time($$$$) {
+    my ($bug_id, $work_time, $bug_when, $log) = @_;
+
+    my $bug = new Bugzilla::Bug($bug_id);
+
+    my $wt = sprintf("%.2f", $work_time);
+
+    my $command = "INSERT INTO longdescs (bug_id, who, bug_when, thetext, work_time) VALUES (?,?,?,?,?)";
+    
+    Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when,
+                          'Logging Hours',
+                          $wt,
+                          );
+}
+
 sub _set_remaining_time($$$$) {
     my ($bug_id, $new_remaining_time, $bug_when, $log) = @_;
 
@@ -221,7 +239,7 @@ sub _set_remaining_time($$$$) {
         $command = "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, added, removed) VALUES (?,?,?,?,?,?)";
         Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when,
                           get_field_id('remaining_time'),
-                          sprintf("%.2f", $nrt),
+                          $nrt,
                           $old_remaining_time);
     }
 }
