@@ -139,10 +139,8 @@ sub load_test_data($) {
 
                 my $estimate = int(rand(MAX_STORY_LENGTH)) + 1;
 
-                $bug->set_estimated_time($estimate);
-                $bug->update();
-                
-                _set_remaining_time($bug_id, $estimate, $start_date);
+                _set_estimated_time($bug_id, $estimate, $start_date, 0);
+                _set_remaining_time($bug_id, $estimate, $start_date, 0);
 
                 # Put some bugs submitted during this period into the sprint, and some into the backlog.
                 if ($into_sprint) {
@@ -172,6 +170,10 @@ sub load_test_data($) {
                             my $today_date = "$t_year-$t_month-$t_day";
                             my $work_done  = int(rand($estimate + 1)) - 1;    # Ensure that when estimate reaches 1 we get a result of 0 or 1
 
+                            if ($work_done < 0) {
+                                $work_done = 0;
+                            }
+
                             $vars->{'output'} .= "Estimate $estimate Work Done: $work_done<br />";
 
                             if ($work_done) {
@@ -180,8 +182,8 @@ sub load_test_data($) {
                                 if ($new_remaining_time < 0) {
                                     $new_remaining_time = 0;
                                 }
-                                
-                                _set_remaining_time($bug_id, $new_remaining_time, $today_date);
+
+                                _set_remaining_time($bug_id, $new_remaining_time, $today_date, 1);
                             }
                         }
                         $days++;
@@ -202,21 +204,38 @@ sub load_test_data($) {
     $vars->{'output'} .= '<p>Loaded Complete</p>';
 }
 
-sub _set_remaining_time($$) {
-    my ($bug_id, $new_remaining_time, $when) = @_;
-    
+sub _set_remaining_time($$$$) {
+    my ($bug_id, $new_remaining_time, $bug_when, $log) = @_;
+
+    my $bug = new Bugzilla::Bug($bug_id);
+
+    my $old_remaining_time = $bug->remaining_time;
+
+    my $nrt = sprintf("%.2f", $new_remaining_time);
+
+    my $command = "UPDATE bugs SET remaining_time = ? WHERE bug_id = ?";
+    Bugzilla->dbh->do($command, undef, $nrt, $bug_id);
+
+    if ($log) {
+        $command = "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, added, removed) VALUES (?,?,?,?,?,?)";
+        Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when, get_field_id('remaining_time'), sprintf("%.2f", $nrt), $old_remaining_time);
+    }
+}
+
+sub _set_estimated_time($$$$) {
+    my ($bug_id, $new_estimated_time, $bug_when, $log) = @_;
+
     my $bug = new Bugzilla::Bug($bug_id);
     
-    my $old_remaining_time = $bug->remaining_time;
-    
-    my $command = "UPDATE bugs SET remaining_time = ? WHERE bug_id = ?";
-    Bugzilla->dbh->do($command, undef, $new_remaining_time, $bug_id);
+    my $old_estimated_time = $bug->estimated_time;
 
-    my $command = "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, added, removed) VALUES (?,?,?,?,?,?)";
-    Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $when,
-                      get_field_id('remaining_time'),
-                      sprintf("%.2f", $new_remaining_time),
-                      $old_remaining_time);
+    my $command = "UPDATE bugs SET estimated_time = ? WHERE bug_id = ?";
+    Bugzilla->dbh->do($command, undef, $new_estimated_time, $bug_id);
+
+    if ($log) {
+        $command = "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, added, removed) VALUES (?,?,?,?,?,?)";
+        Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when, get_field_id('estimated_time'), sprintf("%.2f", $new_estimated_time), $old_estimated_time);
+    }
 }
 
 sub _create_backlog($) {
