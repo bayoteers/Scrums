@@ -135,7 +135,7 @@ sub load_test_data($) {
 
                 $vars->{'output'} .= "Adding $bug_id to sprint " . $sprint->name . "<br /><br />";
 
-                my $into_sprint = $counter < (TEAMSIZE * SPRINTLENGTH);
+                my $into_sprint = (int(rand(4)) + 1) != 4; #1 in 4 chance it doesn't go into the sprint
 
                 my $estimate = int(rand(MAX_STORY_LENGTH)) + 1;
 
@@ -173,7 +173,7 @@ sub load_test_data($) {
                             if ($work_done < 0) {
                                 $work_done = 0;
                             }
-                            else{
+                            else {
                                 _set_work_time($bug_id, $work_done, $today_date, 1);
                             }
 
@@ -216,11 +216,8 @@ sub _set_work_time($$$$) {
     my $wt = sprintf("%.2f", $work_time);
 
     my $command = "INSERT INTO longdescs (bug_id, who, bug_when, thetext, work_time) VALUES (?,?,?,?,?)";
-    
-    Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when,
-                          'Logging Hours',
-                          $wt,
-                          );
+
+    Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when, 'Logging Hours', $wt,);
 }
 
 sub _set_remaining_time($$$$) {
@@ -237,10 +234,7 @@ sub _set_remaining_time($$$$) {
 
     if ($log) {
         $command = "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, added, removed) VALUES (?,?,?,?,?,?)";
-        Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when,
-                          get_field_id('remaining_time'),
-                          $nrt,
-                          $old_remaining_time);
+        Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when, get_field_id('remaining_time'), $nrt, $old_remaining_time);
     }
 }
 
