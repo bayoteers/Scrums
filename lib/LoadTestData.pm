@@ -133,7 +133,7 @@ sub load_test_data($) {
             foreach my $bug_id (@{$bug_ids}) {
                 my $bug = new Bugzilla::Bug($bug_id);
 
-                $vars->{'output'} .= "Adding $bug_id to sprint " . Dumper($sprint) . "<br />";
+                $vars->{'output'} .= "Adding $bug_id to sprint " . $sprint->name . "<br /><br />";
 
                 my $into_sprint = $counter < (TEAMSIZE * SPRINTLENGTH);
 
@@ -168,13 +168,11 @@ sub load_test_data($) {
                             my ($t_year, $t_month, $t_day) = Add_Delta_Days($s_year, $s_month, $s_day, $days);
 
                             my $today_date = "$t_year-$t_month-$t_day";
-                            my $work_done  = int(rand($estimate + 1)) - 1;    # Ensure that when estimate reaches 1 we get a result of 0 or 1
+                            my $work_done  = int(rand($estimate + 2));    # Ensure that when estimate reaches 1 we get a result of 0 or 1
 
                             if ($work_done < 0) {
                                 $work_done = 0;
                             }
-
-                            $vars->{'output'} .= "Estimate $estimate Work Done: $work_done<br />";
 
                             if ($work_done) {
                                 my $new_remaining_time = $bug->remaining_time - $work_done;
@@ -185,10 +183,13 @@ sub load_test_data($) {
 
                                 _set_remaining_time($bug_id, $new_remaining_time, $today_date, 1);
                             }
+
+                            $bug = new Bugzilla::Bug($bug_id);
+                            $vars->{'output'} .= "Estimate $estimate Work Done: $work_done Remaining: " . $bug->remaining_time . "<br />";
                         }
                         $days++;
                     }
-
+                    $vars->{'output'} .= "<br />";
                 }
 
                 $counter++;
@@ -218,7 +219,10 @@ sub _set_remaining_time($$$$) {
 
     if ($log) {
         $command = "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, added, removed) VALUES (?,?,?,?,?,?)";
-        Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when, get_field_id('remaining_time'), sprintf("%.2f", $nrt), $old_remaining_time);
+        Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when,
+                          get_field_id('remaining_time'),
+                          sprintf("%.2f", $nrt),
+                          $old_remaining_time);
     }
 }
 
@@ -226,7 +230,7 @@ sub _set_estimated_time($$$$) {
     my ($bug_id, $new_estimated_time, $bug_when, $log) = @_;
 
     my $bug = new Bugzilla::Bug($bug_id);
-    
+
     my $old_estimated_time = $bug->estimated_time;
 
     my $command = "UPDATE bugs SET estimated_time = ? WHERE bug_id = ?";
@@ -234,7 +238,10 @@ sub _set_estimated_time($$$$) {
 
     if ($log) {
         $command = "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, added, removed) VALUES (?,?,?,?,?,?)";
-        Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when, get_field_id('estimated_time'), sprintf("%.2f", $new_estimated_time), $old_estimated_time);
+        Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when,
+                          get_field_id('estimated_time'),
+                          sprintf("%.2f", $new_estimated_time),
+                          $old_estimated_time);
     }
 }
 
