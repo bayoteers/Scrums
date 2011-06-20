@@ -72,7 +72,8 @@ function switch_lists(ui, lists) {
             from_list = list;
         }
     }
-    $("#" + to_list.ul_id).find('li').each(function(i) {
+    $("#" + to_list.ul_id).find('tr').each(function(i) {
+    //$("#" + to_list.ul_id).find('li').each(function(i) {
         if (to_list.visible.length == to_list.offset + i) {
             if (to_list.visible.length > 0) {
                 // new value is plus one from the prev last

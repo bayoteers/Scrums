@@ -32,9 +32,10 @@
   .colD { min-width: 60px; }
   .colE { min-width: 40px; }
   .colF { min-width: 15px; }
-  .sortable table tr td { margin: 0px; padding: 0px; }
+  .sortable table tr td { margin: 0px; padding: 0px; text-align: left; }
+  .sortable { text-align: left; background: #eeeeee; }
 
-  .sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }
+  /*.sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }*/
   .sortable li { background: #eeeeee; margin: 5px; padding: 5px; width: 680px; }
   .disabled { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }
   .disabled li { background: #eeeeee; margin: 3px; padding: 5px; font-size: 1em; width: 680px; }
@@ -68,19 +69,16 @@
   </li>
 </script>
 
+  <!--<li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>-->
 <script id="TeamBugLiTmpl" type="text/html">
-  <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
-    <table>
-      <tr>
-        <td class="colF"> <span class="number"><#= counter #></span></td>
-        <td class="colD"> <a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
-        <td class="colF"> <#= bug[1] #></td>
-        <td class="colC"> <#= bug[2] #></td>
-        <td class="colA"> <#= bug[3] #></td>
-        <td title="<#= bug[5] #>"> <#= bug[4] #></td>
+      <tr id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
+        <td class="colF sortable"> <span class="number"><#= counter #></span></td>
+        <td class="colD sortable"> <a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
+        <td class="colF sortable"> <#= bug[1] #></td>
+        <td class="colC sortable"> <#= bug[2] #></td>
+        <td class="colA sortable"> <#= bug[3] #></td>
+        <td title="<#= bug[5] #>" class='sortable'> <#= bug[4] #></td>
       </tr>
-    </table>
-  </li>
 </script>
 
 <script id="BugLiTmpl" type="text/html">
@@ -107,8 +105,14 @@
       (<span id='items_<#= list.id #>'></span>)
     </p>
 
-    <ul id="<#= list.ul_id #>" class="connectedSortable sortable">
-    </ul>
+    <table>
+        <thead>
+            <tr><th class='sortable'>order</th><th class='sortable' class="colF">id</th><th class='sortable' class="colF">hours</th><th class='sortable' class="colF">status</th><th class='sortable' class="colF">Assigned to</th><th class='sortable' class="colF">description</th></tr>
+        </thead>
+        <tbody id="<#= list.ul_id #>" class="connectedSortable sortable">
+        </tbody>
+    </table>
+
   </div>
 </script>
 
