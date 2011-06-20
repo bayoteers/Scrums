@@ -167,6 +167,7 @@ function update_lists(bugs_list, move_pos, data) {
 
     } // for
     $("#" + bugs_list.ul_id).html(html);
+    $('#items_' + bugs_list.id).html(bugs_list.list.length);
 }
 
 function list_filter(header, list, bugs_list) { // header is any element, list is an unordered list
