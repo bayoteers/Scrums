@@ -1,5 +1,26 @@
 #!/usr/bin/perl
 
+# -*- Mode: perl; indent-tabs-mode: nil -*-
+#
+# The contents of this file are subject to the Mozilla Public
+# License Version 1.1 (the "License"); you may not use this file
+# except in compliance with the License. You may obtain a copy of
+# the License at http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS
+# IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+# implied. See the License for the specific language governing
+# rights and limitations under the License.
+#
+# The Original Code is the Scrums Bugzilla Extension.
+#
+# The Initial Developer of the Original Code is "Nokia Corporation"
+# Portions created by the Initial Developer are Copyright (C) 2011 the
+# Initial Developer. All Rights Reserved.
+#
+# Contributor(s):
+#   Stephen Jayna <sdjayna@bayoteers.org>
+
 package Bugzilla::Extension::Scrums::LoadTestData;
 
 use strict;
@@ -11,6 +32,7 @@ use Bugzilla;
 
 use Bugzilla::Constants;
 use Bugzilla::Error;
+use Bugzilla::Field;
 use Bugzilla::Group;
 use Bugzilla::User;
 use Bugzilla::Util qw(trick_taint);
@@ -25,10 +47,11 @@ our @EXPORT = qw(
   load_test_data
   );
 
-use constant TEAMCOUNT    => 10;
-use constant TEAMSIZE     => 10;
-use constant SPRINTCOUNT  => 10;
-use constant SPRINTLENGTH => 14;
+use constant TEAMCOUNT        => 1;
+use constant TEAMSIZE         => 5;
+use constant SPRINTCOUNT      => 7;
+use constant SPRINTLENGTH     => 14;
+use constant MAX_STORY_LENGTH => 16;
 
 use vars qw(%data);
 
@@ -48,7 +71,7 @@ sub load_test_data($) {
         $vars->{'output'} .= "<p><strong>Loading Team $name</strong><br />";
 
         my $team = Bugzilla::Extension::Scrums::Team->create({ name => $name, owner => $owner, scrum_master => $scrum_master });
-        _create_backlog($team->id);
+        my $backlog = _create_backlog($team->id);
 
         # Add members to this team.
 
@@ -70,7 +93,7 @@ sub load_test_data($) {
 
         # Figure out our starting point: the first day we're going to create a sprint for.
         my ($s_year, $s_month, $s_day) = Today(time());
-        ($s_year, $s_month, $s_day) = Add_Delta_Days($s_year, $s_month, $s_day, -((SPRINTCOUNT * SPRINTLENGTH) / 2));
+        ($s_year, $s_month, $s_day) = Add_Delta_Days($s_year, $s_month, $s_day, -((SPRINTCOUNT * SPRINTLENGTH) / 1.3));
 
         for my $i_sprint (1 .. SPRINTCOUNT) {
             # Make the end of the sprint SPRINTLENGTH after our starting point.
@@ -89,7 +112,85 @@ sub load_test_data($) {
 
             $vars->{'output'} .= "Creating Sprint $i_sprint Week $s_week_number -> $e_week_number Is Active? $is_active<br />";
 
-            _create_sprint($team->id, "NEW", 1, "Week $s_week_number-$e_week_number", "", "Sprint for Week $s_week_number to Week $e_week_number", $is_active);
+            my $start_date = "$s_year-$s_month-$s_day";
+            my $end_date   = "$year-$month-$day";
+
+            my $sprint = _create_sprint($team->id, "NEW", 1, "Week $s_week_number-$e_week_number",
+                                        $start_date, "Sprint for Week $s_week_number to Week $e_week_number",
+                                        $is_active, $start_date, $end_date);
+
+            # Find bugs that were created in the period before the sprint, and put them into the sprint.
+            my ($w_year, $w_month, $w_day) = Add_Delta_Days($s_year, $s_month, $s_day, -(SPRINTLENGTH));
+            my $week_earlier_date = "$w_year-$w_month-$w_day";
+
+            my $query   = "SELECT bug_id FROM bugs WHERE creation_ts > '$week_earlier_date' and creation_ts < '$start_date' and product_id = $product_id";
+            my $bug_ids = Bugzilla->dbh->selectcol_arrayref($query);
+
+            my $s_counter = 1;
+            my $b_counter = 1;
+            my $counter   = 1;
+
+            foreach my $bug_id (@{$bug_ids}) {
+                my $bug = new Bugzilla::Bug($bug_id);
+
+                $vars->{'output'} .= "Adding $bug_id to sprint " . Dumper($sprint) . "<br />";
+
+                my $into_sprint = $counter < (TEAMSIZE * SPRINTLENGTH);
+
+                my $estimate = int(rand(MAX_STORY_LENGTH)) + 1;
+
+                $bug->set_estimated_time($estimate);
+                $bug->update();
+                
+                _set_remaining_time($bug_id, $estimate, $start_date);
+
+                # Put some bugs submitted during this period into the sprint, and some into the backlog.
+                if ($into_sprint) {
+                    Bugzilla->dbh->do('INSERT INTO scrums_sprint_bug_map (bug_id, sprint_id) values (?, ?)', undef, $bug_id, $sprint->id);
+                    Bugzilla->dbh->do('INSERT INTO scrums_bug_order (bug_id, team) values (?, ?)',           undef, $bug_id, $s_counter);
+
+                    $s_counter++;
+                }
+                else {
+                    Bugzilla->dbh->do('INSERT INTO scrums_sprint_bug_map (bug_id, sprint_id) values (?, ?)', undef, $bug_id, $backlog->id);
+                    Bugzilla->dbh->do('INSERT INTO scrums_bug_order (bug_id, team) values (?, ?)',           undef, $bug_id, $b_counter);
+
+                    $b_counter++;
+                }
+
+                if ($into_sprint) {
+                    my $days = 0;
+
+                    # Now for each day in the sprint increase the amount of actual work done on the bug
+                    while ($days < SPRINTLENGTH) {
+                        #Re-fetch bug.
+                        $bug = new Bugzilla::Bug($bug_id);
+
+                        if ($bug->remaining_time > 0) {
+                            my ($t_year, $t_month, $t_day) = Add_Delta_Days($s_year, $s_month, $s_day, $days);
+
+                            my $today_date = "$t_year-$t_month-$t_day";
+                            my $work_done  = int(rand($estimate + 1)) - 1;    # Ensure that when estimate reaches 1 we get a result of 0 or 1
+
+                            $vars->{'output'} .= "Estimate $estimate Work Done: $work_done<br />";
+
+                            if ($work_done) {
+                                my $new_remaining_time = $bug->remaining_time - $work_done;
+
+                                if ($new_remaining_time < 0) {
+                                    $new_remaining_time = 0;
+                                }
+                                
+                                _set_remaining_time($bug_id, $new_remaining_time, $today_date);
+                            }
+                        }
+                        $days++;
+                    }
+
+                }
+
+                $counter++;
+            }
 
             # Move the starting point along by SPRINTLENGTH.
             ($s_year, $s_month, $s_day) = ($year, $month, $day);
@@ -99,6 +200,23 @@ sub load_test_data($) {
     }
 
     $vars->{'output'} .= '<p>Loaded Complete</p>';
+}
+
+sub _set_remaining_time($$) {
+    my ($bug_id, $new_remaining_time, $when) = @_;
+    
+    my $bug = new Bugzilla::Bug($bug_id);
+    
+    my $old_remaining_time = $bug->remaining_time;
+    
+    my $command = "UPDATE bugs SET remaining_time = ? WHERE bug_id = ?";
+    Bugzilla->dbh->do($command, undef, $new_remaining_time, $bug_id);
+
+    my $command = "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, added, removed) VALUES (?,?,?,?,?,?)";
+    Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $when,
+                      get_field_id('remaining_time'),
+                      sprintf("%.2f", $new_remaining_time),
+                      $old_remaining_time);
 }
 
 sub _create_backlog($) {
@@ -113,7 +231,15 @@ sub _create_backlog($) {
 }
 
 sub _create_sprint(@) {
-    my ($team_id, $status, $item_type, $name, $nominal_schedule, $description, $is_active) = @_;
+    my ($team_id, $status, $item_type, $name, $nominal_schedule, $description, $is_active, $start_date, $end_date) = @_;
+
+    if (!$start_date) {
+        $start_date = "2000-01-01";
+    }
+
+    if (!$end_date) {
+        $end_date = "2000-01-01";
+    }
 
     # Create a sprint.
 
@@ -125,7 +251,9 @@ sub _create_sprint(@) {
                                                                name             => $name,
                                                                nominal_schedule => $nominal_schedule,
                                                                description      => $description,
-                                                               is_active        => $is_active
+                                                               is_active        => $is_active,
+                                                               start_date       => $start_date,
+                                                               end_date         => $end_date,
                                                              }
                                                             );
 
@@ -148,6 +276,8 @@ sub _drop_existing_data() {
         Bugzilla->dbh->do("delete from $table");
     }
 
+    Bugzilla->dbh->do("delete from bugs_activity where fieldid=" . get_field_id('remaining_time'));
+
     $dbh->bz_commit_transaction();
 }
 
@@ -159,7 +289,7 @@ sub _get_random_user() {
     my $user_id;
 
     do {
-        my $query = "SELECT userid FROM profiles ORDER BY rand() limit 1;";
+        my $query = "SELECT userid FROM profiles WHERE disabledtext = '' ORDER BY rand() limit 1;";
         $user_id = Bugzilla->dbh->selectrow_array($query);
 
     } until !$data{'user'}{$user_id};
@@ -177,7 +307,7 @@ sub _get_random_product() {
     my ($id, $name);
 
     do {
-        my $query = "SELECT id,name FROM products ORDER BY rand() limit 1;";
+        my $query = "SELECT id,name FROM products WHERE name LIKE 'H-%' or name LIKE 'Other' ORDER BY rand() limit 1;";
         ($id, $name) = Bugzilla->dbh->selectrow_array($query);
 
     } until !$data{'product'}{$id};
