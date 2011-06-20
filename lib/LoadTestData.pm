@@ -47,9 +47,9 @@ our @EXPORT = qw(
   load_test_data
   );
 
-use constant TEAMCOUNT        => 30;
+use constant TEAMCOUNT        => 50;
 use constant TEAMSIZE         => 5;
-use constant SPRINTCOUNT      => 7;
+use constant SPRINTCOUNT      => 8;
 use constant SPRINTLENGTH     => 14;
 use constant MAX_STORY_LENGTH => 16;
 
@@ -135,7 +135,7 @@ sub load_test_data($) {
 
                 $vars->{'output'} .= "Adding $bug_id to sprint " . $sprint->name . "<br /><br />";
 
-                my $into_sprint = (int(rand(4)) + 1) != 4; #1 in 4 chance it doesn't go into the sprint
+                my $into_sprint = (int(rand(4)) + 1) != 4;    #1 in 4 chance it doesn't go into the sprint
 
                 my $estimate = int(rand(MAX_STORY_LENGTH)) + 1;
 
@@ -173,17 +173,15 @@ sub load_test_data($) {
                             if ($work_done < 0) {
                                 $work_done = 0;
                             }
-                            else {
-                                _set_work_time($bug_id, $work_done, $today_date, 1);
-                            }
 
-                            if ($work_done) {
+                            if ($work_done > 0) {
                                 my $new_remaining_time = $bug->remaining_time - $work_done;
 
                                 if ($new_remaining_time < 0) {
                                     $new_remaining_time = 0;
                                 }
 
+                                _set_work_time($bug_id, $work_done, $today_date);
                                 _set_remaining_time($bug_id, $new_remaining_time, $today_date, 1);
                             }
 
@@ -206,10 +204,12 @@ sub load_test_data($) {
     }
 
     $vars->{'output'} .= '<p>Loaded Complete</p>';
+
+    return;
 }
 
-sub _set_work_time($$$$) {
-    my ($bug_id, $work_time, $bug_when, $log) = @_;
+sub _set_work_time($$$) {
+    my ($bug_id, $work_time, $bug_when) = @_;
 
     my $bug = new Bugzilla::Bug($bug_id);
 
@@ -217,7 +217,9 @@ sub _set_work_time($$$$) {
 
     my $command = "INSERT INTO longdescs (bug_id, who, bug_when, thetext, work_time) VALUES (?,?,?,?,?)";
 
-    Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when, 'Logging Hours', $wt,);
+    Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when, 'Logging Hours', $wt);
+
+    return;
 }
 
 sub _set_remaining_time($$$$) {
@@ -236,6 +238,8 @@ sub _set_remaining_time($$$$) {
         $command = "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, added, removed) VALUES (?,?,?,?,?,?)";
         Bugzilla->dbh->do($command, undef, $bug_id, $bug->assigned_to->id, $bug_when, get_field_id('remaining_time'), $nrt, $old_remaining_time);
     }
+
+    return;
 }
 
 sub _set_estimated_time($$$$) {
@@ -255,6 +259,8 @@ sub _set_estimated_time($$$$) {
                           sprintf("%.2f", $new_estimated_time),
                           $old_estimated_time);
     }
+
+    return;
 }
 
 sub _create_backlog($) {
@@ -311,10 +317,10 @@ sub _drop_existing_data() {
     $dbh->bz_start_transaction();
 
     foreach my $table (@tables) {
-        Bugzilla->dbh->do("delete from $table");
+        Bugzilla->dbh->do("DELETE FROM $table");
     }
 
-    Bugzilla->dbh->do("delete from bugs_activity where fieldid=" . get_field_id('remaining_time'));
+    Bugzilla->dbh->do("DELETE FROM bugs_activity WHERE fieldid=" . get_field_id('remaining_time'));
 
     $dbh->bz_commit_transaction();
 }

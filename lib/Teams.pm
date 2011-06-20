@@ -65,12 +65,12 @@ sub show_all_teams($) {
     }
 
     my $sort = $cgi->param('sort');
-    
-    if (!$sort){
-      # Set default sort to be by name.
-      $sort = 1;
+
+    if (!$sort) {
+        # Set default sort to be by name.
+        $sort = 1;
     }
-    
+
     my $team_list = Bugzilla::Extension::Scrums::Team->all_teams($sort);
 
     $vars->{'sort'}     = $sort;
