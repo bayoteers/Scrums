@@ -89,7 +89,9 @@ sub create_release {
             $release_id = $1;    # $data now untainted
 
             my $release = Bugzilla::Extension::Scrums::Release->new($release_id);
-
+            if (!defined $release) {
+                ThrowUserError('release_not_found');                
+            }
             if ($cgi->param('editrelease') ne "") {
                 if (not Bugzilla->user->in_group('release_managers')) {
                     ThrowUserError('auth_failure', { group => "release_managers", action => "edit", object => "release" });
@@ -102,7 +104,7 @@ sub create_release {
                 my $remaining    = $cgi->param('remaining');
                 my $error        = _update_release($release, $release_name, $mr_begin, $mr_end, $algorithm, $original, $remaining);
                 if ($error ne "") {
-                    $vars->{'error'} = $error;
+                    ThrowUserError('release_can_not_be_updated', { 'invalid_data' => $error });
                 }
             }
             elsif ($cgi->param('newflagtype') ne "") {
@@ -122,7 +124,7 @@ sub create_release {
             _show_existing_release($vars, $release);
         }
         else {
-            $vars->{'error'} = "Illegal release id. ";
+            ThrowUserError('release_not_found');
         }
     }
     else {
@@ -250,6 +252,10 @@ sub _new_release {
     ($error, $release_name, $mr_begin, $mr_end, $algorithm, $original, $remaining) =
       _sanitize($release_name, $mr_begin, $mr_end, $algorithm, $original, $remaining);
 
+    if ($error ne "") {
+        ThrowUserError('release_can_not_be_updated', { 'invalid_data' => $error });
+    }
+
     if ($release_name) {
         my $release;
         if ($mr_begin and $mr_end) {
@@ -260,9 +266,6 @@ sub _new_release {
             $release = Bugzilla::Extension::Scrums::Release->create({ name => $release_name });
         }
         _show_existing_release($vars, $release);
-    }
-    else {
-        $vars->{'error'} = $error;
     }
 
     $vars->{'releaseisnew'} = 'true';
@@ -315,7 +318,7 @@ sub _sanitize {
         $release_name = $1;    # $data now untainted
     }
     else {
-        $error        = "Illegal name. ";
+        $error        = " Illegal name";
         $release_name = "";
     }
 
@@ -326,7 +329,7 @@ sub _sanitize {
         $mr_begin = $1;        # $data now untainted
     }
     else {
-        $error    = "Illegal beginning of milestore range value.";
+        $error    = " Illegal beginning of milestore range value";
         $mr_begin = "";
     }
 
@@ -337,7 +340,7 @@ sub _sanitize {
         $mr_end = $1;          # $data now untainted
     }
     else {
-        $error  = "Illegal end of milestore range value." . $mr_end;
+        $error  = " Illegal end of milestore range value" . $mr_end;
         $mr_end = "";
     }
 
@@ -345,7 +348,7 @@ sub _sanitize {
         $algorithm = $1;       # $data now untainted
     }
     else {
-        $error     = "Illegal algorithm. ";
+        $error     = " Illegal algorithm";
         $algorithm = "";
     }
 
@@ -353,7 +356,7 @@ sub _sanitize {
         $original = $1;        # $data now untainted
     }
     else {
-        $error .= "Illegal original capacity value.";
+        $error .= " Illegal original capacity value";
         $original = "";
     }
 
@@ -361,7 +364,7 @@ sub _sanitize {
         $remaining = $1;       # $data now untainted
     }
     else {
-        $error .= "Illegal remaining capacity value.";
+        $error .= " Illegal remaining capacity value";
         $remaining = "";
     }
 

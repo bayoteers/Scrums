@@ -56,7 +56,7 @@ sub bug_end_of_update {
             my $estimated_time = $bug->estimated_time();
             my $actual_time    = $bug->actual_time();
 
-            my $filling_forced = 0;
+            my $filling_forced                = 0;
             my $precondition_enabled_severity = Bugzilla->params->{"scrums_precondition_enabled_severity"};
 
             foreach my $enabled_severity (@$precondition_enabled_severity) {
@@ -65,7 +65,7 @@ sub bug_end_of_update {
                 }
             }
 
-            if($filling_forced) {
+            if ($filling_forced) {
                 if ($estimated_time == 0) {
                     ThrowUserError("scrums_estimated_time_required");
                 }

@@ -60,4 +60,16 @@
 [% ELSIF error == "release_already_exists" %]
    [% title = "Release already exists" %]
    Release '[% name %]' already exists.
+[% ELSIF error == "release_can_not_be_updated" %]
+   [% title = "Release can not be updated" %]
+   Release is invalid.[% invalid_data %].
+[% ELSIF error == "release_not_found" %]
+    [% title = "Release Not Found" %]
+    The requested release does not exist
+[% ELSIF error == "scrums_team_can_not_be_updated" %]
+   [% title = "Team can not be updated" %]
+   Team is invalid.[% invalid_data %].
+[% ELSIF error == "scrums_team_not_found" %]
+    [% title = "Team Not Found" %]
+    The requested team does not exist
 [% END %]
