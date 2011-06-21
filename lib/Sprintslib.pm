@@ -362,6 +362,9 @@ sub _burndown_plot {
 sub _task_hour_log {
     my ($vars, $sprint_id) = @_;
 
+    use Bugzilla::Field;
+    my $remaining_fieldid = get_field_id('remaining_time');
+
     my $dbh = Bugzilla->dbh;
     my $sth = $dbh->prepare(
         # With MySql-database it would be possible to select directly with function unix_timestamp(bug_when).
@@ -375,7 +378,7 @@ sub _task_hour_log {
             scrums_sprint_bug_map sbm on
             sbm.bug_id = ba.bug_id
         where 
-            fieldid = 41 and
+            fieldid = ? and
             sprint_id = ?)
 
         union
@@ -396,14 +399,14 @@ sub _task_hour_log {
             bugs_activity ba
         on
             sbm.bug_id = ba.bug_id and
-            fieldid = 41 
+            fieldid = ? 
         where 
             sprint_id = ?
         group by
             sbm.bug_id) as first_change
         on
             first_change.bug_id = ba.bug_id and
-            fieldid = 41 and
+            fieldid = ? and
             first_change.ts = ba.bug_when and
             ba.removed > 0
         inner join
@@ -430,7 +433,7 @@ sub _task_hour_log {
             not exists
         (select null from bugs_activity ba
             where b.bug_id = ba.bug_id and
-            fieldid = 41))
+            fieldid = ?))
 
         union
 
@@ -449,7 +452,7 @@ sub _task_hour_log {
         order by
             bug_when"
     );
-    $sth->execute($sprint_id, $sprint_id, $sprint_id, $sprint_id);
+    $sth->execute($remaining_fieldid, $sprint_id, $remaining_fieldid, $sprint_id, $remaining_fieldid, $sprint_id, $remaining_fieldid, $sprint_id);
     my @result;
     my ($v1, $v2, $v3, $v4);
     while (($v1, $v2, $v3, $v4) = $sth->fetchrow_array) {
