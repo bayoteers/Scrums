@@ -62,6 +62,7 @@ function switch_lists(ui, lists) {
     old_vis_position = parseInt(ui.item.attr('bug_order_nr'));
     to_list = undefined;
     from_list = undefined;
+    var new_entry_id = '';
     new_position = -1;
     for (var l = 0; l < lists.length; l++) {
         list = lists[l];
@@ -72,7 +73,8 @@ function switch_lists(ui, lists) {
             from_list = list;
         }
     }
-    $("#" + to_list.ul_id).find('li').each(function(i) {
+    $("#" + to_list.ul_id).find('tr').each(function(i) {
+    //$("#" + to_list.ul_id).find('li').each(function(i) {
         if (to_list.visible.length == to_list.offset + i) {
             if (to_list.visible.length > 0) {
                 // new value is plus one from the prev last
@@ -85,6 +87,7 @@ function switch_lists(ui, lists) {
         }
         order = to_list.visible[to_list.offset + i];
         if ($(this).attr('id') == ui.item.attr('id')) {
+            new_entry_id = $(this).attr('id');
             new_position = order;
             var temp = from_list.list.splice(old_position, 1);
             to_list.list.splice(new_position, 0, temp[0]);
@@ -99,6 +102,14 @@ function switch_lists(ui, lists) {
     from_list.visible = -1;
     update_lists(to_list);
     update_lists(from_list);
+    if (new_entry_id)
+    {
+        $('#'+new_entry_id).children().each(function ()
+        {
+            $(this).effect( 'highlight', {color: '#404d6c'}, 1000 );
+        });
+    }
+
 }
 
 function bind_sortable_lists(lists) {
@@ -118,7 +129,9 @@ function bind_sortable_lists(lists) {
         },
         stop: function(event, ui) {
             switch_lists(ui, lists);;
-        }
+        },
+        items: 'tr:not(.ignoresortable)',
+
     }).disableSelection();
 }
 
@@ -155,10 +168,10 @@ function update_lists(bugs_list, move_pos, data) {
 
     var template;
     if(bugs_list.li_tmpl) {
-	template = bugs_list.li_tmpl
+        template = bugs_list.li_tmpl
     }
     else {
-	template = $("#BugLiTmpl");
+        template = $("#BugLiTmpl");
     } 
           html += parseTemplate(template.html(), {
           bug: bugs_list.list[bugs_list.visible[i]],
@@ -166,7 +179,13 @@ function update_lists(bugs_list, move_pos, data) {
         });
 
     } // for
-    $("#" + bugs_list.ul_id).html(html);
+    if (html)
+    {
+        $("#" + bugs_list.ul_id).html(html);
+    } else
+    {
+        $("#" + bugs_list.ul_id).html('<tr rowspan="1"><td colspan="6">&nbsp;</td></tr><tr class="ignoresortable"><td colspan="6"><h2 style="text-align: center;">NO ITEMS</h2></td></tr>');
+    }
     $('#items_' + bugs_list.id).html(bugs_list.list.length);
 }
 
