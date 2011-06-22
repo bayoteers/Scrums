@@ -434,11 +434,11 @@ sub install_update_db {
 sub install_before_final_checks {
     my ($self, $args) = @_;
 
-    my $name = "editteams";
+    my $name        = "editteams";
     my $description = "Can edit responsible teams";
-    my $isbuggroup = 1;
-    my $isactive = 0;
-    my $group = new Bugzilla::Group({ name => $name });
+    my $isbuggroup  = 1;
+    my $isactive    = 0;
+    my $group       = new Bugzilla::Group({ name => $name });
     if (!$group) {
         $group = Bugzilla::Group->create({ name => $name, description => $description, isbuggroup => $isbuggroup, isactive => $isactive });
     }
