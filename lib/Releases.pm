@@ -90,7 +90,7 @@ sub create_release {
 
             my $release = Bugzilla::Extension::Scrums::Release->new($release_id);
             if (!defined $release) {
-                ThrowUserError('release_not_found');                
+                ThrowUserError('release_not_found');
             }
             if ($cgi->param('editrelease') ne "") {
                 if (not Bugzilla->user->in_group('release_managers')) {
@@ -103,6 +103,7 @@ sub create_release {
                 my $original     = $cgi->param('original');
                 my $remaining    = $cgi->param('remaining');
                 my $error        = _update_release($release, $release_name, $mr_begin, $mr_end, $algorithm, $original, $remaining);
+
                 if ($error ne "") {
                     ThrowUserError('release_can_not_be_updated', { 'invalid_data' => $error });
                 }
