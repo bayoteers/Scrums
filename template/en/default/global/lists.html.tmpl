@@ -20,7 +20,6 @@
   #%]
 
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.4.4.min.js"></script>
-<!--<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.10.custom.min.js"></script>-->
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.13.custom.min.js"></script>
 
 <script type="text/javascript" src="extensions/Scrums/web/js/scrums.js"></script>
@@ -36,7 +35,6 @@
   .sortable table tr td { margin: 0px; padding: 0px; text-align: left; }
   .sortable { text-align: left; background: #eeeeee; }
 
-  /*.sortable { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }*/
   .sortable li { background: #eeeeee; margin: 5px; padding: 5px; width: 680px; }
   .disabled { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }
   .disabled li { background: #eeeeee; margin: 3px; padding: 5px; font-size: 1em; width: 680px; }
@@ -55,9 +53,7 @@
 </style>
 
 <script id="ReleaseBugLiTmpl" type="text/html">
-  <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
-    <table>
-      <tr>
+      <tr id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
         <td class="colF"><span class="number"><#= counter #></span></td>
         <td class="colD"><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
         <td class="colC"> <#= bug[1] #></td>
@@ -66,11 +62,9 @@
         <td class="colB"> <a href="page.cgi?id=scrums/createteam.html&teamid=<#= bug[6] #>"><#= bug[4] #></a></td>
         <td> <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=<#= bug[7] #>"><#= bug[5] #></a></td>
       </tr>
-    </table>
   </li>
 </script>
 
-  <!--<li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>-->
 <script id="TeamBugLiTmpl" type="text/html">
       <tr id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
         <td class="colF sortable"> <span class="number"><#= counter #></span></td>
@@ -86,7 +80,6 @@
   <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #> <#= bug[4] #></span></li>
 </script>
 
-<!--      $( "#effect" ).effect( selectedEffect, options, 500, callback ); -->
 <script id="ListTmpl" type="text/html">
   <h3 id="<#= list.h_id #>"><#= list.name #></h3>
 
@@ -118,18 +111,58 @@
   </div>
 </script>
 
-<script id="StaticTmpl" type="text/html">
+<script id="ReleaseListTmpl" type="text/html">
   <h3 id="<#= list.h_id #>"><#= list.name #></h3>
 
   <div class='content'>
     <p>
       <input type='button' value='Previous' OnClick='move_list_left("<#= list.id #>");'/>
       <#= extra_middle #>
+
       <input type='button' value='Next' OnClick='move_list_right("<#= list.id #>");'/>
+
+      Show
+      <select id="<#= list.id #>" onchange='select_step("<#= list.id #>");'>
+        <option selected="selected">10</option>
+        <option>20</option>         
+        <option>50</option>         
+        <option>All</option>                                
+      </select>
+      (<span id='items_<#= list.id #>'></span>)
     </p>
 
-    <ul id="<#= list.ul_id #>" class="connectedSortable disabled">
-    </ul>
+    <table>
+        <thead>
+            <tr><th class='sortable'>Priority</th><th class='sortable' class="colF">[% field_descs.bug_id %]</th><th class='sortable' class="colF">[% field_descs.bug_status %]</th><th class='sortable' class="colF">[% field_descs.bug_severity %]</th><th class='sortable' class="colF">[% field_descs.short_desc %]</th><th class='sortable' class="colF">Team</th><th class='sortable' class="colF">Sprint</th></tr>
+        </thead>
+        <tbody id="<#= list.ul_id #>" class="connectedSortable sortable">
+        </tbody>
+    </table>
+
+  </div>
+</script>
+
+<script id="StaticTmpl" type="text/html">
+<h3 id="<#= list.h_id #>"><#= list.name #></h3>
+  <div class='content'>
+    <p>
+      <input type='button' value='Previous' OnClick='move_list_left("<#= list.id #>");'/>
+      <#= extra_middle #>
+      <input type='button' value='Next' OnClick='move_list_right("<#= list.id #>");'/>
+      Show
+      <select id="<#= list.id #>" onchange='select_step("<#= list.id #>");'>
+        <option selected="selected">10</option>
+        <option>20</option>         
+        <option>50</option>         
+        <option>All</option>                                
+      </select>
+    </p>
+
+    <table>
+        <tbody id="<#= list.ul_id #>" class="connectedSortable sortable">
+        </tbody>
+    </table>
+
     <br><a href="page.cgi?id=scrums/sprintburndown.html&sprintid=<#= list.id #>">Burndown Chart</a><br>
   </div>
 </script>
