@@ -96,7 +96,7 @@ sub _check_end_date {
 sub _check_date {
     my ($self, $tested_date) = @_;
 
-    my $team_id = $self->team_id();
+    my $team_id = team_id();
     my ($sprint_id, $name, $start_date, $end_date);
 
     my $dbh = Bugzilla->dbh;

@@ -243,8 +243,8 @@ sub _burndown_plot {
     my $hour_log_array = _task_hour_log($vars, $sprint_id);
     my $index = scalar @{$hour_log_array};
 
-    my $end = 1000 * Mktime(Today_and_Now());
-    $vars->{'end'}  = $end;
+    my $today = 1000 * Mktime(Today_and_Now());
+    $vars->{'end'}  = $today;
     $vars->{'last'} = $index;
 
     my $dbh = Bugzilla->dbh;
@@ -276,13 +276,53 @@ sub _burndown_plot {
     $sth->execute($sprint_id);
     my ($cum_work_time) = $sth->fetchrow_array();
 
+    my $sprint  = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    my $spr_end;
+    my $spr_start;
+    if($sprint->end_date()) {
+        my ($y, $m, $d);
+        $sprint->end_date() =~ /^([0-9]+)-([0-9]+)-([0-9]+)$/;
+        $y = $1;
+        $m = $2;
+        $d = $3;
+        # The day, that ends sprint lasts for (almost) 24 hours. 
+        $spr_end = 1000 * Mktime($y, $m, $d, 23, 59, 0);
+    }
+    if($sprint->start_date()) {
+        my ($y, $m, $d);
+        $sprint->start_date() =~ /^([0-9]+)-([0-9]+)-([0-9]+)$/;
+        $y = $1;
+        $m = $2;
+        $d = $3;
+        $spr_start = 1000 * Mktime($y, $m, $d, 0, 0, 0);
+    }
+
     my @remaining_array;
     my @worktime_array;
     my @last_rem_plot;
     my @last_work_plot;
+    my $row;
     my ($x, $y);
 
-    $x = $end;
+    my $plot_ts;
+
+    if(!$spr_end) {
+        $x = $today;
+    }
+    while(!$x && $index > 0) {
+        $row   = @{$hour_log_array}[$index];
+        $plot_ts = @{$row}[0];
+        if($spr_end > $plot_ts) {
+            $x = $spr_end; 
+        }
+        else {
+            $cum_remain = $cum_remain - @{$row}[1];    # 'added' in remain field
+            $cum_remain = $cum_remain + @{$row}[2];    # 'removed' in remain field
+            $cum_work_time = $cum_work_time - @{$row}[3];    # 'work_time'
+            $index--;
+        }
+    }
+
     $y = $cum_remain;
     push @last_rem_plot,   $x;
     push @last_rem_plot,   $y;
@@ -293,38 +333,56 @@ sub _burndown_plot {
     push @last_work_plot, $y;
     push @worktime_array, \@last_work_plot;
 
-    my $row;
-    while ($index > 0) {
+    my  $passed_beginning = 0;
+    while ($index > 0 && !$passed_beginning) {
         $index = $index - 1;
         $row   = @{$hour_log_array}[$index];
 
-        $x = @{$row}[0];
-        $y = $cum_remain;
-        my @rem_plot1;
-        push @rem_plot1,       $x;
-        push @rem_plot1,       $y;
-        push @remaining_array, \@rem_plot1;
+        if($spr_start && $spr_start > @{$row}[0]) {
+            $x = $spr_start;    
+            $y = $cum_remain;
+            my @rem_plot1;
+            push @rem_plot1,       $x;
+            push @rem_plot1,       $y;
+            push @remaining_array, \@rem_plot1;
 
-        $y = $cum_remain + $cum_work_time;
-        my @work_plot1;
-        push @work_plot1,     $x;
-        push @work_plot1,     $y;
-        push @worktime_array, \@work_plot1;
+            $y = $cum_remain + $cum_work_time;
+            my @work_plot1;
+            push @work_plot1,     $x;
+            push @work_plot1,     $y;
+            push @worktime_array, \@work_plot1;
 
-        $cum_remain = $cum_remain - @{$row}[1];    # 'added' in remain field
-        $cum_remain = $cum_remain + @{$row}[2];    # 'removed' in remain field
-        $y          = $cum_remain;
-        my @rem_plot2;
-        push @rem_plot2,       $x;
-        push @rem_plot2,       $y;
-        push @remaining_array, \@rem_plot2;
+            $passed_beginning = 1;
+        }
+        else {
+            $x = @{$row}[0];
+            $y = $cum_remain;
+            my @rem_plot1;
+            push @rem_plot1,       $x;
+            push @rem_plot1,       $y;
+            push @remaining_array, \@rem_plot1;
 
-        $cum_work_time = $cum_work_time - @{$row}[3];    # 'work_time'
-        $y             = $cum_remain + $cum_work_time;
-        my @work_plot2;
-        push @work_plot2,     $x;
-        push @work_plot2,     $y;
-        push @worktime_array, \@work_plot2;
+            $y = $cum_remain + $cum_work_time;
+            my @work_plot1;
+            push @work_plot1,     $x;
+            push @work_plot1,     $y;
+            push @worktime_array, \@work_plot1;
+
+            $cum_remain = $cum_remain - @{$row}[1];    # 'added' in remain field
+            $cum_remain = $cum_remain + @{$row}[2];    # 'removed' in remain field
+            $y          = $cum_remain;
+            my @rem_plot2;
+            push @rem_plot2,       $x;
+            push @rem_plot2,       $y;
+            push @remaining_array, \@rem_plot2;
+
+            $cum_work_time = $cum_work_time - @{$row}[3];    # 'work_time'
+            $y             = $cum_remain + $cum_work_time;
+            my @work_plot2;
+            push @work_plot2,     $x;
+            push @work_plot2,     $y;
+            push @worktime_array, \@work_plot2;
+        }
     }
 
     $vars->{'result'}         = $hour_log_array;
