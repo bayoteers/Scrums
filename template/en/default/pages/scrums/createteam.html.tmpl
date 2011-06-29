@@ -85,27 +85,26 @@
     </tr>
   </table>
 
-  <h2>Current Sprint</h2>
+  [% IF active_sprint_id %]
+    <h2>Current Sprint</h2>
 
-  <ul>
-    [% IF active_sprint_id %]
+    <ul>
       <li>
         <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
-          Remaining Items
+          Sprint open items
         </a>
       </li>
       <li>
-        <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">Burndown Chart</a>
+        <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">Sprint burndown</a>
       </li>
-    [% END %]
+    </ul>
+  [% END %]
 
-    <li style="margin-top: 10px;"><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">Unprioritized Items</a></li>
-  </ul>
-
-  <h2>Planning</h2>
+  <h2>Team planning</h2>
   <ul>
+    <li style="margin-top: 10px;"><a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">New bugs</a></li>
     <li><a href="page.cgi?id=scrums/teambugs2.html&teamid=[% team.id %]">Sprint Planning</a>
-    <li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Product Backlog</a>
+    <li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Team Backlog planning</a>
     <li><a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">Archived Sprints</a>
   </ul>
 

@@ -305,11 +305,12 @@ sub user_teams {
         where 
             owner = ? or 
             scrum_master = ? or 
-            exists (select null from scrums_teammember where teamid = id and userid = ?)', undef, $user_id, $user_id, $user_id);
+            exists (select null from scrums_teammember where teamid = id and userid = ?)', undef, $user_id, $user_id, $user_id
+                                           );
     return Bugzilla::Extension::Scrums::Team->new_from_list($team_ids);
 }
 
-sub get_team_current_sprint { 
+sub get_team_current_sprint {
     my $self = shift;
     my $dbh  = Bugzilla->dbh;
     my ($sprint_id) = $dbh->selectrow_array(
@@ -324,12 +325,12 @@ sub get_team_current_sprint {
 	not exists (select null from scrums_sprints s2
 	where s2.team_id = s1.team_id and item_type = 1 and s2.nominal_schedule > s1.nominal_schedule)', undef, $self->id
     );
-    if($sprint_id) {
+    if ($sprint_id) {
         return Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
     }
     else {
         return undef;
-    };
+    }
 }
 
 #

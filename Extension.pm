@@ -467,7 +467,7 @@ sub page_before_template {
         for my $team (@{$teams}) {
             my $sprint = $team->get_team_current_sprint();
             # When there is no active sprint, undef is pushed.
-            push(@sprints, $sprint); 
+            push(@sprints, $sprint);
         }
         $vars->{'sprints'} = \@sprints;
     }
