@@ -30,14 +30,6 @@
   }
 </script>
 
-[% IF error %]
-  <p>
-    Error msg: [% error %]
-  </p>
-  <p>
-    <a href="page.cgi?id=scrums/createteam.html&teamid=[% teamid %]">[back]</a>
-  </p>
-[% ELSE %]
   <p>
     Do you want to make <strong>[% userrealname %]</strong> a member of <strong>[% teamname %]</strong>?
   </p>
@@ -55,7 +47,6 @@
   <p>
     <a href="page.cgi?id=scrums/allteams.html">Manage Team</a>
   </p>
-[% END %]
 
 [% PROCESS global/footer.html.tmpl %]
 

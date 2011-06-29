@@ -111,8 +111,10 @@
 
     max_ts = rem[0][0];
     min_ts = rem[rem.length-1][0];
-    max_date = new Date(max_ts);
-    min_date = new Date(min_ts);
+    // Subtracting timezone offset is needed because date slews one day because timezone offset has been added
+    max_date = new Date(max_ts - tzo); 
+    min_date = new Date(min_ts - tzo);
+
     $("#datepicker_min").datepicker({ minDate: min_date, maxDate: max_date, dateFormat: 'yy-mm-dd' });
     $("#datepicker_max").datepicker({ minDate: min_date, maxDate: max_date, dateFormat: 'yy-mm-dd' });
 

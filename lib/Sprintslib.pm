@@ -243,8 +243,8 @@ sub _burndown_plot {
     my $hour_log_array = _task_hour_log($vars, $sprint_id);
     my $index = scalar @{$hour_log_array};
 
-    my $end = 1000 * Mktime(Today_and_Now());
-    $vars->{'end'}  = $end;
+    my $today = 1000 * Mktime(Today_and_Now());
+    $vars->{'end'}  = $today;
     $vars->{'last'} = $index;
 
     my $dbh = Bugzilla->dbh;
@@ -276,13 +276,53 @@ sub _burndown_plot {
     $sth->execute($sprint_id);
     my ($cum_work_time) = $sth->fetchrow_array();
 
+    my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    my $spr_end;
+    my $spr_start;
+    if ($sprint->end_date()) {
+        my ($y, $m, $d);
+        $sprint->end_date() =~ /^([0-9]+)-([0-9]+)-([0-9]+)$/;
+        $y = $1;
+        $m = $2;
+        $d = $3;
+        # The day, that ends sprint lasts for (almost) 24 hours.
+        $spr_end = 1000 * Mktime($y, $m, $d, 23, 59, 0);
+    }
+    if ($sprint->start_date()) {
+        my ($y, $m, $d);
+        $sprint->start_date() =~ /^([0-9]+)-([0-9]+)-([0-9]+)$/;
+        $y         = $1;
+        $m         = $2;
+        $d         = $3;
+        $spr_start = 1000 * Mktime($y, $m, $d, 0, 0, 0);
+    }
+
     my @remaining_array;
     my @worktime_array;
     my @last_rem_plot;
     my @last_work_plot;
+    my $row;
     my ($x, $y);
 
-    $x = $end;
+    my $plot_ts;
+
+    if (!$spr_end) {
+        $x = $today;
+    }
+    while (!$x && $index > 0) {
+        $row     = @{$hour_log_array}[$index];
+        $plot_ts = @{$row}[0];
+        if ($spr_end > $plot_ts) {
+            $x = $spr_end;
+        }
+        else {
+            $cum_remain    = $cum_remain - @{$row}[1];       # 'added' in remain field
+            $cum_remain    = $cum_remain + @{$row}[2];       # 'removed' in remain field
+            $cum_work_time = $cum_work_time - @{$row}[3];    # 'work_time'
+            $index--;
+        }
+    }
+
     $y = $cum_remain;
     push @last_rem_plot,   $x;
     push @last_rem_plot,   $y;
@@ -293,38 +333,56 @@ sub _burndown_plot {
     push @last_work_plot, $y;
     push @worktime_array, \@last_work_plot;
 
-    my $row;
-    while ($index > 0) {
+    my $passed_beginning = 0;
+    while ($index > 0 && !$passed_beginning) {
         $index = $index - 1;
         $row   = @{$hour_log_array}[$index];
 
-        $x = @{$row}[0];
-        $y = $cum_remain;
-        my @rem_plot1;
-        push @rem_plot1,       $x;
-        push @rem_plot1,       $y;
-        push @remaining_array, \@rem_plot1;
+        if ($spr_start && $spr_start > @{$row}[0]) {
+            $x = $spr_start;
+            $y = $cum_remain;
+            my @rem_plot1;
+            push @rem_plot1,       $x;
+            push @rem_plot1,       $y;
+            push @remaining_array, \@rem_plot1;
 
-        $y = $cum_remain + $cum_work_time;
-        my @work_plot1;
-        push @work_plot1,     $x;
-        push @work_plot1,     $y;
-        push @worktime_array, \@work_plot1;
+            $y = $cum_remain + $cum_work_time;
+            my @work_plot1;
+            push @work_plot1,     $x;
+            push @work_plot1,     $y;
+            push @worktime_array, \@work_plot1;
 
-        $cum_remain = $cum_remain - @{$row}[1];    # 'added' in remain field
-        $cum_remain = $cum_remain + @{$row}[2];    # 'removed' in remain field
-        $y          = $cum_remain;
-        my @rem_plot2;
-        push @rem_plot2,       $x;
-        push @rem_plot2,       $y;
-        push @remaining_array, \@rem_plot2;
+            $passed_beginning = 1;
+        }
+        else {
+            $x = @{$row}[0];
+            $y = $cum_remain;
+            my @rem_plot1;
+            push @rem_plot1,       $x;
+            push @rem_plot1,       $y;
+            push @remaining_array, \@rem_plot1;
 
-        $cum_work_time = $cum_work_time - @{$row}[3];    # 'work_time'
-        $y             = $cum_remain + $cum_work_time;
-        my @work_plot2;
-        push @work_plot2,     $x;
-        push @work_plot2,     $y;
-        push @worktime_array, \@work_plot2;
+            $y = $cum_remain + $cum_work_time;
+            my @work_plot1;
+            push @work_plot1,     $x;
+            push @work_plot1,     $y;
+            push @worktime_array, \@work_plot1;
+
+            $cum_remain = $cum_remain - @{$row}[1];    # 'added' in remain field
+            $cum_remain = $cum_remain + @{$row}[2];    # 'removed' in remain field
+            $y          = $cum_remain;
+            my @rem_plot2;
+            push @rem_plot2,       $x;
+            push @rem_plot2,       $y;
+            push @remaining_array, \@rem_plot2;
+
+            $cum_work_time = $cum_work_time - @{$row}[3];    # 'work_time'
+            $y             = $cum_remain + $cum_work_time;
+            my @work_plot2;
+            push @work_plot2,     $x;
+            push @work_plot2,     $y;
+            push @worktime_array, \@work_plot2;
+        }
     }
 
     $vars->{'result'}         = $hour_log_array;
@@ -359,65 +417,69 @@ sub _burndown_plot {
 # Fourth query fetches worked hour, that have been recorded. Work hours are combined
 # with 'remaining hours' in single query result. Rows are sorted by timestamp.
 #
+# Using 'union' clause in SQL has a drawback. Union does not repeat same database records
+# more than once. It conversely combines records in union, so that each line repeats only once.
+# In this case that result is not what is needed. Combining results in union is avoided
+# by grouping resulting data in each sub-query in union. It means, that in the end
+# resulting data has been grouped twice.
+#
 sub _task_hour_log {
     my ($vars, $sprint_id) = @_;
+
+    use Bugzilla::Field;
+    my $remaining_fieldid = get_field_id('remaining_time');
 
     my $dbh = Bugzilla->dbh;
     my $sth = $dbh->prepare(
         # With MySql-database it would be possible to select directly with function unix_timestamp(bug_when).
         # That would not however be database agnostic.
-        "select bug_when, sum(added), sum(removed), sum(work_time) from (
+        "select bug_when, sum(a), sum(r), sum(w) from (
         (select
-            bug_when, added, removed, null as work_time
+            bug_when, sum(added) as a, sum(removed) as r, null as w
         from 
             bugs_activity ba
         inner join
             scrums_sprint_bug_map sbm on
             sbm.bug_id = ba.bug_id
         where 
-            fieldid = 41 and
-            sprint_id = ?)
+            fieldid = ? and
+            sprint_id = ?
+	group by
+	    bug_when)
 
         union
 
         (select 
             creation_ts as bug_when, 
-            removed as added,
-            null as removed,
-            null as work_time
+            sum(removed) as a,
+            null as r,
+            null as w
         from
-            bugs_activity ba
-            inner join
-        (select
-            sbm.bug_id as bug_id, min(bug_when) as ts
-        from 
-            scrums_sprint_bug_map sbm 
+            bugs_activity ba1
         inner join
-            bugs_activity ba
-        on
-            sbm.bug_id = ba.bug_id and
-            fieldid = 41 
-        where 
+            scrums_sprint_bug_map sbm 
+	on
+            sbm.bug_id = ba1.bug_id and
             sprint_id = ?
-        group by
-            sbm.bug_id) as first_change
-        on
-            first_change.bug_id = ba.bug_id and
-            fieldid = 41 and
-            first_change.ts = ba.bug_when and
-            ba.removed > 0
         inner join
             bugs b
-        on
-            first_change.bug_id = b.bug_id)
+	on
+            ba1.bug_id = b.bug_id
+	where
+            fieldid = ? and
+	    not exists (select null from bugs_activity ba2
+	    where ba2.bug_id = ba1.bug_id and ba2.fieldid = ? and
+	    ba2.bug_when < ba1.bug_when)
+	group by
+	    bug_when)
 
         union
 
             (select
             creation_ts as bug_when, 
-            remaining_time as added,
-            null as removed,
-            null as worktime
+            sum(remaining_time) as a,
+            null as r,
+            null as w
         from 
             scrums_sprint_bug_map sbm 
         inner join
@@ -430,12 +492,14 @@ sub _task_hour_log {
             not exists
         (select null from bugs_activity ba
             where b.bug_id = ba.bug_id and
-            fieldid = 41))
+            fieldid = ?)
+	group by
+	    bug_when)
 
         union
 
         (select
-            bug_when, null as added, null as removed, work_time 
+            bug_when, null as a, null as r, sum(work_time) as w
         from 
             longdescs ld
         inner join
@@ -443,13 +507,15 @@ sub _task_hour_log {
             sbm.bug_id = ld.bug_id
         where
             sprint_id = ? and 
-            work_time > 0)) as hours
+            work_time > 0
+	group by
+	    bug_when)) as hours
         group by
             bug_when
         order by
             bug_when"
     );
-    $sth->execute($sprint_id, $sprint_id, $sprint_id, $sprint_id);
+    $sth->execute($remaining_fieldid, $sprint_id, $sprint_id, $remaining_fieldid, $remaining_fieldid, $sprint_id, $remaining_fieldid, $sprint_id);
     my @result;
     my ($v1, $v2, $v3, $v4);
     while (($v1, $v2, $v3, $v4) = $sth->fetchrow_array) {

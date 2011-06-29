@@ -56,11 +56,22 @@ sub bug_end_of_update {
             my $estimated_time = $bug->estimated_time();
             my $actual_time    = $bug->actual_time();
 
-            if ($estimated_time == 0) {
-                ThrowUserError("scrums_estimated_time_required");
+            my $filling_forced                = 0;
+            my $precondition_enabled_severity = Bugzilla->params->{"scrums_precondition_enabled_severity"};
+
+            foreach my $enabled_severity (@$precondition_enabled_severity) {
+                if ($enabled_severity eq $bug->bug_severity()) {
+                    $filling_forced = 1;
+                }
             }
-            elsif ($actual_time == 0) {
-                ThrowUserError("scrums_actual_time_required");
+
+            if ($filling_forced) {
+                if ($estimated_time == 0) {
+                    ThrowUserError("scrums_estimated_time_required");
+                }
+                elsif ($actual_time == 0) {
+                    ThrowUserError("scrums_actual_time_required");
+                }
             }
         }
     }
@@ -418,6 +429,19 @@ sub install_update_db {
     Bugzilla->dbh->bz_add_column("scrums_team", "scrum_master", TEAM_SCRUM_MASTER, undef);
 
     return;
+}
+
+sub install_before_final_checks {
+    my ($self, $args) = @_;
+
+    my $name        = "editteams";
+    my $description = "Can edit responsible teams";
+    my $isbuggroup  = 1;
+    my $isactive    = 0;
+    my $group       = new Bugzilla::Group({ name => $name });
+    if (!$group) {
+        $group = Bugzilla::Group->create({ name => $name, description => $description, isbuggroup => $isbuggroup, isactive => $isactive });
+    }
 }
 
 sub page_before_template {

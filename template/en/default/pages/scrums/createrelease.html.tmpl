@@ -46,9 +46,6 @@
   -->
 </style>
 
-[% IF error %]
-  Error msg: [% error %]
-[% ELSE %]
   [% IF releaseisnew %]
     Release Created!
   [% END %]
@@ -149,6 +146,5 @@
       <a href="page.cgi?id=scrums/allreleases.html">Manage Releases</a>
     | <a href="page.cgi?id=scrums/allteams.html">Manage Teams</a>
   </p>
-[% END %]
 
 [% PROCESS global/footer.html.tmpl %]

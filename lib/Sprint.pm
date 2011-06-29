@@ -25,7 +25,7 @@ package Bugzilla::Extension::Scrums::Sprint;
 
 #use Bugzilla::Constants;
 #use Bugzilla::Util;
-#use Bugzilla::Error;
+use Bugzilla::Error;
 
 use base qw(Bugzilla::Object);
 
@@ -69,25 +69,96 @@ use constant UPDATE_COLUMNS => qw(
   end_date
   );
 
-use constant VALIDATORS => {};
+use constant VALIDATORS => { start_date => \&_check_start_date, end_date => \&_check_end_date };
 
 ###############################
 ####     Constructors     #####
 ###############################
-# This is necessary method only when transaction handling is needed for multiple tables
-#sub remove_from_db {
-#    my $self = shift;
-#    my $dbh = Bugzilla->dbh;
-#    $dbh->bz_start_transaction();
-#    $self->SUPER::remove_from_db();
-#
-#    $dbh->bz_commit_transaction();
-#}
 
 ###############################
 ####      Validators       ####
 ###############################
-#
+
+sub _check_start_date {
+    my ($self, $start_date) = @_;
+
+    $self->_check_date($start_date);
+    return $start_date;
+}
+
+sub _check_end_date {
+    my ($self, $end_date) = @_;
+
+    $self->_check_date($end_date);
+    return $end_date;
+}
+
+sub _check_date {
+    my ($self, $tested_date) = @_;
+
+    my $team_id = team_id();
+    my ($sprint_id, $name, $start_date, $end_date);
+
+    my $dbh = Bugzilla->dbh;
+
+    my $sth = $dbh->prepare(
+        "select 
+                        id, 
+                        name, 
+                        start_date, 
+                        end_date        
+                from 
+                        scrums_sprints 
+                where 
+                        item_type = 1 and 
+                        (start_date is null or end_date is null) and 
+                        team_id = ?"
+                           );
+
+    if ($tested_date == undef) {
+        return;
+    }
+
+    $sth->execute($team_id);
+    if (($sprint_id, $name, $start_date, $end_date) = $sth->fetchrow_array) {
+        if ($self->id && $self->id != $sprint_id) {
+            if (!$start_date) {
+                $start_date = "null";
+            }
+            if (!$end_date) {
+                $end_date = "null";
+            }
+            ThrowUserError('scrums_overlapping_sprint', { 'name' => $name, 'start' => $start_date, 'end' => $end_date });
+        }
+    }
+
+    $sth = $dbh->prepare(
+        "select 
+                        id, 
+                        name, 
+                        start_date, 
+                        end_date 
+                from 
+                        scrums_sprints 
+                where 
+                        item_type = 1 and 
+                        (start_date < ? or start_date is null) and 
+                        (end_date > ? or end_date is null) and 
+                        team_id = ?"
+                        );
+    $sth->execute($tested_date, $tested_date, $team_id);
+    if (($sprint_id, $name, $start_date, $end_date) = $sth->fetchrow_array) {
+        if ($self->id && $self->id != $sprint_id) {
+            if (!$start_date) {
+                $start_date = "null";
+            }
+            if (!$end_date) {
+                $end_date = "null";
+            }
+            ThrowUserError('scrums_overlapping_sprint', { 'name' => $name, 'start' => $start_date, 'end' => $end_date });
+        }
+    }
+}
 
 ###############################
 ####       Methods         ####

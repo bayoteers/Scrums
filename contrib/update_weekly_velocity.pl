@@ -38,7 +38,7 @@ sub _update_teams {
     my $sth_query = $dbh->prepare($query);
     $sth_query->execute();
 
-    my $team_id, $weekly_velocity;
+    my ($team_id, $weekly_velocity);
 
     while (($team_id, $weekly_velocity) = $sth_query->fetchrow_array) {
         my $update_query = "update scrums_team set weekly_velocity_value = $weekly_velocity,

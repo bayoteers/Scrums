@@ -146,17 +146,19 @@ sub show_create_team {
                 if ($team_owner =~ /^([0-9]+)$/) {
                     $team_owner = $1;                                                       # $data now untainted
                     $error = _update_team($team, $team_name, $team_owner, $scrum_master);
+                    if ($error ne "") {
+                        ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });
+                    }
                 }
                 else {
-                    $error .= "Illegal team owner";
+                    ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => " Illegal team owner" });
                 }
             }
             _show_existing_team($vars, $team);
         }
         else {
-            $error .= "Illegal team id. ";
+            ThrowUserError('scrums_team_not_found');
         }
-        $vars->{'error'} = $error;
     }
     else {
         if (not Bugzilla->user->in_group('editteams')) {
@@ -210,7 +212,7 @@ sub _new_team {
         $name = $1;    # $data now untainted
     }
     else {
-        $error = "Illegal name. ";
+        $error = " Illegal name";
         $name  = "";
     }
 
@@ -218,7 +220,7 @@ sub _new_team {
         $owner_id = $1;    # $data now untainted
     }
     else {
-        $error .= "Illegal owner.";
+        $error .= " Illegal owner";
         $owner_id = "";
     }
 
@@ -252,7 +254,7 @@ sub _new_team {
         _show_existing_team($vars, $team);
     }
     else {
-        $vars->{'error'} = $error;
+        ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });
     }
 
     $vars->{'teamisnew'} = "true";
@@ -270,7 +272,7 @@ sub add_into_team {
             $team_id = $1;    # $data now untainted
         }
         else {
-            $vars->{'error'} .= "Illegal team id: " . $team_id;
+            ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => " Illegal team id" });
         }
     }
 
@@ -285,7 +287,7 @@ sub add_into_team {
             $vars->{'teamname'}     = $cgi->param('teamname');
         }
         else {
-            $vars->{'error'} .= "Illegal user id. ";
+            ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => " Illegal user id" });
         }
     }
 }
@@ -496,25 +498,25 @@ sub show_team_and_sprints {
     elsif ($cgi->param('editsprint') ne "") {
         if ($sprint_id ne "") {
             if ($sprint_id =~ /^([0-9]+)$/) {
-                $sprint_id = $1;                              # $data now untainted
-                $error = _update_sprint($vars, $sprint_id);
+                $sprint_id = $1;    # $data now untainted
+                _update_sprint($vars, $sprint_id);
             }
             else {
-                $error = "Invalid Sprint ID";
+                ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => " Invalid Sprint ID" });
             }
         }
     }
     elsif ($cgi->param('deletesprint') ne "") {
         $sprint_id = $cgi->param('deletesprint');
         if ($sprint_id =~ /^([0-9]+)$/) {
-            $sprint_id = $1;                                  # $data now untainted
+            $sprint_id = $1;        # $data now untainted
             _delete_sprint($vars, $sprint_id);
         }
     }
     elsif ($cgi->param('archivesprint') ne "") {
         $sprint_id = $cgi->param('archivesprint');
         if ($sprint_id =~ /^([0-9]+)$/) {
-            $sprint_id = $1;                                  # $data now untainted
+            $sprint_id = $1;        # $data now untainted
             _archive_sprint($vars, $sprint_id);
         }
     }
@@ -585,8 +587,7 @@ sub _new_sprint {
                                                                 );
     }
     else {
-        ThrowUserError($error);
-        $vars->{'error'} = $error;
+        ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });
     }
 }
 
@@ -615,8 +616,7 @@ sub _update_sprint {
         $sprint->update();
     }
     else {
-        ThrowUserError($error);
-        $vars->{'error'} = $error;
+        ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });
     }
 }
 
@@ -647,7 +647,7 @@ sub _sanitise_sprint_data {
         $teamid = $1;    # $data now untainted
     }
     else {
-        $error .= "Illegal team id. ";
+        $error .= " Illegal team id";
         $teamid = "";
     }
 
@@ -655,7 +655,7 @@ sub _sanitise_sprint_data {
         $name = $1;      # $data now untainted
     }
     else {
-        $error .= "Illegal name. ";
+        $error .= " Illegal name";
         $name = "";
     }
 
@@ -663,7 +663,7 @@ sub _sanitise_sprint_data {
         $nominalschedule = $1;    # $data now untainted
     }
     else {
-        $error .= "Illegal nominal schedule. ";
+        $error .= " Illegal nominal schedule";
         $nominalschedule = "";
     }
 
@@ -671,7 +671,7 @@ sub _sanitise_sprint_data {
         $description = $1;        # $data now untainted
     }
     else {
-        $error .= "Illegal description. ";
+        $error .= " Illegal description";
         $description = "";
     }
 
@@ -679,7 +679,7 @@ sub _sanitise_sprint_data {
         $start_date = $1;         # $data now untainted
     }
     else {
-        $error .= "Illegal start date. ";
+        $error .= " Illegal start date";
         $start_date = undef;
     }
 
@@ -687,7 +687,7 @@ sub _sanitise_sprint_data {
         $end_date = $1;           # $data now untainted
     }
     else {
-        $error .= "Illegal end date. ";
+        $error .= " Illegal end date";
         $end_date = undef;
     }
 
@@ -702,7 +702,7 @@ sub _update_team {
         $name = $1;    # $data now untainted
     }
     else {
-        $error = "Illegal name. ";
+        $error = " Illegal name";
         $name  = "";
     }
 
@@ -710,7 +710,7 @@ sub _update_team {
         $owner = $1;    # $data now untainted
     }
     else {
-        $error .= "Illegal owner.";
+        $error .= " Illegal owner";
         $owner = "";
     }
 
