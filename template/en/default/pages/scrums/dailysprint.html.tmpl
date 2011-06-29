@@ -20,14 +20,14 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Team Daily Tasks" 
+    title = "Team New Bugs" 
     style_urls = ['skins/standard/admin.css']
 %]
 
 [% PROCESS global/lists.html.tmpl %]
 
 <script type="text/javascript">
-  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', $("#TeamBugLiTmpl"));
+  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs', $("#TeamBugLiTmpl"));
 
   var all_lists = [];
 
@@ -81,7 +81,7 @@
 </script>
 
 <div class="bz_title_container">
-  [% team.name %] Daily Tasks
+  '[% team.name %]' New Bugs
 </div>
 
 <table>

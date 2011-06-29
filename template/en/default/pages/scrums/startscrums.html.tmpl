@@ -1,0 +1,100 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Scrums Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is "Nokia corporation"
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Visa Korhonen <visa.korhonen@symbio.com>
+  #%]
+
+[% title = "User " _ user.name %]
+[% PROCESS global/header.html.tmpl
+    title = title 
+%]
+
+<link rel="stylesheet" href="extensions/Scrums/web/css/scrums.css">
+
+[% index = 0 %]
+[% FOREACH team IN teams %]
+  <h1>
+    Team '[% team.name %]'
+  </h1>
+
+  [% owner = team.owner_user() %]
+  [% scrum_master = team.scrum_master_user() %]
+
+  [% active_sprint = sprints.$index %]
+  [% IF active_sprint %]
+    <h2>Current Sprint: '[% active_sprint.name %]'</h2>
+  [% ELSE %]
+    <h3>No active sprint</h3>
+  [% END %]
+
+  <table>
+    [% IF active_sprint.id %]
+      <tr>
+        <td style="min-width: 200px; text-align: center;">
+          <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint.id %]&order=scrums_team_order%2Cbug_severity&daily">
+            <img src="extensions/Scrums/web/img/ikoni2i.bmp" border="1"/>
+          </a>
+        </td>
+        <td style="text-align: center;">
+          <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint.id %]&order=scrums_team_order%2Cbug_severity&daily">
+          Sprint Open Items
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td colwidth="2" style="min-height: 20px;">&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="min-width: 200px; text-align: center;">
+          <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint.id %]">
+            <img src="extensions/Scrums/web/img/ikoni1b.bmp"/> 
+          </a>
+        </td>
+        <td style="text-align: center;">
+          <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint.id %]">Sprint Burndown</a>
+        </td>
+      </tr>
+      <tr>
+        <td colwidth="2" style="min-height: 20px;">&nbsp;</td>
+      </tr>
+    [% END %]
+    <tr>
+      <td style="min-width: 200px; text-align: center;">
+        <a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">
+          <img src="extensions/Scrums/web/img/bug-item_b.png"/>
+        </a>
+      </td>
+      <td style="text-align: center;">
+        <a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">New Bugs</a>
+      </td>
+    </tr>
+  </table>
+
+  <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Manage team</a>
+
+  <hr/>
+  [% index = index + 1 %]
+[% END %]
+
+<p>
+  <a href="page.cgi?id=scrums/allteams.html">Manage Teams</a>
+| <a href="page.cgi?id=scrums/allreleases.html">Manage Releases</a>
+| <a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
+</p>
+
+[% PROCESS global/footer.html.tmpl %]

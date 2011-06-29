@@ -20,7 +20,7 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Burndown Chart"
+    title = "Sprint Burndown"
     style_urls = ['skins/standard/admin.css','extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css'] 
 %]
 
@@ -224,7 +224,7 @@
 </script>
 
 <div class="bz_title_container">
-  [% team_name %] Sprint [% sprint_name %]
+  [% team_name %] Sprint '[% sprint_name %]'
 </div>
 
 [% IF slist.size > 0 %]
