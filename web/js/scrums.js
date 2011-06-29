@@ -27,7 +27,7 @@ function listObject(ul_id, h_id, id, name, li_tmpl) {
     this.orginal_list = [];
     this.visible = -1;
     this.offset = 0;
-    this.offset_step = 10; // default value
+    this.offset_step = 99999; // default value
     this.name = name;
     this.li_tmpl = li_tmpl;
 }
@@ -131,7 +131,10 @@ function bind_sortable_lists(lists) {
             switch_lists(ui, lists);;
         },
         items: 'tr:not(.ignoresortable)',
-
+        helper: function(event , item)
+        {
+            return item.clone().attr('class', 'helper');
+        },
     }).disableSelection();
 }
 
@@ -209,7 +212,10 @@ function list_filter(header, list, bugs_list) { // header is any element, list i
             bugs_list.visible = [];
             for (var i = 0; i < bugs_list.list.length; i++) {
                 // search against desc and bug id
-                if (bugs_list.list[i][5].toLowerCase().match("^" + filter.toLowerCase()) == filter.toLowerCase() || String(bugs_list.list[i][0]).match("^" + filter) == filter) {
+                var rg = new RegExp(filter,'i');
+                // summary, assigned to and bug id
+                if (bugs_list.list[i][5].search(rg) >= 0 || bugs_list.list[i][3].search(rg) >= 0 || String(bugs_list.list[i][0]).match("^" + filter) == filter) {
+                //if (bugs_list.list[i][5].toLowerCase().match("^" + filter.toLowerCase()) == filter.toLowerCase() || String(bugs_list.list[i][0]).match("^" + filter) == filter) {
                     //filtered_bugs.list.push(bugs_list.list[i]);
                     bugs_list.visible.push(i);
                 }

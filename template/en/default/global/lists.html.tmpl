@@ -52,7 +52,117 @@
     font-size: 125%; 
     font-weight: bold;
   }
+
+/* CSS Document */
+
+.helper td {
+    border: 1px;
+    background-color: #404d6c;
+}
+
 </style>
+
+
+<style>
+/* datTable for styling only */
+table.dataTable {
+    margin: 0;
+    padding: 0;
+    border: 1px solid #999;
+    /*
+    border-bottom: 1px solid #999;
+    border-left: 1px solid #999;
+    border-right: 1px solid #999;
+    border-top: 1px solid #999;
+    */
+}
+
+
+table.dataTable td {
+    position: relative;
+    margin: 0;
+    height: 35px;
+    /*border-right: 1px solid #999;*/
+    border-top: 1px solid #999;
+    /*
+    border-bottom: 1px solid #999;
+    */
+    padding: 2px 3px 3px 4px;
+}
+
+/* This makes the scrolling table work */
+
+div.scrollTableContainer {
+    height: 445px;  
+    overflow: auto;
+    /*margin: 15px 0 0 0; */
+    width: 90%;
+    margin: 0 auto;
+
+
+    /*position: relative;*/
+}
+/*http://rcs-comp.com/blog/scrolling_table/*/
+
+/* The different widths below are due to the way the scroll bar is implamented
+we are keeping these here instead of putting them in the IE css file b/c it 
+is easier to change the width if both numbers are in the same place. */
+
+/* All browsers accept this, but we are targeting IE with this rule */
+div.scrollTableContainer table {
+  width: 97%;  /*100% of container produces horiz. scroll in Mozilla*/
+  border: none;
+  border-spacing: 0px;
+  background-color: transparent;
+
+}
+
+/* Modern browsers accept this (not IE) and we are targetting firefox */
+html>/**/body div.scrollTableContainer table {
+}
+
+/* Modern browsers accept this (not IE) and we are targetting firefox */
+html>/**/body div.scrollTableContainer table>tbody  {  
+    overflow: auto; 
+    max-height: 410px;
+   /* height: 410px; */
+    overflow-x: hidden;
+}
+
+table>tbody tr {
+  height: auto;
+}
+
+/*
+#mythead {
+    position: absolute;
+}
+
+div.scrollTableContainer thead   {
+    position:relative;
+/*
+    position: absolute;
+
+}
+
+*/
+
+
+div.scrollTableContainer thead tr   {
+    top: 0px;/*expression(offsetParent.scrollTop); IE5+ only*/
+
+/*
+    height: 30;
+    position: absolute;
+*/
+    position:relative;
+}
+
+/*prevent Mozilla scrollbar from hiding cell content*/
+div.scrollTableContainer td:last-child {padding-right: 20px;}
+</style>
+
+
 
 <script id="ReleaseBugLiTmpl" type="text/html">
   <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
@@ -86,11 +196,7 @@
   <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #> <#= bug[4] #></span></li>
 </script>
 
-<!--      $( "#effect" ).effect( selectedEffect, options, 500, callback ); -->
-<script id="ListTmpl" type="text/html">
-  <h3 id="<#= list.h_id #>"><#= list.name #></h3>
-
-  <div class='content'>
+<!--
     <p>
       <input type='button' value='Previous' OnClick='move_list_left("<#= list.id #>");'/>
       <#= extra_middle #>
@@ -106,15 +212,22 @@
       </select>
       (<span id='items_<#= list.id #>'></span>)
     </p>
+-->
 
-    <table>
-        <thead>
-            <tr><th class='sortable'>order</th><th class='sortable' class="colF">id</th><th class='sortable' class="colF">hours</th><th class='sortable' class="colF">status</th><th class='sortable' class="colF">Assigned to</th><th class='sortable' class="colF">description</th></tr>
+
+<script id="ListTmpl" type="text/html">
+  <h3 id="<#= list.h_id #>"><#= list.name #></h3>
+
+  <div class='content' >
+    <div class='scrollTableContainer'>
+    <table class="dataTable" cellspacing="0">
+        <thead id="mythead">
+           <tr><th class='sortable'>order</th><th class="sortable colF">id</th><th class="sortable colF">hours</th><th class="sortable colF">status</th><th class="sortable colF">Assigned to</th><th class="sortable colF">description</th></tr>
         </thead>
         <tbody id="<#= list.ul_id #>" class="connectedSortable sortable">
         </tbody>
     </table>
-
+    </div>
   </div>
 </script>
 
