@@ -306,7 +306,7 @@ sub user_teams {
             owner = ? or 
             scrum_master = ? or 
             exists (select null from scrums_teammember where teamid = id and userid = ?)', undef, $user_id, $user_id, $user_id
-                                           );
+    );
     return Bugzilla::Extension::Scrums::Team->new_from_list($team_ids);
 }
 

@@ -43,6 +43,11 @@
     return false;
   }
 
+  function member_removal(user, team)
+  {
+    return confirm("Do you want to remove user " + user + " from team " + team + "?");
+  }
+
   function removal(component, product, team)
   {
     return confirm("Do you want to remove component " + component + " (" + product + ")" + " from team " + team + "?");
@@ -160,7 +165,8 @@
           </td>
           [% IF user.in_group('editteams') %]
             <td>
-              <a href="page.cgi?id=scrums/createteam.html&userid=[% member.id() %]&teamid=[% team.id() %]&username=[% member.name() %]&userlogin=[% member.login() %]">Remove</a>
+              <a href="page.cgi?id=scrums/createteam.html&userid=[% member.id() %]&teamid=[% team.id() %]&username=[% member.name() %]&userlogin=[% member.login() %]"
+		  onclick="return member_removal('[% member.name() %]', '[% team.name() %]');">Remove</a>
             </td>
           [% END %]
         </tr>

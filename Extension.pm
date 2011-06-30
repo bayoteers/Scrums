@@ -459,7 +459,7 @@ sub page_before_template {
     }
 
     # Teams
-    elsif ($page eq 'scrums/startscrums.html') {
+    elsif ($page eq 'scrums/scrums.html') {
         my $teams = Bugzilla::Extension::Scrums::Team->user_teams(Bugzilla->user->id());
         $vars->{'teams'} = $teams;
 
