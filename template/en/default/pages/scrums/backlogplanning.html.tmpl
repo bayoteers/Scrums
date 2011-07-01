@@ -20,14 +20,14 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Backlog " _ team.name
+    title = team.name  _ " team backlog planning" 
     style_urls = ['skins/standard/admin.css']
 %]
 
 [% PROCESS global/lists.html.tmpl %]
 
 <script type="text/javascript">
-  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', $("#TeamBugLiTmpl"));
+  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized items', $("#TeamBugLiTmpl"));
   var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog', $("#TeamBugLiTmpl"));
 
   var all_lists = [];
@@ -68,7 +68,7 @@
 </script>
 
 <div class="bz_title_container">
-  [% team.name %] Product Backlog
+  Team [% team.name %] backlog 
 </div>
 
 <table>

@@ -20,7 +20,7 @@
   #%]
 
 [% PROCESS global/header.html.tmpl
-    title = "Archived Sprints " _ team.name
+    title = team.name _ " archived sprints "
     style_urls = ['skins/standard/admin.css']
 %]
 
@@ -71,7 +71,7 @@
 </script>
 
 <div class="bz_title_container">
-  [% team.name %] Archived Sprints
+  [% team.name %] archived sprints
 </div>
 
 <table>

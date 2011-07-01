@@ -159,7 +159,8 @@ sub sprint_summary {
     my $sprint  = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
     my $team_id = $sprint->team_id();
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
-    _burndown_plot($vars, $sprint_id);
+    _burndown_plot_by_hour($vars, $sprint_id);
+    _burndown_plot_by_items($vars, $sprint_id);
     _status_summary($vars, $sprint_id);
     $vars->{'team_name'}   = $team->name();
     $vars->{'team_id'}     = $team_id;
@@ -233,19 +234,22 @@ sub _status_summary {
     $vars->{'slist'}   = \@slist;
 }
 
-sub _burndown_plot {
+sub _burndown_plot_by_hour {
     my ($vars, $sprint_id) = @_;
 
     if ($sprint_id =~ /([0-9]+)/) {
         $sprint_id = $1;    # $data now untainted
     }
-
+    my ($ending_remain, $ending_work_time) = _ending_hours($sprint_id);
     my $hour_log_array = _task_hour_log($vars, $sprint_id);
-    my $index = scalar @{$hour_log_array};
+    my ($remaining_array, $worktime_array) = _create_plot_chart($vars, $sprint_id, $ending_remain, $ending_work_time, $hour_log_array);
 
-    my $today = 1000 * Mktime(Today_and_Now());
-    $vars->{'end'}  = $today;
-    $vars->{'last'} = $index;
+    $vars->{'remaining_hours_plot'} = $remaining_array;
+    $vars->{'worktime_hours_plot'}  = $worktime_array;
+}
+
+sub _ending_hours {
+    my ($sprint_id) = @_;
 
     my $dbh = Bugzilla->dbh;
     my $sth = $dbh->prepare(
@@ -260,7 +264,7 @@ sub _burndown_plot {
             sprint_id = ?"
                            );
     $sth->execute($sprint_id);
-    my ($cum_remain) = $sth->fetchrow_array();
+    my ($ending_remain) = $sth->fetchrow_array();
 
     $sth = $dbh->prepare(
         "select
@@ -274,7 +278,18 @@ sub _burndown_plot {
             sprint_id = ?"
                         );
     $sth->execute($sprint_id);
-    my ($cum_work_time) = $sth->fetchrow_array();
+    my ($ending_work_time) = $sth->fetchrow_array();
+    return ($ending_remain, $ending_work_time);
+}
+
+sub _create_plot_chart {
+    my ($vars, $sprint_id, $cum_remain, $cum_work_time, $hour_log_array) = @_;
+
+    my $index = scalar @{$hour_log_array};
+
+    my $today = 1000 * Mktime(Today_and_Now());
+    $vars->{'end'}  = $today;
+    $vars->{'last'} = $index;
 
     my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
     my $spr_end;
@@ -385,9 +400,7 @@ sub _burndown_plot {
         }
     }
 
-    $vars->{'result'}         = $hour_log_array;
-    $vars->{'remaining_plot'} = \@remaining_array;
-    $vars->{'worktime_plot'}  = \@worktime_array;
+    return (\@remaining_array, \@worktime_array);
 }
 
 #
@@ -527,6 +540,109 @@ sub _task_hour_log {
         push(@result, \@copy);
     }
     return \@result;
+}
+
+sub _burndown_plot_by_items {
+    my ($vars, $sprint_id) = @_;
+
+    if ($sprint_id =~ /([0-9]+)/) {
+        $sprint_id = $1;    # $data now untainted
+    }
+    my ($ending_remain, $ending_work_time) = _ending_item_status($sprint_id);
+    my $hour_log_array = _task_status_log($sprint_id);
+    my ($remaining_array, $worktime_array) = _create_plot_chart($vars, $sprint_id, $ending_remain, $ending_work_time, $hour_log_array);
+
+    $vars->{'remaining_items_plot'} = $remaining_array;
+    $vars->{'worktime_items_plot'}  = $worktime_array;
+}
+
+sub _task_status_log {
+    my ($sprint_id) = @_;
+
+    use Bugzilla::Field;
+    my $bug_status_fieldid = get_field_id('bug_status');
+
+    my $dbh = Bugzilla->dbh;
+    my $sth = $dbh->prepare(
+	"(select
+            bug_when, ad_st.is_open as a, re_st.is_open as r, re_st.is_open-ad_st.is_open as w
+        from 
+            bugs_activity ba
+        inner join
+            scrums_sprint_bug_map sbm on
+            sbm.bug_id = ba.bug_id
+	inner join
+	    bug_status ad_st on
+	    ba.added = ad_st.value
+	inner join
+	    bug_status re_st on
+	    ba.removed = re_st.value
+        where 
+            fieldid = ? and
+            sprint_id = ?)
+
+        union
+
+	(select
+	    creation_ts as bug_when, 1 as a, 0 as r, 0 as w
+	from
+	    bugs b
+        inner join
+            scrums_sprint_bug_map sbm on
+            sbm.bug_id = b.bug_id
+        where 
+            sprint_id = ?)
+        order by 
+            bug_when");
+    $sth->execute($bug_status_fieldid, $sprint_id, $sprint_id);
+    my @result;
+    my ($v1, $v2, $v3, $v4);
+    while (($v1, $v2, $v3, $v4) = $sth->fetchrow_array) {
+        my @copy;
+        push(@copy,   1000 * str2time($v1));
+        push(@copy,   $v2);
+        push(@copy,   $v3);
+        push(@copy,   $v4);
+        push(@result, \@copy);
+    }
+    return \@result;
+}
+
+sub _ending_item_status {
+    my ($sprint_id) = @_;
+
+    my $dbh = Bugzilla->dbh;
+    my $sth = $dbh->prepare(
+        "select
+	bs.is_open,
+	count(b.bug_id)
+    from
+	bugs b
+    inner join
+	bug_status bs 
+    on
+	b.bug_status = bs.value
+    inner join
+	scrums_sprint_bug_map sbm on sbm.bug_id = b.bug_id
+    inner join
+	scrums_sprints s on s.id = sbm.sprint_id
+    where
+	s.id = ?
+    group by
+	bs.is_open"
+                           );
+    $sth->execute($sprint_id);
+    my ($open_status, $count);
+    my ($open, $closed);
+    while (($open_status, $count) = $sth->fetchrow_array) {
+        if ($open_status == 1) {
+            $open = $count;
+        }
+        else {
+            $closed = $count;
+        }
+    }
+    return ($open, $closed);
 }
 
 sub _old_team_order {

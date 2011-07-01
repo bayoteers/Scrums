@@ -459,8 +459,19 @@ sub page_before_template {
     }
 
     # Teams
+    elsif ($page eq 'scrums/scrums.html') {
+        my $teams = Bugzilla::Extension::Scrums::Team->user_teams(Bugzilla->user->id());
+        $vars->{'teams'} = $teams;
 
-    if ($page eq 'scrums/allteams.html') {
+        my @sprints;
+        for my $team (@{$teams}) {
+            my $sprint = $team->get_team_current_sprint();
+            # When there is no active sprint, undef is pushed.
+            push(@sprints, $sprint);
+        }
+        $vars->{'sprints'} = \@sprints;
+    }
+    elsif ($page eq 'scrums/allteams.html') {
         show_all_teams($vars);
     }
     elsif ($page eq 'scrums/createteam.html') {
