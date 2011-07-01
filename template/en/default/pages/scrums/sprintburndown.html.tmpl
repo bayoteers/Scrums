@@ -32,8 +32,10 @@
 <script language="javascript" type="text/javascript" src="extensions/Scrums/web/js/jquery.flot.pie.js"></script>
 
 <script type="text/javascript">
-  var rem = [[% FOREACH plot IN remaining_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
-  var work = [[% FOREACH plot IN worktime_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
+  var hours_rem = [[% FOREACH plot IN remaining_hours_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
+  var hours_work = [[% FOREACH plot IN worktime_hours_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
+  var items_rem = [[% FOREACH plot IN remaining_items_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
+  var items_work = [[% FOREACH plot IN worktime_items_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
 
   var open_closed = [
   [% IF summary.open %]
@@ -82,9 +84,10 @@
   };
 
   $(function () {
-    var ch = $("#testi_id");
+    var ch = $("#show_total_ch");
     ch[0].checked = false;
-
+//    var ra = $("#unit");
+//    ra[0].value = 'hours';
     init();
   });
 
@@ -100,17 +103,34 @@
     var tzo = -d.getTimezoneOffset() * 60 * 1000; // Timezone offset in milliseconds
 
     var i = 0;
-    for(i = 0; i < rem.length; i++)
+    for(i = 0; i < hours_rem.length; i++)
     {
-        rem[i][0] = rem[i][0] + tzo;
+        hours_rem[i][0] = hours_rem[i][0] + tzo;
     }
-    for(i = 0; i < work.length; i++)
+    for(i = 0; i < hours_work.length; i++)
     {
-        work[i][0] = work[i][0] + tzo;
+        hours_work[i][0] = hours_work[i][0] + tzo;
     }
 
-    max_ts = rem[0][0];
-    min_ts = rem[rem.length-1][0];
+    for(i = 0; i < items_rem.length; i++)
+    {
+        items_rem[i][0] = items_rem[i][0] + tzo;
+    }
+    for(i = 0; i < items_work.length; i++)
+    {
+        items_work[i][0] = items_work[i][0] + tzo;
+    }
+
+    max_ts = hours_rem[0][0];
+    if(items_rem[0][0] > hours_rem[0][0])
+    {
+        max_ts = items_rem[0][0];
+    }
+    min_ts = hours_rem[hours_rem.length-1][0];
+    if(items_rem[items_rem.length-1][0] < hours_rem[hours_rem.length-1][0])
+    {
+        min_ts = items_rem[items_rem.length-1][0];
+    }
     // Subtracting timezone offset is needed because date slews one day because timezone offset has been added
     max_date = new Date(max_ts - tzo); 
     min_date = new Date(min_ts - tzo);
@@ -132,15 +152,33 @@
 
   function refresh()
   {
-    var ch = $("#testi_id");
+    var ch = $("#show_total_ch");
     var work_selected = ch[0].checked;
-    if(work_selected)
-    {
-        $.plot($("#placeholder"), [ { label: "Remaining work", data: rem }, { label: "Total amount of work", data: work } ], options);
+
+    var ra = $("#items");
+    var items = ra[0].checked;
+
+    if(items)
+    {	
+        if(work_selected)
+        {
+            $.plot($("#placeholder"), [ { label: "Remaining items", data: items_rem }, { label: "Total amount of items", data: items_work } ], options);
+        }
+        else
+        {
+           $.plot($("#placeholder"), [ { label: "Remaining items", data: items_rem } ], options);
+        }
     }
     else
     {
-        $.plot($("#placeholder"), [ { label: "Remaining work", data: rem } ], options);
+        if(work_selected)
+        {
+            $.plot($("#placeholder"), [ { label: "Remaining work", data: hours_rem }, { label: "Total amount of work", data: hours_work } ], options);
+        }
+        else
+        {
+            $.plot($("#placeholder"), [ { label: "Remaining work", data: hours_rem } ], options);
+        }
     }
 
     $.plot($("#pie1"), open_closed, pie_options);
@@ -230,17 +268,24 @@
 [% IF slist.size > 0 %]
   <table>
     <tr>
-      <td>
+      <td rowspan="2">
         <div id="placeholder" style="width:800px;height:400px;"></div>
 
-        <input type="checkbox" id="testi_id" onclick="refresh();">
-          <label for="testi_id">Show total work amount</label>
+        <input type="checkbox" id="show_total_ch" onclick="refresh();">
+          <label for="show_total_ch">Show total work amount</label>
         </input>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         Show days: <input onchange="gettime();" type="text" value="" id="datepicker_min" size="08">-<input onchange="gettime();" type="text" value="" id="datepicker_max" size="08">
         &nbsp;<button onclick="reset_range();">Reset</button>
       </td>
-      <td style="padding-left: 50px;">
+      <td>
+        <label for="unit">Show work amount in:<br></label>
+        <input type="radio" id="hours" name="unit" value="hours" checked="checked" onclick="refresh();"/>Hours<br/>
+        <input type="radio" id="items" name="unit" value="items" onclick="refresh();"/>Items<br/>
+      </td>
+    </tr>
+    <tr>
+      <td style="float: top; vertical-align: top; padding-left: 50px; padding-top: 60px;">
         <div id="pie1" style="width:200px;height:200px;"></div>
 
         <table>
@@ -253,7 +298,7 @@
           [% END %]
         </table>
       </td>
-      <td style="padding-left: 50px;">
+      <td style="float: top; vertical-align: top; padding-left: 50px; padding-top: 60px;">
         <div id="pie2" style="width:200px;height:200px;"></div>
       
         <table>
