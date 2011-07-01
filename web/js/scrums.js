@@ -19,6 +19,14 @@
   *   Eero Heino <eero.heino@nokia.com>
   */
 
+function toggle_scroll()
+{
+    $('.content div').each(function (i, item)
+    {
+        $(item).toggleClass('autoheight');
+    });
+}
+
 function listObject(ul_id, h_id, id, name, li_tmpl) {
     this.ul_id = ul_id;
     this.id = id;
