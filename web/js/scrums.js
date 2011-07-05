@@ -195,7 +195,7 @@ function update_lists(bugs_list, move_pos, data) {
         $("#" + bugs_list.ul_id).html(html);
     } else
     {
-        $("#" + bugs_list.ul_id).html('<tr rowspan="1"><td colspan="6">&nbsp;</td></tr><tr class="ignoresortable"><td colspan="6"><h2 style="text-align: center;">NO ITEMS</h2></td></tr>');
+        $("#" + bugs_list.ul_id).html('<tr><td colspan="6">&nbsp;</td></tr><tr class="ignoresortable"><td colspan="6" align="center">No Items</td></tr>');
     }
     $('#items_' + bugs_list.id).html(bugs_list.list.length);
 }
