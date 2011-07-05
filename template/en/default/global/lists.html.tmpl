@@ -129,8 +129,6 @@ div.scrollTableContainer thead tr   {
 div.scrollTableContainer td:last-child {padding-right: 2px;}
 </style>
 
-
-
 <script id="ReleaseBugLiTmpl" type="text/html">
       <tr id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
         <td class="colF"><span class="number"><#= counter #></span></td>
@@ -159,27 +157,20 @@ div.scrollTableContainer td:last-child {padding-right: 2px;}
   <li id="<#= bug[0] #>" bug_order_nr='<#= counter #>'><span class="number"><#= counter #></span> <span><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a> <#= bug[1] #> <#= bug[2] #> <#= bug[3] #> <#= bug[4] #></span></li>
 </script>
 
-<!--
-
-come in from a git conflict.
-    <table>
-        <thead>
-            <tr><th class='sortable'>Priority</th><th class='sortable' class="colF">[% field_descs.bug_id %]</th><th class='sortable' class="colF">[% field_descs.remaining_time %]</th><th class='sortable' class="colF">[% field_descs.bug_status %]</th><th class='sortable' class="colF">[% field_descs.assigned_to %]</th><th class='sortable' class="colF">[% field_descs.short_desc %]</th></tr>
-
--->
-
 <script id="ListTmpl" type="text/html">
   <h3 id="<#= list.h_id #>"><#= list.name #></h3>
- <input type='button' class='toggle_scroll' value='toggle scroll bars' onClick="toggle_scroll();" />
+
   <div class='content' >
     <div class='scrollTableContainer' id='container'>
-    <table class="dataTable" cellspacing="0">
+      <table class="dataTable" cellspacing="0">
         <thead id="mythead">
-           <tr><th class='sortable'>order</th><th class="sortable colF">id</th><th class="sortable colF">hours</th><th class="sortable colF">status</th><th class="sortable colF">Assigned to</th><th class="sortable colF">description</th></tr>
+          <tr>
+            <th class='sortable'>Priority</th><th class="sortable colF">[% field_descs.bug_id %]</th><th class="sortable colF">[% field_descs.remaining_time %]</th><th class="sortable colF">[% field_descs.bug_status %]</th><th class="sortable colF">[% field_descs.assigned_to %]</th><th class="sortable colF">[% field_descs.short_desc %]</th>
+          </tr>
         </thead>
         <tbody id="<#= list.ul_id #>" class="connectedSortable sortable">
         </tbody>
-    </table>
+      </table>
     </div>
   </div>
 </script>
@@ -205,18 +196,19 @@ come in from a git conflict.
     </p>
 
     <table>
-        <thead>
-            <tr><th class='sortable'>Priority</th><th class='sortable' class="colF">[% field_descs.bug_id %]</th><th class='sortable' class="colF">[% field_descs.bug_status %]</th><th class='sortable' class="colF">[% field_descs.bug_severity %]</th><th class='sortable' class="colF">[% field_descs.short_desc %]</th><th class='sortable' class="colF">Team</th><th class='sortable' class="colF">Sprint</th></tr>
-        </thead>
-        <tbody id="<#= list.ul_id #>" class="connectedSortable sortable">
-        </tbody>
+      <thead>
+        <tr><th class='sortable'>Priority</th><th class='sortable' class="colF">[% field_descs.bug_id %]</th><th class='sortable' class="colF">[% field_descs.bug_status %]</th><th class='sortable' class="colF">[% field_descs.bug_severity %]</th><th class='sortable' class="colF">[% field_descs.short_desc %]</th><th class='sortable' class="colF">Team</th><th class='sortable' class="colF">Sprint</th></tr>
+      </thead>
+      <tbody id="<#= list.ul_id #>" class="connectedSortable sortable">
+      </tbody>
     </table>
 
   </div>
 </script>
 
 <script id="StaticTmpl" type="text/html">
-<h3 id="<#= list.h_id #>"><#= list.name #></h3>
+  <h3 id="<#= list.h_id #>"><#= list.name #></h3>
+
   <div class='content'>
     <p>
       <input type='button' value='Previous' OnClick='move_list_left("<#= list.id #>");'/>
@@ -232,10 +224,12 @@ come in from a git conflict.
     </p>
 
     <table>
-        <tbody id="<#= list.ul_id #>" class="connectedSortable sortable">
-        </tbody>
+      <tbody id="<#= list.ul_id #>" class="connectedSortable sortable">
+      </tbody>
     </table>
 
-    <br><a href="page.cgi?id=scrums/sprintburndown.html&sprintid=<#= list.id #>">Burndown Chart</a><br>
+    <br />
+
+    <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=<#= list.id #>">Burndown Chart</a><br>
   </div>
 </script>

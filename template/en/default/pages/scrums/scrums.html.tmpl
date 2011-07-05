@@ -59,11 +59,11 @@
         <tr>
           <td style="min-width: 200px; text-align: center;">
             <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint.id %]&order=scrums_team_order%2Cbug_severity&daily">
-	      [% IF large %]
+              [% IF large %]
                 <img src="extensions/Scrums/web/img/icon2_b.bmp" border="1"/>
-	      [% ELSE %]
+              [% ELSE %]
                 <img src="extensions/Scrums/web/img/icon2.bmp" border="1"/>
-	      [% END %]
+              [% END %]
             </a>
           </td>
           <td style="text-align: center;">
@@ -78,7 +78,7 @@
         <tr>
           <td style="min-width: 200px; text-align: center;">
             <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint.id %]">
-	      [% IF large %]
+              [% IF large %]
                 <img src="extensions/Scrums/web/img/icon1_b.png"/> 
               [% ELSE %]
                 <img src="extensions/Scrums/web/img/icon1.bmp"/> 
@@ -96,7 +96,7 @@
       <tr>
         <td style="min-width: 200px; text-align: center;">
           <a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">
-	    [% IF large %]
+            [% IF large %]
               <img src="extensions/Scrums/web/img/bug-item_b.png"/>
             [% ELSE %]
               <img src="extensions/Scrums/web/img/bug-item.png"/>

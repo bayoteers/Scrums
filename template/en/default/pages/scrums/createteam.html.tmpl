@@ -166,7 +166,7 @@
           [% IF user.in_group('editteams') %]
             <td>
               <a href="page.cgi?id=scrums/createteam.html&userid=[% member.id() %]&teamid=[% team.id() %]&username=[% member.name() %]&userlogin=[% member.login() %]"
-		  onclick="return member_removal('[% member.name() %]', '[% team.name() %]');">Remove</a>
+                  onclick="return member_removal('[% member.name() %]', '[% team.name() %]');">Remove</a>
             </td>
           [% END %]
         </tr>
