@@ -206,12 +206,16 @@ function list_filter(header, list, bugs_list) { // header is any element, list i
         "class": "filterform",
         "action": "#"
     }),
-        input = $("<input>").attr({
-            "class": "filterinput",
-            "type": "text"
-        });
+    input = $("<input>").attr({
+        "class": "filterinput",
+        "type": "text",
+        "style": "width: 70%;"
+    });
+        
     //var html_obj = $(form).append(input)
+    $(form).append('Filter: ').prependTo($(header).next());
     $(form).append(input).prependTo($(header).next());
+
     //$(header).next().after(html_obj);
     //html_obj.aft.appendTo(header);
     $(input).change(function() {
