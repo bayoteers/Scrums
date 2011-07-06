@@ -126,10 +126,6 @@ sub bug_end_of_update {
                 }
             }
         }
-
-        # Confirm we haven't got invalid status/resolution selections.
-        _bug_check_bug_status($bug);
-        _bug_check_resolution($bug);
     }
 
     return;
@@ -571,60 +567,6 @@ sub page_before_template {
         my $sprint_id = $cgi->param('sprintid');
 
         sprint_summary($vars, $sprint_id);
-    }
-
-    return;
-}
-
-sub _bug_check_bug_status {
-    my ($bug) = @_;
-
-    my @bug_status_black_list = ('INDEFINITION', 'ACCEPTED', 'WAITING');
-
-    my @feature_status_black_list = ('ASSIGNED', 'WAITING FOR UPSTREAM');
-
-    my $is_feature = ($bug->bug_severity() eq "task" || $bug->bug_severity() eq "feature");
-
-    if ($is_feature) {
-        foreach my $blacklisted (@feature_status_black_list) {
-            if ($bug->status->{'value'} eq $blacklisted) {
-                ThrowUserError("invalid_feature_status", { bug => $bug, invstatus => $blacklisted });
-            }
-        }
-    }
-    else {
-        foreach my $blacklisted (@bug_status_black_list) {
-            if ($bug->status->{'value'} eq $blacklisted) {
-                ThrowUserError("invalid_bug_status", { bug => $bug, invstatus => $blacklisted });
-            }
-        }
-    }
-
-    return;
-}
-
-sub _bug_check_resolution {
-    my ($bug) = @_;
-
-    my @bug_resolution_black_list = ('READYFORINTEGRATION', 'REJECTED');
-
-    my @feature_resolution_black_list = ('FIXED', 'INVALID', 'WONTFIX', 'WORKSFORME');
-
-    my $is_feature = ($bug->bug_severity() eq "task" || $bug->bug_severity() eq "feature");
-
-    if ($is_feature) {
-        foreach my $blacklisted (@feature_resolution_black_list) {
-            if ($bug->resolution eq $blacklisted) {
-                ThrowUserError("invalid_feature_resolution", { bug => $bug, invresolution => $blacklisted });
-            }
-        }
-    }
-    else {
-        foreach my $blacklisted (@bug_resolution_black_list) {
-            if ($bug->resolution eq $blacklisted) {
-                ThrowUserError("invalid_bug_resolution", { bug => $bug, invresolution => $blacklisted });
-            }
-        }
     }
 
     return;
