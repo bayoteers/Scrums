@@ -44,72 +44,45 @@
   [% FOREACH team IN teams %]
     <h1>
       Team '[% team.name %]'
-    </h1>
     [% owner = team.owner_user() %]
     [% scrum_master = team.scrum_master_user() %]
 
     [% active_sprint = sprints.$index %]
     [% IF active_sprint %]
-      <h2>Current Sprint: '[% active_sprint.name %]'</h2>
+      Current Sprint: '[% active_sprint.name %]'
     [% ELSE %]
-      <h3>No active sprint</h3>
+      No Active Sprint
     [% END %]
+
+    </h1>
+
+    <h2>My Sprint View</h2>
+
     <table>
       [% IF active_sprint.id %]
         <tr>
-          <td style="min-width: 200px; text-align: center;">
-            <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint.id %]&order=scrums_team_order%2Cbug_severity&daily">
-              [% IF large %]
-                <img src="extensions/Scrums/web/img/icon2_b.bmp" border="1"/>
-              [% ELSE %]
-                <img src="extensions/Scrums/web/img/icon2.bmp" border="1"/>
-              [% END %]
-            </a>
-          </td>
-          <td style="text-align: center;">
-            <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint.id %]&order=scrums_team_order%2Cbug_severity&daily">
-              Sprint Open Items
+          <td>
+            <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id=[% active_sprint.id %]&order=scrums_team_order%2Cbug_severity&daily">
+              Remaining Items
             </a>
           </td>
         </tr>
         <tr>
-          <td colwidth="2">&nbsp;</td>
-        </tr>
-        <tr>
-          <td style="min-width: 200px; text-align: center;">
-            <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint.id %]">
-              [% IF large %]
-                <img src="extensions/Scrums/web/img/icon1_b.png"/> 
-              [% ELSE %]
-                <img src="extensions/Scrums/web/img/icon1.bmp"/> 
-              [% END %]
-            </a>
+          <td>
+            <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint.id %]">Team Burndown Chart</a>
           </td>
-          <td style="text-align: center;">
-            <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint.id %]">Sprint Burndown</a>
-          </td>
-        </tr>
-        <tr>
-          <td colwidth="2">&nbsp;</td>
         </tr>
       [% END %]
       <tr>
-        <td style="min-width: 200px; text-align: center;">
-          <a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">
-            [% IF large %]
-              <img src="extensions/Scrums/web/img/bug-item_b.png"/>
-            [% ELSE %]
-              <img src="extensions/Scrums/web/img/bug-item.png"/>
-            [% END %]
-          </a>
-        </td>
-        <td style="text-align: center;">
-          <a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">New Bugs</a>
+        <td>
+          <a href="????">New Bugs</a>
         </td>
       </tr>
     </table>
 
-    <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Manage team</a>
+    <hr />
+
+    <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id %]">Manage Team</a>
 
     <hr/>
     [% index = index + 1 %]
