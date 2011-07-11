@@ -1,3 +1,91 @@
+  .colA { min-width:190px; }
+  .colB { min-width:100px; }
+  .colC { min-width: 70px; }
+  .colD { min-width: 60px; }
+  .colE { min-width: 40px; }
+  .colF { min-width: 15px; }
+  .sortable table tr td { margin: 0px; padding: 0px; text-align: left; }
+  .sortable { text-align: left; background: #eeeeee; }
+
+  .sortable li { background: #eeeeee; margin: 5px; padding: 5px; width: 680px; }
+  .disabled { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }
+  .disabled li { background: #eeeeee; margin: 3px; padding: 5px; font-size: 1em; width: 680px; }
+  .number { background: #eee; color: #000000; border: 1px solid #dddddd;  }
+  .content { text-align: center; }
+  h3 { text-align: center; }
+
+.helper td {
+    border: 1px;
+    background-color: #404d6c;
+}
+
+table.dataTable {
+    margin: 0;
+    padding: 0;
+}
+
+
+table.dataTable td {
+    position: relative;
+    margin: 0;
+    height: 35px;
+    border-top: 1px solid #999;
+    padding: 2px 3px 3px 4px;
+}
+
+/* This makes the scrolling table work */
+
+div.scrollTableContainer {
+    height: 445px;  
+    overflow: auto;
+    margin: 15px 0 0 0;
+    width: 90%;
+    border: 1px solid #ddd;
+}
+
+div.autoheight {
+    height: auto;
+}
+
+/*http://rcs-comp.com/blog/scrolling_table/*/
+
+/* The different widths below are due to the way the scroll bar is implamented
+we are keeping these here instead of putting them in the IE css file b/c it 
+is easier to change the width if both numbers are in the same place. */
+
+/* All browsers accept this, but we are targeting IE with this rule */
+div.scrollTableContainer table {
+  width: 100%;  /*100% of container produces horiz. scroll in Mozilla*/
+  border: none;
+  border-spacing: 0px;
+  background-color: transparent;
+
+}
+
+/* Modern browsers accept this (not IE) and we are targetting firefox */
+html>/**/body div.scrollTableContainer table {
+}
+
+/* Modern browsers accept this (not IE) and we are targetting firefox */
+html>/**/body div.scrollTableContainer table>tbody  {  
+    overflow: auto; 
+    max-height: 410px;
+   /* height: 410px; */
+    overflow-x: hidden;
+}
+
+table>tbody tr {
+  height: auto;
+}
+
+div.scrollTableContainer thead tr   {
+    top: 0px;/*expression(offsetParent.scrollTop); IE5+ only*/
+    position:relative;
+}
+
+/*prevent Mozilla scrollbar from hiding cell content*/
+div.scrollTableContainer td:last-child {padding-right: 2px;}
+
 .bz_title_container 
 {
     margin: 8px 0; 
@@ -8,70 +96,4 @@
     font-weight: bold; 
 }
 
-
-/* CSS Document */
-
-/* datTable for styling only */
-table.dataTable {
-    margin: 0;
-    padding: 0;
-    border-bottom: 1px solid #999;
-    border-left: 1px solid #999;
-}
-
-table.dataTable th {
-    margin: 0;
-    border-right: 1px solid #999;
-    border-top: 1px solid #999;
-    font-weight: normal;
-    padding: 4px 3px 3px 4px;
-    background: #ccc;
-    font-weight: bold;
-}
-
-table.dataTable td {
-    margin: 0;
-    border-right: 1px solid #999;
-    border-top: 1px solid #999; 
-    padding: 2px 3px 3px 4px
-}
-
-/* This makes the scrolling table work */
-
-div.scrollTableContainer {
-    height: 45px;  
-    overflow: auto;
-    width: 970px;
-    margin: 15px 0 0 0;
-    position: relative;
-}
-/*http://rcs-comp.com/blog/scrolling_table/*/
-
-/* The different widths below are due to the way the scroll bar is implamented
-we are keeping these here instead of putting them in the IE css file b/c it 
-is easier to change the width if both numbers are in the same place. */
-
-/* All browsers accept this, but we are targeting IE with this rule */
-div.scrollTableContainer table {
-    width: 952px;
-}
-
-/* Modern browsers accept this (not IE) and we are targetting firefox */
-html>/**/body div.scrollTableContainer table {
-    width: 970px;
-}
-
-/* Modern browsers accept this (not IE) and we are targetting firefox */
-html>/**/body div.scrollTableContainer table>tbody  {  
-    overflow: auto; 
-    height: 10px;
-    overflow-x: hidden;
-}
-
-div.scrollTableContainer thead tr   {
-    position:relative;
-}
-
-/*prevent Mozilla scrollbar from hiding cell content*/
-div.scrollTableContainer td:last-child {padding-right: 20px;}
 
