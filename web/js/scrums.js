@@ -38,6 +38,7 @@ function listObject(ul_id, h_id, id, name, li_tmpl) {
     this.offset_step = 99999; // default value
     this.name = name;
     this.li_tmpl = li_tmpl;
+    this.show_priority = true;
 }
 
 var from_list_ul_id = '';
@@ -186,7 +187,8 @@ function update_lists(bugs_list, move_pos, data) {
     } 
           html += parseTemplate(template.html(), {
           bug: bugs_list.list[bugs_list.visible[i]],
-          counter: (bugs_list.visible[i] + 1)
+          counter: (bugs_list.visible[i] + 1),
+          show_priority: bugs_list.show_priority,
         });
 
     } // for
@@ -195,7 +197,7 @@ function update_lists(bugs_list, move_pos, data) {
         $("#" + bugs_list.ul_id).html(html);
     } else
     {
-        $("#" + bugs_list.ul_id).html('<tr rowspan="1"><td colspan="6">&nbsp;</td></tr><tr class="ignoresortable"><td colspan="6"><h2 style="text-align: center;">NO ITEMS</h2></td></tr>');
+        $("#" + bugs_list.ul_id).html('<tr><td colspan="6">&nbsp;</td></tr><tr class="ignoresortable"><td colspan="6" align="center">No Items</td></tr>');
     }
     $('#items_' + bugs_list.id).html(bugs_list.list.length);
 }
@@ -206,12 +208,16 @@ function list_filter(header, list, bugs_list) { // header is any element, list i
         "class": "filterform",
         "action": "#"
     }),
-        input = $("<input>").attr({
-            "class": "filterinput",
-            "type": "text"
-        });
+    input = $("<input>").attr({
+        "class": "filterinput",
+        "type": "text",
+        "style": "width: 70%;"
+    });
+        
     //var html_obj = $(form).append(input)
+    $(form).append('Filter: ').prependTo($(header).next());
     $(form).append(input).prependTo($(header).next());
+
     //$(header).next().after(html_obj);
     //html_obj.aft.appendTo(header);
     $(input).change(function() {

@@ -564,7 +564,7 @@ sub _task_status_log {
 
     my $dbh = Bugzilla->dbh;
     my $sth = $dbh->prepare(
-	"(select
+        "(select
             bug_when, ad_st.is_open as a, re_st.is_open as r, re_st.is_open-ad_st.is_open as w
         from 
             bugs_activity ba
@@ -593,7 +593,8 @@ sub _task_status_log {
         where 
             sprint_id = ?)
         order by 
-            bug_when");
+            bug_when"
+                           );
     $sth->execute($bug_status_fieldid, $sprint_id, $sprint_id);
     my @result;
     my ($v1, $v2, $v3, $v4);
@@ -633,7 +634,7 @@ sub _ending_item_status {
                            );
     $sth->execute($sprint_id);
     my ($open_status, $count);
-    my ($open, $closed);
+    my ($open,        $closed);
     while (($open_status, $count) = $sth->fetchrow_array) {
         if ($open_status == 1) {
             $open = $count;

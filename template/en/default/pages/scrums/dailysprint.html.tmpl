@@ -28,6 +28,7 @@
 
 <script type="text/javascript">
   var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs', $("#TeamBugLiTmpl"));
+  unordered_bugs.show_priority = false;
 
   var all_lists = [];
 
@@ -81,7 +82,7 @@
 </script>
 
 <div class="bz_title_container">
-  '[% team.name %]' new bugs
+  '[% team.name %]' New Bugs
 </div>
 
 <table>
@@ -93,6 +94,7 @@
   </tr>
   <tr>
     <td colspan="2" align="right">
+      <input type='button' class='toggle_scroll' value='Toggle Scroll Bars' onClick="toggle_scroll();" />
       <input type='button' value='Save' OnClick='save_all();' />
     </td>
   </tr>
