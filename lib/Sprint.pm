@@ -169,13 +169,14 @@ sub get_bugs {
     my $dbh  = Bugzilla->dbh;
     my ($sprint_bugs) = $dbh->selectall_arrayref(
         'select
-	b.bug_id,
+	    b.bug_id,
         b.remaining_time,
         b.bug_status,
         p.realname,
         left(b.short_desc, 40),
         b.short_desc,
-	bo.team
+        bo.team,
+        b.creation_ts
     from
 	scrums_sprint_bug_map sbm
 	inner join bugs b on sbm.bug_id = b.bug_id

@@ -29,7 +29,9 @@
 <script type="text/javascript">
   var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', $("#TeamBugLiTmpl"));
   unordered_bugs.show_priority = false;
+  unordered_bugs.show_creation_date = true;
   var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog', $("#TeamBugLiTmpl"));
+  backlog.show_creation_date = true;
 
   var all_lists = [];
 
@@ -45,10 +47,12 @@
 
   // data from backend
   var unordered_list_data = [[% FOREACH bug IN unprioritised_items %]
-  [[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],
+  [[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]","[% bug.6 %]"],
   [% END %]];
 
-  var backlog_bugs = [[% FOREACH bug IN backlog.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
+  var backlog_bugs = [[% FOREACH bug IN backlog.bugs %]
+  [[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]","[% bug.7 %]"],
+  [% END %]];
   var sprint_lists = [];
 
   $(document).ready(function() {

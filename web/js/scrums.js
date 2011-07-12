@@ -39,6 +39,7 @@ function listObject(ul_id, h_id, id, name, li_tmpl) {
     this.name = name;
     this.li_tmpl = li_tmpl;
     this.show_priority = true;
+    this.show_creation_date = false;
 }
 
 var from_list_ul_id = '';
@@ -189,6 +190,7 @@ function update_lists(bugs_list, move_pos, data) {
           bug: bugs_list.list[bugs_list.visible[i]],
           counter: (bugs_list.visible[i] + 1),
           show_priority: bugs_list.show_priority,
+          show_creation_date: bugs_list.show_creation_date,
         });
 
     } // for
@@ -199,6 +201,8 @@ function update_lists(bugs_list, move_pos, data) {
     {
         $("#" + bugs_list.ul_id).html('<tr><td colspan="6">&nbsp;</td></tr><tr class="ignoresortable"><td colspan="6" align="center">No Items</td></tr>');
     }
+    $("#table"+bugs_list.ul_id).tablesorter();
+    //$("#table"+bugs_list.ul_id).tablesorter({locale: 'de', useUI: false});
     $('#items_' + bugs_list.id).html(bugs_list.list.length);
 }
 

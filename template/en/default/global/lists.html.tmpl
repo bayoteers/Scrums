@@ -21,6 +21,7 @@
 
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.4.4.min.js"></script>
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.14.custom.min.js"></script>
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery.tablesorter-update.js"></script>
 
 <script type="text/javascript" src="extensions/Scrums/web/js/scrums.js"></script>
 <link rel="stylesheet" href="extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
@@ -29,7 +30,12 @@
 
 <script id="ReleaseBugLiTmpl" type="text/html">
       <tr id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
+        <# if (show_priority) { #>
         <td class="colF"><span class="number"><#= counter #></span></td>
+        <# } #>
+        <# if (show_creation_date) { #>
+            <td class='sortable'><#= bug[6] #></td>
+        <# } #>
         <td class="colD"><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
         <td class="colC"> <#= bug[1] #></td>
         <td class="colD"> <#= bug[2] #></td>
@@ -43,6 +49,9 @@
       <tr id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
         <# if (show_priority) { #>
         <td class="colF sortable"> <span class="number"><#= counter #></span></td>
+        <# } #>
+        <# if (show_creation_date) { #>
+            <td class='sortable'><#= bug[6] #></td>
         <# } #>
         <td class="colD sortable"> <a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
         <td class="colF sortable"> <#= bug[1] #></td>
@@ -61,12 +70,17 @@
 
   <div class='content' >
     <div class='scrollTableContainer' id='container'>
-      <table class="dataTable" cellspacing="0">
+      <table class="dataTable" cellspacing="0" id="table<#= list.ul_id #>">
         <thead id="mythead">
           <tr>
             <# if (list.show_priority) { #>
-            <th class='sortable'>Priority</th>
+            <th class="sortable">Priority</th>
             <# } #>
+
+            <# if (list.show_creation_date) { #>
+            <th class='sortable'>Created</th>
+            <# } #>
+
             <th class="sortable colF">[% field_descs.bug_id %]</th>
             <th class="sortable colF">[% field_descs.remaining_time %]</th>
             <th class="sortable colF">[% field_descs.bug_status %]</th>
