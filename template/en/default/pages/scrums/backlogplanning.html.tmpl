@@ -28,10 +28,11 @@
 
 <script type="text/javascript">
   var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', $("#TeamBugLiTmpl"));
-  unordered_bugs.show_priority = false;
-  unordered_bugs.show_creation_date = true;
+  unordered_bugs.show_columns.push('creation_date')
+  unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
+
   var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog', $("#TeamBugLiTmpl"));
-  backlog.show_creation_date = true;
+  backlog.show_columns.push('creation_date')
 
   var all_lists = [];
 
@@ -47,11 +48,14 @@
 
   // data from backend
   var unordered_list_data = [[% FOREACH bug IN unprioritised_items %]
-  [[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]","[% bug.6 %]"],
+//[% "${bugid}" FILTER bug_link(bugid) FILTER none %] bugzilla call for showing bug id
+  [% bugid = bug.0 %]
+  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]","[% bug.6 %]","[% bug.7 %]"],
   [% END %]];
 
   var backlog_bugs = [[% FOREACH bug IN backlog.bugs %]
-  [[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]","[% bug.7 %]"],
+  [% bugid = bug.0 %]
+  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]","[% bug.7 %]"],
   [% END %]];
   var sprint_lists = [];
 

@@ -29,35 +29,51 @@
 <link rel="stylesheet" href="extensions/Scrums/web/css/scrums.css">
 
 <script id="ReleaseBugLiTmpl" type="text/html">
-      <tr id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
+      <tr id="<#= bug[0][0] #>" bug_order_nr='<#= counter #>'>
         <# if (show_priority) { #>
         <td class="colF"><span class="number"><#= counter #></span></td>
         <# } #>
         <# if (show_creation_date) { #>
             <td class='sortable'><#= bug[6] #></td>
         <# } #>
-        <td class="colD"><a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
+        <td class="colD"><#= bug[0][1] #></td>
         <td class="colC"> <#= bug[1] #></td>
         <td class="colD"> <#= bug[2] #></td>
         <td class="colA"> <#= bug[3] #></td> 
+        <# if (show_severity) { #>
+            <td class="colA sortable"> <#= bug[7] #></td>
+        <# } #>
         <td class="colB"> <a href="page.cgi?id=scrums/createteam.html&teamid=<#= bug[6] #>"><#= bug[4] #></a></td>
         <td> <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=<#= bug[7] #>"><#= bug[5] #></a></td>
       </tr>
 </script>
 
 <script id="TeamBugLiTmpl" type="text/html">
-      <tr id="<#= bug[0] #>" bug_order_nr='<#= counter #>'>
-        <# if (show_priority) { #>
+      <tr id="<#= bug[0][0] #>" bug_order_nr='<#= counter #>'>
+        <# if ($.inArray('order', show_columns) > -1) { #>
         <td class="colF sortable"> <span class="number"><#= counter #></span></td>
         <# } #>
-        <# if (show_creation_date) { #>
+        <# if ($.inArray('bug_id', show_columns) > -1) { #>
+        <td class="colD sortable"><#= bug[0][1] #></td>
+        <# } #>
+        <# if ($.inArray('points', show_columns) > -1) { #>
+        <td class="colF sortable"><#= bug[1] #></td>
+        <# } #>
+        <# if ($.inArray('status', show_columns) > -1) { #>
+        <td class="colC sortable"><#= bug[2] #></td>
+        <# } #>
+        <# if ($.inArray('assigned', show_columns) > -1) { #>
+        <td class="colA sortable"><#= bug[3] #></td>
+        <# } #>
+        <# if ($.inArray('severity', show_columns) > -1) { #>
+            <td class="colA sortable"> <#= bug[7] #></td>
+        <# } #>
+        <# if ($.inArray('summary', show_columns) > -1) { #>
+        <td title="<#= bug[5] #>" class='sortable'> <#= bug[5] #></td>
+        <# } #>
+        <# if ($.inArray('creation_date', show_columns) > -1) { #>
             <td class='sortable'><#= bug[6] #></td>
         <# } #>
-        <td class="colD sortable"> <a href="show_bug.cgi?id=<#= bug[0] #>"><#= bug[0] #></a></td>
-        <td class="colF sortable"> <#= bug[1] #></td>
-        <td class="colC sortable"> <#= bug[2] #></td>
-        <td class="colA sortable"> <#= bug[3] #></td>
-        <td title="<#= bug[5] #>" class='sortable'> <#= bug[4] #></td>
       </tr>
 </script>
 
@@ -73,19 +89,30 @@
       <table class="dataTable" cellspacing="0" id="table<#= list.ul_id #>">
         <thead id="mythead">
           <tr>
-            <# if (list.show_priority) { #>
-            <th class="sortable">Priority</th>
+            <# if ($.inArray('order', list.show_columns) > -1) { #>
+            <th class="sortable">#</th>
             <# } #>
-
-            <# if (list.show_creation_date) { #>
-            <th class='sortable'>Created</th>
-            <# } #>
-
+            <# if ($.inArray('bug_id', list.show_columns) > -1) { #>
             <th class="sortable colF">[% field_descs.bug_id %]</th>
+            <# } #>
+            <# if ($.inArray('points', list.show_columns) > -1) { #>
             <th class="sortable colF">[% field_descs.remaining_time %]</th>
+            <# } #>
+            <# if ($.inArray('status', list.show_columns) > -1) { #>
             <th class="sortable colF">[% field_descs.bug_status %]</th>
+            <# } #>
+            <# if ($.inArray('assigned', list.show_columns) > -1) { #>
             <th class="sortable colF">[% field_descs.assigned_to %]</th>
+            <# } #>
+            <# if ($.inArray('severity', list.show_columns) > -1) { #>
+            <th class="sortable colF">[% field_descs.bug_severity %]</th>
+            <# } #>
+            <# if ($.inArray('summary', list.show_columns) > -1) { #>
             <th class="sortable colF">[% field_descs.short_desc %]</th>
+            <# } #>
+            <# if ($.inArray('creation_date', list.show_columns) > -1) { #>
+            <th class='sortable'>[% field_descs.creation_ts %]</th>
+            <# } #>
           </tr>
         </thead>
         <tbody id="<#= list.ul_id #>" class="connectedSortable sortable">

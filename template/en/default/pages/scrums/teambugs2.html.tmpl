@@ -38,8 +38,12 @@
   }
 
   // data from backend
- var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
- var backlog_bugs = [[% FOREACH bug IN backlog.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
+ var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %]
+ [% bugid = bug.0 %]
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+ var backlog_bugs = [[% FOREACH bug IN backlog.bugs %]
+ [% bugid = bug.0 %]
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
 
  var sprint_lists = [];
 

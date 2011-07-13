@@ -28,7 +28,8 @@
 
 <script type="text/javascript">
   var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs', $("#TeamBugLiTmpl"));
-  unordered_bugs.show_priority = false;
+  unordered_bugs.show_columns.push('creation_date')
+  unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
 
   var all_lists = [];
 
@@ -38,8 +39,12 @@
   }
 
   // data from backend
-  var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"], [% END %]];
-  var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %][[% bug.0 %], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+  var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %]
+  [% bugid = bug.0 %]
+  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"], [% END %]];
+  var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %]
+  [% bugid = bug.0 %]
+  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
 
   var sprint_lists = [];
 

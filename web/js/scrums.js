@@ -38,8 +38,10 @@ function listObject(ul_id, h_id, id, name, li_tmpl) {
     this.offset_step = 99999; // default value
     this.name = name;
     this.li_tmpl = li_tmpl;
+    this.show_columns = ['order', 'bug_id', 'points', 'summary'];
     this.show_priority = true;
     this.show_creation_date = false;
+    this.show_severity = false;
 }
 
 var from_list_ul_id = '';
@@ -189,8 +191,10 @@ function update_lists(bugs_list, move_pos, data) {
           html += parseTemplate(template.html(), {
           bug: bugs_list.list[bugs_list.visible[i]],
           counter: (bugs_list.visible[i] + 1),
+          show_columns: bugs_list.show_columns,
           show_priority: bugs_list.show_priority,
           show_creation_date: bugs_list.show_creation_date,
+          show_severity: bugs_list.show_severity,
         });
 
     } // for
@@ -303,7 +307,7 @@ function save(lists, schema, obj_id, data_lists, call_back) {
         var list_id = list.id;
         data_lists[list_id] = [];
         for (var k = 0; k < list.list.length; k++) {
-            data_lists[list_id].push(list.list[k][0]);
+            data_lists[list_id].push(list.list[k][0][0]);
         }
     }
 
@@ -326,7 +330,7 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id, call_back)
         var found = false;
         for (var k = 0; k < unordered_list.original_list.length; k++)
         {
-            if (unordered_list.original_list[k][0] == unordered_list.list[i][0])
+            if (unordered_list.original_list[k][0][0] == unordered_list.list[i][0][0])
             {
                 found = true;
                 break;
@@ -335,7 +339,7 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id, call_back)
             if (found != true)
             {
                 // this bug is new in unordered list
-                data_lists[list_id].push(unordered_list.list[i][0])
+                data_lists[list_id].push(unordered_list.list[i][0][0])
             }
 
     }
