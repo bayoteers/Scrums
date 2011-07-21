@@ -32,6 +32,7 @@ use Bugzilla::Error;
 use strict;
 use base qw(Exporter);
 our @EXPORT = qw(
+  ajax_sprint_bugs
   show_all_teams
   show_create_team
   user_teams
@@ -389,6 +390,26 @@ sub edit_team {
     $vars->{'scrummasterloginname'} = $cgi->param('scrummasterloginname');
 }
 
+sub ajax_sprint_bugs {
+    my ($vars) = @_;
+    my $cgi     = Bugzilla->cgi;
+    # security checks?
+    my @sprints;
+    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $cgi->param('teamid'), id => $cgi->param('sprintid'), is_active => 1, item_type => 1 });
+    $vars->{'json_text'} = '';
+    if ($sprints)
+    {
+        use JSON;
+        for my $sprint (@{$sprints}) {
+            $vars->{'sprint'} = $sprint;
+            $vars->{'json_text'} = to_json(
+                { name => $sprint->name(), id => $sprint->id(), bugs => $sprint->get_bugs(),
+                  description => $sprint->description(), nominal_schedule => $sprint->nominal_schedule(),
+                  _status => $sprint->status(), end_date => $sprint->end_date(), start_date => $sprint->start_date()});
+        }
+    }
+}
+
 # Show team bugs is a whole, which consists of team, sprints of team and
 # list of bugs (ids) that belong to sprints
 sub _show_team_bugs {
@@ -399,11 +420,19 @@ sub _show_team_bugs {
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
     $vars->{'team'}               = $team;
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
+    my @sprints;
 
     my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 1 });
 
     my %sprint_bug_map;
     my @team_sprints_array;
+
+    my $show_sprint;
+    my $show_sprint_id = 0;
+    if (defined($cgi->param('sprintid')))
+    {
+        $show_sprint_id = $cgi->param('sprintid');
+    }
 
     for my $sprint (@{$sprints}) {
         my $spr_bugs = $sprint->get_bugs();
@@ -411,14 +440,33 @@ sub _show_team_bugs {
         $team_sprint{'sprint'} = $sprint;
         $team_sprint{'bugs'}   = $spr_bugs;
         push @team_sprints_array, \%team_sprint;
+        if ($show_sprint_id)
+        {
+            if ($sprint->id() == $show_sprint_id)
+            {
+                $show_sprint = $sprint;
+            }
+        } else
+        {
+            if ($sprint->is_current())
+            {
+                $show_sprint = $sprint;
+            }
+        }
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
+    $vars->{'sprint'} = $show_sprint;
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
+    my @sprint_names;
+    for my $sprint (@{$backlogs}) {
+        push @sprint_names, $sprint->name();
+    }
     my $team_backlog = @$backlogs[0];
     my %backlog_container;
     $backlog_container{'sprint'} = $team_backlog;
     $backlog_container{'bugs'}   = $team_backlog->get_bugs();
+    $backlog_container{'sprint_names'}   = \@sprint_names;
     $vars->{'backlog'}           = \%backlog_container;
 }
 

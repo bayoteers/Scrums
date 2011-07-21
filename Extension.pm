@@ -486,6 +486,9 @@ sub page_before_template {
     elsif ($page eq 'scrums/newteam.html') {
         edit_team($vars);
     }
+    elsif ($page eq 'scrums/ajaxsprintbugs.html') {
+        ajax_sprint_bugs($vars);
+    }
     elsif ($page eq 'scrums/teambugs.html') {
         show_team_and_sprints($vars);
     }

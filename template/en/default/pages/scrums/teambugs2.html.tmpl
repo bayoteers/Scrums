@@ -27,7 +27,10 @@
 [% PROCESS global/lists.html.tmpl %]
 
 <script type="text/javascript">
+  var team_id = [% team.id %];
   var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog', $("#TeamBugLiTmpl"));
+
+  var sprint = new listObject("sortable", "headers", "[% sprint.id() %]", 'Sprint [% sprint.name() %]', $("#TeamBugLiTmpl"));
 
   var all_lists = [];
 
@@ -45,40 +48,57 @@
  [% bugid = bug.0 %]
  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
 
+
+ var sprint_bugs = [[% FOREACH bug IN sprint.get_bugs() %] [% bugid = bug.0 %]
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
+
+ var foo = "[% sprint.name() %]";
+
  var sprint_lists = [];
 
  $(document).ready(function() {
     var html = '';
-    for (id in sprint_list_data)
-    {
-        // last argument is the name
-        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0], $("#TeamBugLiTmpl"));
-        // last argument is the bug list
-        // extra stuff for sprint
-        list._status = sprint_list_data[id][2]
-        list.nominal_schedule = sprint_list_data[id][3]
-        list.description = sprint_list_data[id][4]
-
-        html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: "" });
-        $(html).appendTo($('#sprints'));
-        update_lists(list, 0, sprint_list_data[id][1]);
-
-        // expand collapse
-        //$("#"+list.ul_id).hide();
-        //toggle the componenet with class msg_body
-        var ul_id = list.ul_id;
-        $("#" + list.h_id).click(function()
-        {
-            $(this).nextAll(".content:first").slideToggle(500);
-        });
-
-        sprint_lists.push(list);
-
-    }
+//    for (id in sprint_list_data)
+//    {
+//        // last argument is the name
+//        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0], $("#TeamBugLiTmpl"));
+//        // last argument is the bug list
+//        // extra stuff for sprint
+//        list._status = sprint_list_data[id][2]
+//        list.nominal_schedule = sprint_list_data[id][3]
+//        list.description = sprint_list_data[id][4]
+//
+//        html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: "" });
+//        $(html).appendTo($('#sprints'));
+//        update_lists(list, 0, sprint_list_data[id][1]);
+//
+//        // expand collapse
+//        //$("#"+list.ul_id).hide();
+//        //toggle the componenet with class msg_body
+//        var ul_id = list.ul_id;
+//        $("#" + list.h_id).click(function()
+//        {
+//            $(this).nextAll(".content:first").slideToggle(500);
+//        });
+//
+//        sprint_lists.push(list);
+//
+//    }
     //$('#sprints').html(html);
+
+    sprint._status = "[% sprint.sprint.status() %]";
+    sprint.nominal_schedule = "[% sprint.sprint.nominal_schedule() %]";
+    sprint.description = "[% sprint.sprint.description() | replace( '"', '\"' ) %]";
+
     $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
     update_lists(backlog, 0, backlog_bugs);
-    all_lists = $.extend(true, [], sprint_lists);
+
+    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+    update_lists(sprint, 0, sprint_bugs);
+    all_lists.push(sprint);
+    //all_lists = $.extend(true, [], [sprint]);
+
+    //all_lists = $.extend(true, [], sprint_lists);
     all_lists.push(backlog);
     bind_sortable_lists(all_lists);
   });
@@ -88,9 +108,24 @@
   [% team.name %] Sprint
 </div>
 
+<form action=''>
+<input type='hidden' value='scrums/teambugs2.html' name='id' />
+<input type='hidden' value='[% team.id %]' name='teamid' />
+Select sprint:
+<select name='sprintid' onchange='get_sprint();' id='selected_sprint'>
+[% FOREACH name IN team_sprints_array %]
+<option value="[% name.sprint.id() %]"[% IF name.sprint.id() == sprint.id() %] selected='selected'[% END %]>
+[% IF name.sprint.is_current() %]*[% END %][% name.sprint.name %]</option>[% END %]
+</select>
+</form>
+
 <table>
   <tr>
-    <td valign='top' id='sprints'>
+     <td colspan='2' id='sprint_info'>
+     </td>
+  </tr>
+  <tr>
+    <td valign='top' id='sprint'>
     </td>
     <td valign='top' id='unordered'>
     </td>
@@ -103,7 +138,8 @@
   </tr>
 </table>
 
-[% team_sprint = team_sprints_array.first() %]
+<!-- team_sprint = team_sprints_array.first() -->
+[% team_sprint = sprint %]
 
 <p>
   <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add Sprint</a> 

@@ -188,14 +188,13 @@ function update_lists(bugs_list, move_pos, data) {
     else {
         template = $("#BugLiTmpl");
     } 
-          html += parseTemplate(template.html(), {
-          bug: bugs_list.list[bugs_list.visible[i]],
-          counter: (bugs_list.visible[i] + 1),
-          show_columns: bugs_list.show_columns,
-          show_priority: bugs_list.show_priority,
-          show_creation_date: bugs_list.show_creation_date,
-          show_severity: bugs_list.show_severity,
-        });
+
+    html += parseTemplate(template.html(),
+    {
+        bug: bugs_list.list[bugs_list.visible[i]],
+        counter: (bugs_list.visible[i] + 1),
+        show_columns: bugs_list.show_columns,
+    });
 
     } // for
     if (html)
@@ -318,6 +317,33 @@ function save(lists, schema, obj_id, data_lists, call_back) {
         data: JSON.stringify(data_lists)
     }, saveResponse        , 'text');
 }
+
+function show_sprint(data)
+{
+    alert('moi');
+    var sprint = new listObject("sortable", "headers", data.id, 'Sprint '+data.name, $("#TeamBugLiTmpl"));
+    alert(data.name);
+    sprint._status = data._status;
+    sprint.nominal_schedule = data.nominal_schedule;
+    sprint.description = data.description;
+    sprint.start_date = data.start_date;
+    sprint.end_date = data.end_date;
+    all_lists = [sprint, backlog];
+    $('#sprint_info').html(sprint.start_date+' - '+sprint.end_date);
+    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+    update_lists(sprint, 0, data.bugs);
+    bind_sortable_lists(all_lists);
+    alert(date.bugs.length);
+}
+
+function get_sprint()
+{
+    $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
+        teamid: team_id,
+        sprintid: $('#selected_sprint').val(),
+    }, show_sprint, 'json');
+}
+
 
 function save_lists(ordered_lists, unordered_list, schema, obj_id, call_back)
 {
