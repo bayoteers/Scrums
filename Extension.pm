@@ -487,7 +487,15 @@ sub page_before_template {
         edit_team($vars);
     }
     elsif ($page eq 'scrums/ajaxsprintbugs.html') {
-        ajax_sprint_bugs($vars);
+
+        my $cgi    = Bugzilla->cgi;
+        my $schema = $cgi->param('schema');
+        if ($schema eq "newsprint") {
+            edit_sprint($vars);
+            show_team_and_sprints($vars);
+        } else {
+            ajax_sprint_bugs($vars);
+        }
     }
     elsif ($page eq 'scrums/teambugs.html') {
         show_team_and_sprints($vars);
@@ -512,7 +520,7 @@ sub page_before_template {
             update_team_bugs($vars, 1);
         }
         else {
-            update_team_bugs($vars, 0);
+            update_team_bugs($vars, 1);
         }
     }
     elsif ($page eq 'scrums/newsprint.html') {

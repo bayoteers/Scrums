@@ -25,6 +25,55 @@
 %]
 
 [% PROCESS global/lists.html.tmpl %]
+<!--
+      <input type="hidden" name="teamid" value="<#= teamid #>" />
+      <input type="hidden" name="sprintid" value="[% sprintid %]" />
+-->
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery.form.js"></script>
+<script id="NewSprintTmpl" type="text/html">
+    <form id='new_sprint_form' action='page.cgi' method="post">
+      <input type='hidden' name='id' value='scrums/ajax.html' />
+      <input type='hidden' name='schema' value='newsprint' />
+      [% IF editsprint %]
+        <input type="hidden" name="editsprint" value="true" />
+      [% ELSE %]
+        <input type="hidden" name="newsprint" value="true" />
+      [% END %]
+
+      <table>
+        <tr>
+          <th>Sprint Name:</th>
+          <td colspan="2"><input type="text" name="sprintname" value="[% sprintname %]"></td>
+        </tr>
+        <tr>
+          <th>Nominal Schedule:</th>
+          <td><input onchange="gettime();" type="text" value="[% nominalschedule %]" name="nominalschedule" id="datepicker_nominal" size="08"></td>
+        </tr>
+        <tr>
+          <th>Description:</th>
+          <td colspan="2"><input size="40" type="text" name="description" value="[% description %]"></td>
+        </tr>
+        <tr>
+          <th>Actual Duration:</th>
+          <td colspan=3">
+             <input onchange="gettime();" type="text" value="[% start_date %]" name="start_date" id="datepicker_min" size="08">-
+             <input onchange="gettime();" type="text" value="[% end_date %]" name="end_date" id="datepicker_max" size="08">
+          </td>
+        </tr>
+        <tr><td colspan="4"></td></tr>
+        <tr>
+          <td colspan="4" align="right">
+            [% submittext = (editsprint != "" ? "Save" : "Create") %]
+
+            <input type="button" value="Cancel" onclick="cancel()"/>
+            <input type="submit" value="[% submittext %]" onclick="return checkvalues()"/>
+          </td>
+        </tr>
+      </table>
+    </form>
+</script>
+
+
 
 <script type="text/javascript">
   var team_id = [% team.id %];
@@ -116,6 +165,7 @@ Select sprint:
 [% FOREACH name IN team_sprints_array %]
 <option value="[% name.sprint.id() %]"[% IF name.sprint.id() == sprint.id() %] selected='selected'[% END %]>
 [% IF name.sprint.is_current() %]*[% END %][% name.sprint.name %]</option>[% END %]
+<option value="new_sprint">&#060; new sprint &#062;</option>
 </select>
 </form>
 

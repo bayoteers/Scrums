@@ -320,9 +320,7 @@ function save(lists, schema, obj_id, data_lists, call_back) {
 
 function show_sprint(data)
 {
-    alert('moi');
     var sprint = new listObject("sortable", "headers", data.id, 'Sprint '+data.name, $("#TeamBugLiTmpl"));
-    alert(data.name);
     sprint._status = data._status;
     sprint.nominal_schedule = data.nominal_schedule;
     sprint.description = data.description;
@@ -333,16 +331,102 @@ function show_sprint(data)
     $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
     update_lists(sprint, 0, data.bugs);
     bind_sortable_lists(all_lists);
-    alert(date.bugs.length);
 }
 
 function get_sprint()
 {
-    $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
-        teamid: team_id,
-        sprintid: $('#selected_sprint').val(),
-    }, show_sprint, 'json');
+    if ($('#selected_sprint').val() == 'new_sprint')
+    {
+        function archive()
+        {
+        gettime();
+        if(range_end == "")
+        {
+            alert("End date is empty. Archived sprint must be stopped before archiving.");
+            return false;
+        }
+        if(range_begin == "")
+        {
+            alert("Sprint start date is empty");
+            return false;
+        }
+
+        return confirm("Are you sure you want to archive sprint '[% sprintname %]'?");
+        }
+
+        function cancel()
+        {
+        window.location = "page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]";  
+        }
+
+        function checkvalues()
+        {
+        gettime();
+
+        var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
+
+        if(sprintname == '')
+        {
+          alert("Sprint must have name.");
+          return false;
+        }
+
+        if(sprintname.match(/^\S/) == null)
+        {
+          alert("Sprint name can not start with whitespace");
+          return false;
+        }
+
+        if(nominal_date == "")
+        {
+          alert("Sprint must have nominal schedule.");
+          return false;
+        }
+
+        return true;
+        }
+
+        function askconfirm()
+        {
+        return confirm("Are you sure you want to delete sprint '[% sprintname %]'?");
+        }
+
+        $('#sprint_info').html('Create new sprint');
+        $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, extra_middle: '' }));
+
+        $('#new_sprint_form').ajaxForm(create_sprint);
+
+        var range_begin = "";
+        var range_end = "";
+        var nominal_date = "";
+
+        $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("#datepicker_nominal").datepicker({ dateFormat: 'yy-mm-dd' });
+
+        function gettime() 
+        {
+            range_begin = $('#datepicker_min').val();
+            range_end = $('#datepicker_max').val();
+            nominal_date = $('#datepicker_nominal').val();
+        }
+
+
+
+    } else
+    {
+        $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
+            teamid: team_id,
+            sprintid: $('#selected_sprint').val(),
+        }, show_sprint, 'json');
+    }
 }
+
+function create_sprint(data)
+{
+    show_sprint(data);
+}
+
 
 
 function save_lists(ordered_lists, unordered_list, schema, obj_id, call_back)
