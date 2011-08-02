@@ -27,6 +27,8 @@ use Bugzilla::Extension::Scrums::Sprintslib;
 
 use Bugzilla::Util qw(trick_taint);
 
+use Bugzilla::Util;
+
 use Bugzilla::Error;
 
 use strict;
