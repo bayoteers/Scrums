@@ -405,14 +405,21 @@ sub _show_team_bugs {
     my %sprint_bug_map;
     my @team_sprints_array;
 
+    my $capacity;
+    my $first = 1;
     for my $sprint (@{$sprints}) {
         my $spr_bugs = $sprint->get_bugs();
         my %team_sprint;
         $team_sprint{'sprint'} = $sprint;
         $team_sprint{'bugs'}   = $spr_bugs;
+        if ($first) {
+            $capacity = $sprint->get_capacity_summary();
+            $first    = 0;
+        }
         push @team_sprints_array, \%team_sprint;
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
+    $vars->{'capacity'}           = $capacity;
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
     my $team_backlog = @$backlogs[0];
@@ -476,11 +483,12 @@ sub edit_sprint {
         $vars->{'sprintid'} = $sprint_id;
         my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
         if (defined $sprint && ref($sprint)) {
-            $vars->{'sprintname'}      = $sprint->name();
-            $vars->{'nominalschedule'} = $sprint->nominal_schedule();
-            $vars->{'description'}     = $sprint->description();
-            $vars->{'start_date'}      = $sprint->start_date();
-            $vars->{'end_date'}        = $sprint->end_date();
+            $vars->{'sprintname'}        = $sprint->name();
+            $vars->{'nominalschedule'}   = $sprint->nominal_schedule();
+            $vars->{'description'}       = $sprint->description();
+            $vars->{'start_date'}        = $sprint->start_date();
+            $vars->{'end_date'}          = $sprint->end_date();
+            $vars->{'estimatedcapacity'} = $sprint->estimated_capacity();
         }
     }
 }
@@ -567,22 +575,24 @@ sub _new_sprint {
     my $description     = $cgi->param('description');
     my $start_date      = $cgi->param('start_date');
     my $end_date        = $cgi->param('end_date');
+    my $est_capacity    = $cgi->param('estimatedcapacity');
 
-    ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date) =
-      _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date);
+    ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date, $est_capacity) =
+      _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date, $est_capacity);
 
     if ($teamid and $name and $nominalschedule) {
         my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
                                                                  {
-                                                                   team_id          => $teamid,
-                                                                   status           => "NEW",
-                                                                   name             => $name,
-                                                                   nominal_schedule => $nominalschedule,
-                                                                   description      => $description,
-                                                                   is_active        => 1,
-                                                                   item_type        => 1,
-                                                                   start_date       => $start_date,
-                                                                   end_date         => $end_date
+                                                                   team_id            => $teamid,
+                                                                   status             => "NEW",
+                                                                   name               => $name,
+                                                                   nominal_schedule   => $nominalschedule,
+                                                                   description        => $description,
+                                                                   is_active          => 1,
+                                                                   item_type          => 1,
+                                                                   start_date         => $start_date,
+                                                                   end_date           => $end_date,
+                                                                   estimated_capacity => $est_capacity
                                                                  }
                                                                 );
     }
@@ -602,9 +612,10 @@ sub _update_sprint {
     my $description     = $cgi->param('description');
     my $start_date      = $cgi->param('start_date');
     my $end_date        = $cgi->param('end_date');
+    my $est_capacity    = $cgi->param('estimatedcapacity');
 
-    ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date) =
-      _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date);
+    ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date, $est_capacity) =
+      _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date, $est_capacity);
 
     if ($teamid and $name and $nominalschedule) {
         my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
@@ -613,6 +624,7 @@ sub _update_sprint {
         $sprint->set_start_date($start_date);
         $sprint->set_end_date($end_date);
         $sprint->set_description($description);
+        $sprint->set_estimated_capacity($est_capacity);
         $sprint->update();
     }
     else {
@@ -640,7 +652,7 @@ sub _archive_sprint {
 }
 
 sub _sanitise_sprint_data {
-    my ($teamid, $name, $nominalschedule, $description, $start_date, $end_date) = @_;
+    my ($teamid, $name, $nominalschedule, $description, $start_date, $end_date, $est_capacity) = @_;
     my $error = "";
 
     if ($teamid =~ /^([0-9]+)$/) {
@@ -691,7 +703,11 @@ sub _sanitise_sprint_data {
         $end_date = undef;
     }
 
-    return ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date);
+    if ($est_capacity =~ /(.*)/) {
+        $est_capacity = $1;       # $data now untainted
+    }
+
+    return ($error, $teamid, $name, $nominalschedule, $description, $start_date, $end_date, $est_capacity);
 }
 
 sub _update_team {
@@ -699,7 +715,7 @@ sub _update_team {
 
     my $error = "";
     if ($name =~ /^([-\ \w]+)$/) {
-        $name = $1;    # $data now untainted
+        $name = $1;               # $data now untainted
     }
     else {
         $error = " Illegal name";
@@ -707,7 +723,7 @@ sub _update_team {
     }
 
     if ($owner =~ /^([0-9]+)$/) {
-        $owner = $1;    # $data now untainted
+        $owner = $1;              # $data now untainted
     }
     else {
         $error .= " Illegal owner";
@@ -715,7 +731,7 @@ sub _update_team {
     }
 
     if ($scrum_master =~ /^([0-9]+)$/) {
-        $scrum_master = $1;    # $data now untainted
+        $scrum_master = $1;       # $data now untainted
     }
     else {
         $scrum_master = "";

@@ -34,6 +34,7 @@ use Bugzilla::Extension::Scrums::Teams;
 use Bugzilla::Extension::Scrums::Releases;
 use Bugzilla::Extension::Scrums::Sprintslib;
 use Bugzilla::Extension::Scrums::LoadTestData;
+use Bugzilla::Extension::Scrums::DebugLibrary;
 
 use Bugzilla::Util qw(trick_taint);
 
@@ -302,10 +303,11 @@ sub db_schema_abstract_schema {
                                                 nominal_schedule => { TYPE => 'DATE',         NOTNULL => 1 },
                                                 status           => { TYPE => 'varchar(20)',  NOTNULL => 1 },
                                                 is_active        => { TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE' },
-                                                description => { TYPE => 'varchar(255)' },
-                                                item_type   => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' },
-                                                start_date  => { TYPE => 'DATE' },
-                                                end_date    => { TYPE => 'DATE' },
+                                                description        => { TYPE => 'varchar(255)' },
+                                                item_type          => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' },
+                                                start_date         => { TYPE => 'DATE' },
+                                                end_date           => { TYPE => 'DATE' },
+                                                estimated_capacity => { TYPE => 'decimal(7,2)' },
                                               ]
                                   };
 
@@ -424,6 +426,10 @@ sub install_update_db {
                                       };
     Bugzilla->dbh->bz_add_column("scrums_team", "scrum_master", TEAM_SCRUM_MASTER, undef);
 
+    use constant CAPACITY_DEFINITION => { TYPE => 'decimal(7,2)' };
+
+    Bugzilla->dbh->bz_add_column("scrums_sprints", "estimated_capacity", CAPACITY_DEFINITION, undef);
+
     return;
 }
 
@@ -452,6 +458,9 @@ sub page_before_template {
 
     if ($page eq 'scrums/loadtestdata.html') {
         load_test_data($vars);
+    }
+    if ($page eq 'scrums/testing_utility.html') {
+        debug_function($vars);
     }
 
     # Teams
