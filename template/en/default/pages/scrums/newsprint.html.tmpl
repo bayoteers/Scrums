@@ -95,6 +95,13 @@
       return false;
     }
 
+    var estimatedcapacity = window.document.forms['newsprint'].elements['estimatedcapacity'].value;
+    if(estimatedcapacity != '' && estimatedcapacity.match(/^\d+(.\d*)*/) == null)
+    {
+      alert("Estimated capacity is illegal.");
+      return false;
+    }
+
     return true;
   }
 
@@ -134,6 +141,10 @@
          <input onchange="gettime();" type="text" value="[% start_date %]" name="start_date" id="datepicker_min" size="08">-
          <input onchange="gettime();" type="text" value="[% end_date %]" name="end_date" id="datepicker_max" size="08">
       </td>
+    </tr>
+    <tr>
+      <th>Estimated capacity:</th>
+      <td colspan="2"><input type="text" name="estimatedcapacity" value="[% estimatedcapacity %]"></td>
     </tr>
     <tr><td colspan="4"></td></tr>
     <tr>

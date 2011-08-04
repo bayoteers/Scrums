@@ -426,7 +426,9 @@ sub install_update_db {
                                       };
     Bugzilla->dbh->bz_add_column("scrums_team", "scrum_master", TEAM_SCRUM_MASTER, undef);
 
-    Bugzilla->dbh->bz_add_column("scrums_sprints", "estimated_capacity", WV_VALUE_DEFINITION, undef);
+    use constant CAPACITY_DEFINITION => { TYPE => 'decimal(7,2)' };
+
+    Bugzilla->dbh->bz_add_column("scrums_sprints", "estimated_capacity", CAPACITY_DEFINITION, undef);
 
     return;
 }
