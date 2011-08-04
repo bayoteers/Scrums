@@ -491,8 +491,15 @@ sub page_before_template {
         my $cgi    = Bugzilla->cgi;
         my $schema = $cgi->param('schema');
         if ($schema eq "newsprint") {
-            edit_sprint($vars);
-            show_team_and_sprints($vars);
+            $vars->{'editsprint'} = 1;
+            #$cgi->param('editsprint') = 1;
+            $cgi->param(-name=>'editsprint',-value=>'1');
+            my $sprintid = edit_sprint($vars);
+            $cgi->param(-name=>'sprintid',-value=>$sprintid);
+            #$vars->{'sprintid'} = $sprintid;
+            #$cgi->param('sprintid') = 1;
+            ajax_sprint_bugs($vars);
+            #show_team_and_sprints($vars);
         } else {
             ajax_sprint_bugs($vars);
         }

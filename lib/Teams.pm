@@ -397,7 +397,19 @@ sub ajax_sprint_bugs {
     my $cgi     = Bugzilla->cgi;
     # security checks?
     my @sprints;
-    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $cgi->param('teamid'), id => $cgi->param('sprintid'), is_active => 1, item_type => 1 });
+
+    my $teamid;
+    my $sprintid;
+    if ($cgi->param('teamid') =~ /(\d+)/) {
+        $teamid = $cgi->param('teamid');
+        $teamid =~ /(\d+)/;
+    }
+
+    if ($cgi->param('sprintid') =~ /(\d+)/) {
+        $sprintid = $cgi->param('sprintid');
+        $sprintid =~ /(\d+)/;
+    }
+    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, is_active => 1, item_type => 1 });
     $vars->{'json_text'} = '';
     if ($sprints)
     {
@@ -532,7 +544,9 @@ sub edit_sprint {
             $vars->{'start_date'}      = $sprint->start_date();
             $vars->{'end_date'}        = $sprint->end_date();
         }
+        return $sprint_id;
     }
+    return 'none';
 }
 
 sub show_team_and_sprints {

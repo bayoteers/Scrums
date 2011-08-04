@@ -326,11 +326,27 @@ function show_sprint(data)
     sprint.description = data.description;
     sprint.start_date = data.start_date;
     sprint.end_date = data.end_date;
-    all_lists = [sprint, backlog];
-    $('#sprint_info').html(sprint.start_date+' - '+sprint.end_date);
+    $('#sprint_info').html(sprint.start_date+' - '+sprint.end_date+"<br /><input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
     $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
     update_lists(sprint, 0, data.bugs);
-    bind_sortable_lists(all_lists);
+    bind_sortable_lists([sprint]);
+    all_lists = [sprint, backlog];
+}
+
+function edit_sprint()
+{
+
+    sprint = all_lists[0];
+    $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, extra_middle: '', sprintid: sprint.id }));
+    alert(sprint.name);
+    $("input[name=sprintname]").val(sprint.name.replace('Sprint ', ''));
+    $("input[name=nominalschedule]").val(sprint.nominal_schedule);
+    $("input[name=description]").val(sprint.description);
+    $("input[name=start_date]").val(sprint.start_date);
+    $("input[name=end_date]").val(sprint.end_date);
+    $("input[name=submit]").val('Save');
+    $('#new_sprint_form').ajaxForm(create_sprint);
+
 }
 
 function get_sprint()
@@ -392,7 +408,7 @@ function get_sprint()
         }
 
         $('#sprint_info').html('Create new sprint');
-        $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, extra_middle: '' }));
+        $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, extra_middle: '', sprintid: 0 }));
 
         $('#new_sprint_form').ajaxForm(create_sprint);
 
