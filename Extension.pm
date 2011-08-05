@@ -135,18 +135,22 @@ sub buglist_supptables {
     my ($self, $args) = @_;
 
     my $supptables = $args->{'supptables'};
+    my $fields     = $args->{'fields'};
+    
+    # Add this table to what can be referenced in MySQL when displaying search results.
 
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN scrums_bug_order ON scrums_bug_order.bug_id = bugs.bug_id');
-
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN dependencies ON dependencies.dependson = bugs.bug_id');
-
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN scrums_sprint_bug_map ON scrums_sprint_bug_map.bug_id = bugs.bug_id');
-
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN scrums_sprints ON scrums_sprints.id = scrums_sprint_bug_map.sprint_id ');
+    foreach my $field (@$fields) {
+        if (($field eq 'scrums_team_order') || ($field eq 'scrums_release_order') || ($field eq 'scrums_program_order')) {
+            push(@$supptables, 'LEFT JOIN scrums_bug_order ON scrums_bug_order.bug_id = bugs.bug_id');
+        }
+        elsif ($field eq 'scrums_blocked') {
+            push(@$supptables, 'LEFT JOIN dependencies ON dependencies.dependson = bugs.bug_id');
+        }
+        elsif ($field eq 'sprint_name') {
+            push(@$supptables, 'LEFT JOIN scrums_sprint_bug_map ON scrums_sprint_bug_map.bug_id = bugs.bug_id');
+            push(@$supptables, 'LEFT JOIN scrums_sprints ON scrums_sprints.id = scrums_sprint_bug_map.sprint_id ');
+        }
+    }
 
     return;
 }
