@@ -511,7 +511,11 @@ sub page_before_template {
         my $cgi    = Bugzilla->cgi;
         my $schema = $cgi->param('schema');
 
-        if ($schema eq "release") {
+        if ($schema eq "personcapacity") {
+            my $data    = $cgi->param('data');
+            handle_person_capacity($data, $vars);
+        }
+        elsif ($schema eq "release") {
             handle_release_bug_data($vars);
         }
         elsif ($schema eq "backlog") {

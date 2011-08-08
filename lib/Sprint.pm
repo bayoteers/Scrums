@@ -199,17 +199,16 @@ sub get_capacity_summary {
     my $self = shift;
 
     my %capacity;
-    my $capacity = \%capacity;
-    my $estimate = $self->estimated_capacity();
-
-    my $work_done = $self->get_work_done();
-
+    my $capacity       = \%capacity;
+    my $estimate       = $self->estimated_capacity();
+    my $work_done      = $self->get_work_done();
     my $remaining_work = $self->calculate_remaining();
-
+    my $total_work     = $work_done + $remaining_work;
     $capacity{sprint_capacity} = $estimate;
     $capacity{work_done}       = $work_done;
     $capacity{remaining_work}  = $remaining_work;
-    $capacity{free_capacity}   = $estimate - $work_done - $remaining_work;
+    $capacity{total_work}      = $total_work;
+    $capacity{free_capacity}   = $estimate - $total_work;
     return $capacity;
 }
 
@@ -224,6 +223,68 @@ sub calculate_remaining {
     return $cum_rem;
 }
 
+sub get_member_capacity {
+    my ($self, $member_id) = @_;
+
+    my $dbh = Bugzilla->dbh;
+    my $sth = $dbh->prepare(
+        'select
+            estimated_capacity
+        from 
+            scrums_test_sprint_estimate
+        where
+            sprintid = ? and 
+            userid = ?'
+                           );
+    $sth->execute($self->id, $member_id);
+    my $estimated_capacity = 0;
+    my ($member_capacity) = $sth->fetchrow_array();
+    if ($member_capacity) {
+        $estimated_capacity = $member_capacity;
+    }
+    else {
+        $estimated_capacity = "0.00";
+    }
+    return $estimated_capacity;
+}
+
+sub set_member_capacity {
+    my ($self, $user_id, $capacity) = @_;
+
+    my $sth = Bugzilla->dbh->prepare(
+        'select
+            estimated_capacity
+        from 
+            scrums_test_sprint_estimate
+        where
+            sprintid = ? and 
+            userid = ?'
+                                    );
+    $sth->execute($self->id, $user_id);
+    my ($old_capacity) = $sth->fetchrow_array();
+    if ($old_capacity) {
+        Bugzilla->dbh->do('UPDATE scrums_test_sprint_estimate set estimated_capacity = ? where sprintid = ? and userid = ?',
+                          undef, $capacity, $self->id, $user_id);
+    }
+    else {
+        Bugzilla->dbh->do('INSERT INTO scrums_test_sprint_estimate (estimated_capacity, sprintid, userid) values (?, ?, ?)',
+                          undef, $capacity, $self->id, $user_id);
+    }
+}
+
+sub get_member_workload {
+    my ($self, $member_id) = @_;
+
+    my $cum_member_workload = 0;
+    my $sprint_bugs         = $self->get_bugs();
+    for my $bug (@$sprint_bugs) {
+        if (@$bug[7] == $member_id) {
+            $cum_member_workload = $cum_member_workload + @$bug[1] + @$bug[8];
+        }
+    }
+    return $cum_member_workload;
+}
+
 sub _fetch_bugs {
     my $self = shift;
     my $dbh  = Bugzilla->dbh;
@@ -236,14 +297,25 @@ sub _fetch_bugs {
         left(b.short_desc, 40),
         b.short_desc,
         bo.team,
-        b.creation_ts
+        b.assigned_to,
+        sum(work_time) as work_done
     from
 	scrums_sprint_bug_map sbm
 	inner join bugs b on sbm.bug_id = b.bug_id
         inner join profiles p on p.userid = b.assigned_to
+        inner join longdescs l on l.bug_id = b.bug_id
 	left join scrums_bug_order bo on sbm.bug_id = bo.bug_id
     where
 	sbm.sprint_id = ?
+    group by
+        b.bug_id,
+        b.remaining_time,
+        b.bug_status,
+        p.realname,
+        left(b.short_desc, 40),
+        b.short_desc,
+        bo.team,
+        b.assigned_to
     order by
 	bo.team', undef, $self->id
     );

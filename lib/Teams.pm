@@ -405,21 +405,18 @@ sub _show_team_bugs {
     my %sprint_bug_map;
     my @team_sprints_array;
 
-    my $capacity;
-    my $first = 1;
     for my $sprint (@{$sprints}) {
         my $spr_bugs = $sprint->get_bugs();
         my %team_sprint;
         $team_sprint{'sprint'} = $sprint;
         $team_sprint{'bugs'}   = $spr_bugs;
-        if ($first) {
-            $capacity = $sprint->get_capacity_summary();
-            $first    = 0;
-        }
         push @team_sprints_array, \%team_sprint;
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
-    $vars->{'capacity'}           = $capacity;
+
+    my $active_sprint = @{$sprints}[0];
+    $vars->{'active_sprint'} = $active_sprint;
+    $vars->{'capacity'}      = $active_sprint->get_capacity_summary();
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
     my $team_backlog = @$backlogs[0];

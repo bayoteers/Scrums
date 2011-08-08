@@ -43,6 +43,7 @@ use base qw(Exporter);
 our @EXPORT = qw(
   update_bug_order_from_json
   sprint_summary
+  handle_person_capacity
   );
 #
 # Important!
@@ -61,6 +62,24 @@ sub update_bug_order_from_json {
     my $content = $json->allow_nonref->utf8->relaxed->decode($data);
 
     team_bug_order($team_id, $content);
+}
+
+sub handle_person_capacity {
+    my ($data, $vars) = @_;
+
+    my $json = new JSON::XS;
+    if ($data =~ /(.*)/) {
+        $data = $1;    # $data now untainted
+    }
+
+    my $content = $json->allow_nonref->utf8->relaxed->decode($data);
+    my $params  = $content->{params};
+
+    my $sprint_id = $params->{sprint_id};
+    my $person_id = $params->{person_id};
+    my $capacity  = $params->{capacity};
+    my $sprint    = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    $sprint->set_member_capacity($person_id, $capacity);
 }
 
 sub team_bug_order {
