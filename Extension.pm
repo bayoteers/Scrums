@@ -493,8 +493,9 @@ sub page_before_template {
         if ($schema eq "newsprint") {
             $vars->{'editsprint'} = 1;
             #$cgi->param('editsprint') = 1;
-            $cgi->param(-name=>'editsprint',-value=>'1');
-            my $sprintid = edit_sprint($vars);
+            $cgi->param(-name=>'editsprint',-value=>'true');
+            my $sprintid = _new_sprint($vars);
+            #my $sprintid = edit_sprint($vars);
             $cgi->param(-name=>'sprintid',-value=>$sprintid);
             #$vars->{'sprintid'} = $sprintid;
             #$cgi->param('sprintid') = 1;

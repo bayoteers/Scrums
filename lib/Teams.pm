@@ -34,6 +34,7 @@ use Bugzilla::Error;
 use strict;
 use base qw(Exporter);
 our @EXPORT = qw(
+  _new_sprint
   ajax_sprint_bugs
   show_all_teams
   show_create_team
@@ -649,6 +650,7 @@ sub _new_sprint {
                                                                    end_date         => $end_date
                                                                  }
                                                                 );
+        return $sprint->id();
     }
     else {
         ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });
