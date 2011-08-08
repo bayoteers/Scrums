@@ -231,7 +231,7 @@ sub get_member_capacity {
         'select
             estimated_capacity
         from 
-            scrums_test_sprint_estimate
+            scrums_sprint_estimate
         where
             sprintid = ? and 
             userid = ?'
@@ -255,7 +255,7 @@ sub set_member_capacity {
         'select
             estimated_capacity
         from 
-            scrums_test_sprint_estimate
+            scrums_sprint_estimate
         where
             sprintid = ? and 
             userid = ?'
@@ -263,11 +263,11 @@ sub set_member_capacity {
     $sth->execute($self->id, $user_id);
     my ($old_capacity) = $sth->fetchrow_array();
     if ($old_capacity) {
-        Bugzilla->dbh->do('UPDATE scrums_test_sprint_estimate set estimated_capacity = ? where sprintid = ? and userid = ?',
+        Bugzilla->dbh->do('UPDATE scrums_sprint_estimate set estimated_capacity = ? where sprintid = ? and userid = ?',
                           undef, $capacity, $self->id, $user_id);
     }
     else {
-        Bugzilla->dbh->do('INSERT INTO scrums_test_sprint_estimate (estimated_capacity, sprintid, userid) values (?, ?, ?)',
+        Bugzilla->dbh->do('INSERT INTO scrums_sprint_estimate (estimated_capacity, sprintid, userid) values (?, ?, ?)',
                           undef, $capacity, $self->id, $user_id);
     }
 }
