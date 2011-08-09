@@ -530,6 +530,24 @@ sub end_date {
     return $self->{'end_date'};
 }
 
+sub is_current {
+    my $self = shift;
+
+    if(!$self->start_date() || !$self->end_date()) {
+        return 0;
+    }
+    use Time::Local;
+    my $now = time;
+    my ($yyyy, $mm, $dd) = ($self->start_date() =~ /(\d+)-(\d+)-(\d+)/);
+    my $sdate = timelocal(0, 0, 0, $dd-1, $mm-1, $yyyy);
+    my ($yyyy, $mm, $dd) = ($self->end_date() =~ /(\d+)-(\d+)-(\d+)/);
+    my $edate = timelocal(0, 0, 0, $dd-1, $mm-1, $yyyy);
+#    open(MYFILE, '>>/tmp/dat.txt');
+#    print MYFILE "$sdate $now $edate - ".$self->name()."\n";
+
+    return ($now > $sdate and $now < $edate)
+}
+
 1;
 
 __END__

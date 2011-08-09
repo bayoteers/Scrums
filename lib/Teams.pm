@@ -27,11 +27,15 @@ use Bugzilla::Extension::Scrums::Sprintslib;
 
 use Bugzilla::Util qw(trick_taint);
 
+use Bugzilla::Util;
+
 use Bugzilla::Error;
 
 use strict;
 use base qw(Exporter);
 our @EXPORT = qw(
+  _new_sprint
+  ajax_sprint_bugs
   show_all_teams
   show_create_team
   user_teams
@@ -389,6 +393,41 @@ sub edit_team {
     $vars->{'scrummasterloginname'} = $cgi->param('scrummasterloginname');
 }
 
+sub ajax_sprint_bugs {
+    my ($vars) = @_;
+    my $cgi     = Bugzilla->cgi;
+    # security checks?
+    my @sprints;
+
+    my $teamid;
+    my $sprintid;
+    if ($cgi->param('teamid') =~ /(\d+)/) {
+        $teamid = $1;
+        #$teamid = $cgi->param('teamid');
+        #$teamid =~ /(\d+)/;
+    }
+
+    if ($cgi->param('sprintid') =~ /(\d+)/) {
+        $sprintid = $1;
+        #$sprintid = $cgi->param('sprintid');
+        #$sprintid =~ /(\d+)/;
+    }
+    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, is_active => 1, item_type => 1 });
+    $vars->{'json_text'} = '';
+    if ($sprints)
+    {
+        use JSON;
+        use Data::Dumper qw(Dumper);
+        for my $sprint (@{$sprints}) {
+            $vars->{'sprint'} = $sprint;
+            $vars->{'json_text'} = to_json(
+                { name => $sprint->name(), id => $sprint->id(), bugs => $sprint->get_bugs(),
+                  description => $sprint->description(), nominal_schedule => $sprint->nominal_schedule(),
+                  _status => $sprint->status(), end_date => $sprint->end_date(), start_date => $sprint->start_date()});
+        }
+    }
+}
+
 # Show team bugs is a whole, which consists of team, sprints of team and
 # list of bugs (ids) that belong to sprints
 sub _show_team_bugs {
@@ -399,11 +438,21 @@ sub _show_team_bugs {
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
     $vars->{'team'}               = $team;
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
+    my @sprints;
 
     my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 1 });
 
     my %sprint_bug_map;
     my @team_sprints_array;
+
+    my $show_sprint;
+    my $show_sprint_id = 0;
+    if (defined($cgi->param('sprintid')))
+    {
+        $show_sprint_id = $cgi->param('sprintid');
+    }
+
+    my $capacity;
 
     for my $sprint (@{$sprints}) {
         my $spr_bugs = $sprint->get_bugs();
@@ -411,18 +460,39 @@ sub _show_team_bugs {
         $team_sprint{'sprint'} = $sprint;
         $team_sprint{'bugs'}   = $spr_bugs;
         push @team_sprints_array, \%team_sprint;
+        if ($show_sprint_id)
+        {
+            if ($sprint->id() == $show_sprint_id)
+            {
+                $show_sprint = $sprint;
+            }
+        } else
+        {
+            if ($sprint->is_current())
+            {
+                $show_sprint = $sprint;
+            }
+        }
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
 
-    my $active_sprint = @{$sprints}[0];
-    $vars->{'active_sprint'} = $active_sprint;
-    $vars->{'capacity'}      = $active_sprint->get_capacity_summary();
+    if(!$show_sprint) {
+        $show_sprint = @{$sprints}[0];
+    }
+
+    $vars->{'sprint'} = $show_sprint;
+    $vars->{'capacity'} = $show_sprint->get_capacity_summary();
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
+    my @sprint_names;
+    for my $sprint (@{$backlogs}) {
+        push @sprint_names, $sprint->name();
+    }
     my $team_backlog = @$backlogs[0];
     my %backlog_container;
     $backlog_container{'sprint'} = $team_backlog;
     $backlog_container{'bugs'}   = $team_backlog->get_bugs();
+    $backlog_container{'sprint_names'}   = \@sprint_names;
     $vars->{'backlog'}           = \%backlog_container;
 }
 
@@ -492,6 +562,7 @@ sub edit_sprint {
             $previous_sprint = $sprint->get_previous_sprint();
         }
     }
+
     if (defined $previous_sprint && ref($previous_sprint)) {
         my $pred_estimate = $previous_sprint->get_predictive_estimate();
         $vars->{'prediction'} = $pred_estimate->{'prediction'};
@@ -500,6 +571,8 @@ sub edit_sprint {
     else {
         $vars->{'prediction'} = '-';
     }
+
+#    return $sprint_id; ?????
 }
 
 sub show_team_and_sprints {
@@ -507,12 +580,13 @@ sub show_team_and_sprints {
 
     my $error     = "";
     my $cgi       = Bugzilla->cgi;
-    my $sprint_id = $cgi->param('sprintid');
+    my $sprint_id;
 
     if ($cgi->param('newsprint') ne "") {
         _new_sprint($vars);
     }
     elsif ($cgi->param('editsprint') ne "") {
+        my $sprint_id = $cgi->param('sprintid');
         if ($sprint_id ne "") {
             if ($sprint_id =~ /^([0-9]+)$/) {
                 $sprint_id = $1;    # $data now untainted
@@ -524,14 +598,14 @@ sub show_team_and_sprints {
         }
     }
     elsif ($cgi->param('deletesprint') ne "") {
-        $sprint_id = $cgi->param('deletesprint');
+        $sprint_id = $cgi->param('sprintid');
         if ($sprint_id =~ /^([0-9]+)$/) {
             $sprint_id = $1;        # $data now untainted
             _delete_sprint($vars, $sprint_id);
         }
     }
     elsif ($cgi->param('archivesprint') ne "") {
-        $sprint_id = $cgi->param('archivesprint');
+        $sprint_id = $cgi->param('sprintid');
         if ($sprint_id =~ /^([0-9]+)$/) {
             $sprint_id = $1;        # $data now untainted
             _archive_sprint($vars, $sprint_id);
@@ -604,6 +678,7 @@ sub _new_sprint {
                                                                    estimated_capacity => $est_capacity
                                                                  }
                                                                 );
+        return $sprint->id();
     }
     else {
         ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });

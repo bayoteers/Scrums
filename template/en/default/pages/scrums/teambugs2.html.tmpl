@@ -25,9 +25,68 @@
 %]
 
 [% PROCESS global/lists.html.tmpl %]
+<!--
+      <input type="hidden" name="teamid" value="<#= teamid #>" />
+      <input type="hidden" name="sprintid" value="[% sprintid %]" />
+-->
+<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery.form.js"></script>
+<script id="NewSprintTmpl" type="text/html">
+    <form id='new_sprint_form' action='page.cgi' method="post">
+      <input type='hidden' name='teamid' value='[% team.id %]' />
+      <# if (sprintid != 0) { print("<input type='hidden' name='sprintid' value='"+sprintid+"' />"); } #>
+      <input type='hidden' name='id' value='scrums/ajaxsprintbugs.html' />
+
+      <table>
+        <tr>
+          <th>Sprint Name:</th>
+          <td colspan="2"><input type="text" name="sprintname" value="[% sprintname %]"></td>
+        </tr>
+        <tr>
+          <th>Nominal Schedule:</th>
+          <td><input onchange="gettime();" type="text" value="[% nominalschedule %]" name="nominalschedule" id="datepicker_nominal" size="08"></td>
+        </tr>
+        <tr>
+          <th>Description:</th>
+          <td colspan="2"><input size="40" type="text" name="description" value="[% description %]"></td>
+        </tr>
+        <tr>
+          <th>Actual Duration:</th>
+          <td colspan=3">
+             <input onchange="gettime();" type="text" value="[% start_date %]" name="start_date" id="datepicker_min" size="08">-
+             <input onchange="gettime();" type="text" value="[% end_date %]" name="end_date" id="datepicker_max" size="08">
+          </td>
+        </tr>
+        <tr><td colspan="4"></td></tr>
+        <tr>
+          <td colspan="4" align="right">
+            <input type="button" value="Cancel" onclick="get_sprint();"/>
+              <# if (edit) { #>
+              <input type='hidden' name='schema' value='editsprint' />
+                <input type="submit" name='editsprint' value="Save" onclick="return checkvalues();"/>
+              <# } else { #>
+              <input type='hidden' name='schema' value='newsprint' />
+                <input type="submit" name='newsprint' value="Create" onclick="return checkvalues();"/>
+              <# } #>
+            
+          </td>
+        </tr>
+        <tr>
+          <td colspan="4" align="right">
+            <input type="submit" value="Delete" name='deletesprint' />
+            <input type="submit" name='archivesprint' value="Archive" />
+          </td>
+        </tr>
+      </table>
+    </form>
+</script>
+
+
 
 <script type="text/javascript">
+  var team_id = [% team.id %];
   var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog', $("#TeamBugLiTmpl"));
+
+  var sprint = new listObject("sortable", "headers", "[% sprint.id() %]", 'Sprint [% sprint.name() %]', $("#TeamBugLiTmpl"));
 
   var all_lists = [];
 
@@ -45,46 +104,70 @@
  [% bugid = bug.0 %]
  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
 
+
+ var sprint_bugs = [[% FOREACH bug IN sprint.get_bugs() %] [% bugid = bug.0 %]
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
+
+ var foo = "[% sprint.name() %]";
+
  var sprint_lists = [];
 
  $(document).ready(function() {
     var html = '';
-    for (id in sprint_list_data)
-    {
-        // last argument is the name
-        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0], $("#TeamBugLiTmpl"));
-        // last argument is the bug list
-        // extra stuff for sprint
-        list._status = sprint_list_data[id][2]
-        list.nominal_schedule = sprint_list_data[id][3]
-        list.description = sprint_list_data[id][4]
-
-        html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: "" });
-        $(html).appendTo($('#sprints'));
-        update_lists(list, 0, sprint_list_data[id][1]);
-
-        // expand collapse
-        //$("#"+list.ul_id).hide();
-        //toggle the componenet with class msg_body
-        var ul_id = list.ul_id;
-        $("#" + list.h_id).click(function()
-        {
-            $(this).nextAll(".content:first").slideToggle(500);
-        });
-
-        sprint_lists.push(list);
-
-    }
+//    for (id in sprint_list_data)
+//    {
+//        // last argument is the name
+//        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0], $("#TeamBugLiTmpl"));
+//        // last argument is the bug list
+//        // extra stuff for sprint
+//        list._status = sprint_list_data[id][2]
+//        list.nominal_schedule = sprint_list_data[id][3]
+//        list.description = sprint_list_data[id][4]
+//
+//        html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: "" });
+//        $(html).appendTo($('#sprints'));
+//        update_lists(list, 0, sprint_list_data[id][1]);
+//
+//        // expand collapse
+//        //$("#"+list.ul_id).hide();
+//        //toggle the componenet with class msg_body
+//        var ul_id = list.ul_id;
+//        $("#" + list.h_id).click(function()
+//        {
+//            $(this).nextAll(".content:first").slideToggle(500);
+//        });
+//
+//        sprint_lists.push(list);
+//
+//    }
     //$('#sprints').html(html);
+
+    sprint._status = "[% sprint.sprint.status() %]";
+    sprint.nominal_schedule = "[% sprint.sprint.nominal_schedule() %]";
+    sprint.description = "[% sprint.sprint.description() | replace( '"', '\"' ) %]";
+
     $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
     update_lists(backlog, 0, backlog_bugs);
-    all_lists = $.extend(true, [], sprint_lists);
+
+    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+    update_lists(sprint, 0, sprint_bugs);
+    all_lists.push(sprint);
+    //all_lists = $.extend(true, [], [sprint]);
+
+    //all_lists = $.extend(true, [], sprint_lists);
     all_lists.push(backlog);
+    all_lists = [sprint, backlog];
     bind_sortable_lists(all_lists);
+    get_sprint();
   });
 </script>
 
 <script type="text/javascript">
+
+<!-- TODO TODO TODO TODO TODO -->
+<!-- This temporary hack is for compatibility in merge-->
+[% active_sprint = sprint %]
+
     // Id of that field, which is currently in editable state
     var editedFieldid = "";
   
@@ -245,6 +328,17 @@
   [% team.name %] Sprint
 </div>
 
+<form action=''>
+<input type='hidden' value='scrums/teambugs2.html' name='id' />
+<input type='hidden' value='[% team.id %]' name='teamid' />
+Select sprint:
+<select name='sprintid' onchange='get_sprint();' id='selected_sprint'>
+    [% FOREACH name IN team_sprints_array %]
+    <option value="[% name.sprint.id() %]"[% IF name.sprint.id() == sprint.id() %] selected='selected'[% END %]>
+    [% IF name.sprint.is_current() %]*[% END %][% name.sprint.name %]</option>[% END %]
+    <option value="new_sprint">&#060; new sprint &#062;</option>
+</select>
+</form>
 Sprint capacity estimate: [% capacity.sprint_capacity %]<br>
 Work done in sprint: [% capacity.work_done %]<br>
 Remaining work in sprint: [% capacity.remaining_work %]<br>
@@ -252,7 +346,11 @@ Estimated free capacity: [% capacity.free_capacity %]<br>
 
 <table>
   <tr>
-    <td valign='top' id='sprints'>
+     <td colspan='2' id='sprint_info'>
+     </td>
+  </tr>
+  <tr>
+    <td valign='top' id='sprint'>
     </td>
     <td valign='top' id='unordered'>
     </td>
@@ -266,6 +364,7 @@ Estimated free capacity: [% capacity.free_capacity %]<br>
 </table>
 
 [% members = team.members() %]
+
 <table>
   <tr>
     <th>
@@ -334,12 +433,19 @@ Estimated free capacity: [% capacity.free_capacity %]<br>
   [% END %]
 </table>
 
-[% team_sprint = team_sprints_array.first() %]
+<!-- team_sprint = team_sprints_array.first() -->
+[% team_sprint = sprint %]
 
+<!-- TODO TODO TODO TODO TODO -->
+<!-- This temporary hack is for compatibility in merge-->
+<a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% sprint.id() %]&editsprint=true">Edit Sprint</a>
+
+<!--
 <p>
   <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add Sprint</a> 
 | <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&editsprint=true">Edit Sprint</a>
 </p>
+-->
 
 <hr />
 

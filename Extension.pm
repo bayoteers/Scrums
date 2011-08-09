@@ -136,18 +136,22 @@ sub buglist_supptables {
     my ($self, $args) = @_;
 
     my $supptables = $args->{'supptables'};
+    my $fields     = $args->{'fields'};
+    
+    # Add this table to what can be referenced in MySQL when displaying search results.
 
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN scrums_bug_order ON scrums_bug_order.bug_id = bugs.bug_id');
-
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN dependencies ON dependencies.dependson = bugs.bug_id');
-
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN scrums_sprint_bug_map ON scrums_sprint_bug_map.bug_id = bugs.bug_id');
-
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN scrums_sprints ON scrums_sprints.id = scrums_sprint_bug_map.sprint_id ');
+    foreach my $field (@$fields) {
+        if (($field eq 'scrums_team_order') || ($field eq 'scrums_release_order') || ($field eq 'scrums_program_order')) {
+            push(@$supptables, 'LEFT JOIN scrums_bug_order ON scrums_bug_order.bug_id = bugs.bug_id');
+        }
+        elsif ($field eq 'scrums_blocked') {
+            push(@$supptables, 'LEFT JOIN dependencies ON dependencies.dependson = bugs.bug_id');
+        }
+        elsif ($field eq 'sprint_name') {
+            push(@$supptables, 'LEFT JOIN scrums_sprint_bug_map ON scrums_sprint_bug_map.bug_id = bugs.bug_id');
+            push(@$supptables, 'LEFT JOIN scrums_sprints ON scrums_sprints.id = scrums_sprint_bug_map.sprint_id ');
+        }
+    }
 
     return;
 }
@@ -524,6 +528,30 @@ sub page_before_template {
     elsif ($page eq 'scrums/newteam.html') {
         edit_team($vars);
     }
+    elsif ($page eq 'scrums/ajaxsprintbugs.html') {
+
+        my $cgi    = Bugzilla->cgi;
+        my $schema = $cgi->param('schema');
+        if ($schema eq "newsprint") {
+            $vars->{'editsprint'} = 1;
+            #$cgi->param('editsprint') = 1;
+            $cgi->param(-name=>'editsprint',-value=>'true');
+            my $sprintid = _new_sprint($vars);
+            #my $sprintid = edit_sprint($vars);
+            $cgi->param(-name=>'sprintid',-value=>$sprintid);
+            #$vars->{'sprintid'} = $sprintid;
+            #$cgi->param('sprintid') = 1;
+            ajax_sprint_bugs($vars);
+            #show_team_and_sprints($vars);
+        } elsif ($schema eq "editsprint") {
+            $vars->{'editsprint'} = 1;
+            show_team_and_sprints($vars);
+            ajax_sprint_bugs($vars);
+        
+        } else {
+            ajax_sprint_bugs($vars);
+        }
+    }
     elsif ($page eq 'scrums/teambugs.html') {
         show_team_and_sprints($vars);
     }
@@ -551,7 +579,7 @@ sub page_before_template {
             update_team_bugs($vars, 1);
         }
         else {
-            update_team_bugs($vars, 0);
+            update_team_bugs($vars, 1);
         }
     }
     elsif ($page eq 'scrums/newsprint.html') {

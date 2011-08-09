@@ -188,14 +188,13 @@ function update_lists(bugs_list, move_pos, data) {
     else {
         template = $("#BugLiTmpl");
     } 
-          html += parseTemplate(template.html(), {
-          bug: bugs_list.list[bugs_list.visible[i]],
-          counter: (bugs_list.visible[i] + 1),
-          show_columns: bugs_list.show_columns,
-          show_priority: bugs_list.show_priority,
-          show_creation_date: bugs_list.show_creation_date,
-          show_severity: bugs_list.show_severity,
-        });
+
+    html += parseTemplate(template.html(),
+    {
+        bug: bugs_list.list[bugs_list.visible[i]],
+        counter: (bugs_list.visible[i] + 1),
+        show_columns: bugs_list.show_columns,
+    });
 
     } // for
     if (html)
@@ -318,6 +317,176 @@ function save(lists, schema, obj_id, data_lists, call_back) {
         data: JSON.stringify(data_lists)
     }, saveResponse        , 'text');
 }
+
+function show_sprint(data)
+{
+    var sprint = new listObject("sortable", "headers", data.id, 'Sprint '+data.name, $("#TeamBugLiTmpl"));
+    sprint._status = data._status;
+    sprint.nominal_schedule = data.nominal_schedule;
+    sprint.description = data.description;
+    sprint.start_date = data.start_date;
+    sprint.end_date = data.end_date;
+
+    $('#sprint_info').html(sprint.start_date+' - '+sprint.end_date+"<br /><input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
+    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+    update_lists(sprint, 0, data.bugs);
+
+    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
+    update_lists(backlog, 0, backlog_bugs);
+    all_lists = [sprint, backlog];
+    bind_sortable_lists(all_lists);
+}
+
+function edit_sprint()
+{
+
+    sprint = all_lists[0];
+    $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: true, sprintid: sprint.id }));
+    $("input[name=sprintname]").val(sprint.name.replace('Sprint ', ''));
+    $("input[name=nominalschedule]").val(sprint.nominal_schedule);
+    $("input[name=description]").val(sprint.description);
+    $("input[name=start_date]").val(sprint.start_date);
+    $("input[name=end_date]").val(sprint.end_date);
+    $("input[name=submit]").val('Save');
+    // prepare Options Object 
+    var options = { 
+        success:   create_sprint,
+        dataType: 'json'
+        } 
+    $('#new_sprint_form').ajaxForm(options);
+        var range_begin = "";
+        var range_end = "";
+        var nominal_date = "";
+
+        $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("#datepicker_nominal").datepicker({ dateFormat: 'yy-mm-dd' });
+
+}
+
+        function archive()
+        {
+        gettime();
+        if(range_end == "")
+        {
+            alert("End date is empty. Archived sprint must be stopped before archiving.");
+            return false;
+        }
+        if(range_begin == "")
+        {
+            alert("Sprint start date is empty");
+            return false;
+        }
+
+        return confirm("Are you sure you want to archive sprint '[% sprintname %]'?");
+        }
+
+        function cancel()
+        {
+        window.location = "page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]";  
+        }
+
+        function checkvalues()
+        {
+        gettime();
+
+        //var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
+        var sprintname = $('input[name=sprintname]').val();
+
+        if(sprintname == '')
+        {
+          alert("Sprint must have name.");
+          return false;
+        }
+
+        if(sprintname.match(/^\S/) == null)
+        {
+          alert("Sprint name can not start with whitespace");
+          return false;
+        }
+
+        if(nominal_date == "")
+        {
+          alert("Sprint must have nominal schedule.");
+          return false;
+        }
+
+        return true;
+        }
+
+        function askconfirm()
+        {
+        return confirm("Are you sure you want to delete sprint '[% sprintname %]'?");
+        }
+
+        function gettime() 
+        {
+            range_begin = $('#datepicker_min').val();
+            range_end = $('#datepicker_max').val();
+            nominal_date = $('#datepicker_nominal').val();
+        }
+
+
+
+function get_sprint()
+{
+    if ($('#selected_sprint').val() == 'new_sprint')
+    {
+
+
+        $('#sprint_info').html('Create new sprint');
+        $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: false, sprintid: 0 }));
+        var options = { 
+            success:   create_sprint,
+            dataType: 'json'
+            } 
+        $('#new_sprint_form').ajaxForm(options);
+
+        var range_begin = "";
+        var range_end = "";
+        var nominal_date = "";
+
+        $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("#datepicker_nominal").datepicker({ dateFormat: 'yy-mm-dd' });
+
+
+    } else
+    {
+        $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
+            teamid: team_id,
+            sprintid: $('#selected_sprint').val(),
+        }, show_sprint, 'json');
+    }
+}
+
+function create_sprint(data)
+{
+    if (data.name)
+    {
+        var sprint_select_name = data.name;
+        if (data.is_current)
+        {
+            sprint_select_name = '*'+sprint_select_name;
+        }
+        s_option = $('#selected_sprint option[value='+data.id+']');
+        if (s_option.val())
+        {
+            s_option.text(sprint_select_name);
+        } else
+        { 
+            $('#selected_sprint').children().each(function () { $(this).removeAttr('selected');});
+            $('#selected_sprint option:last-child').before('<option value="'+data.id+'" selected="selected">'+sprint_select_name+'</option>');
+        }
+        show_sprint(data);
+    } else {
+        $('#selected_sprint option').each(function () { if ($(this).attr('selected')) { $(this).remove(); return false; };});
+        $('#selected_sprint option').first().attr('selected', 'selected');
+        get_sprint();
+    }
+}
+
+
 
 function save_lists(ordered_lists, unordered_list, schema, obj_id, call_back)
 {
