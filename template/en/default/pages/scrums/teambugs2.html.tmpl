@@ -151,6 +151,7 @@
 
     //all_lists = $.extend(true, [], sprint_lists);
     all_lists.push(backlog);
+    all_lists = [sprint, backlog];
     bind_sortable_lists(all_lists);
     get_sprint();
   });

@@ -415,6 +415,7 @@ sub ajax_sprint_bugs {
     if ($sprints)
     {
         use JSON;
+        use Data::Dumper qw(Dumper);
         for my $sprint (@{$sprints}) {
             $vars->{'sprint'} = $sprint;
             $vars->{'json_text'} = to_json(

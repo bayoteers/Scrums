@@ -326,11 +326,15 @@ function show_sprint(data)
     sprint.description = data.description;
     sprint.start_date = data.start_date;
     sprint.end_date = data.end_date;
+
     $('#sprint_info').html(sprint.start_date+' - '+sprint.end_date+"<br /><input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
     $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
     update_lists(sprint, 0, data.bugs);
-    bind_sortable_lists([sprint]);
+
+    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
+    update_lists(backlog, 0, backlog_bugs);
     all_lists = [sprint, backlog];
+    bind_sortable_lists(all_lists);
 }
 
 function edit_sprint()
@@ -338,7 +342,6 @@ function edit_sprint()
 
     sprint = all_lists[0];
     $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, extra_middle: '', sprintid: sprint.id }));
-    alert(sprint.name);
     $("input[name=sprintname]").val(sprint.name.replace('Sprint ', ''));
     $("input[name=nominalschedule]").val(sprint.nominal_schedule);
     $("input[name=description]").val(sprint.description);
