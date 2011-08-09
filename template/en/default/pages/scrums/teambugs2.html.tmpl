@@ -173,6 +173,10 @@ Select sprint:
     <option value="new_sprint">&#060; new sprint &#062;</option>
 </select>
 </form>
+Sprint capacity estimate: [% capacity.sprint_capacity %]<br>
+Work done in sprint: [% capacity.work_done %]<br>
+Remaining work in sprint: [% capacity.remaining_work %]<br>
+Estimated free capacity: [% capacity.free_capacity %]<br>
 
 <table>
   <tr>
@@ -199,7 +203,7 @@ Select sprint:
 <!--
 <p>
   <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add Sprint</a> 
-| <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&status='[% team_sprint.sprint.status() %]'&sprintname='[% team_sprint.sprint.name() %]'&nominalschedule='[% team_sprint.sprint.nominal_schedule() %]'&description='[% team_sprint.sprint.description() %]'&editsprint=true">Edit Sprint</a>
+| <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&editsprint=true">Edit Sprint</a>
 </p>
 -->
 

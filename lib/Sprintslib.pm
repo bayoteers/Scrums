@@ -60,7 +60,6 @@ sub update_bug_order_from_json {
     }
     my $content = $json->allow_nonref->utf8->relaxed->decode($data);
 
-    my %all_team_sprints_and_unprioritised_in = %{$content};
     team_bug_order($team_id, $content);
 }
 
@@ -68,10 +67,8 @@ sub team_bug_order {
     my ($team_id, $all_team_sprints_and_unprioritised_in) = @_;
 
     my %sprints_hash;
-    #    my %team_order_hash;
 
     _get_sprints_hash(\%sprints_hash, $team_id);
-    #    _get_team_order_hash(\%team_order_hash, $team_id);
 
     my @sprint_id_array = keys %{$all_team_sprints_and_unprioritised_in};
     for my $sprint_id (@sprint_id_array) {
@@ -85,7 +82,6 @@ sub team_bug_order {
         }
     }
 
-    #    process_team_orders($all_team_sprints_and_unprioritised_in, \%team_order_hash);
     process_team_orders($all_team_sprints_and_unprioritised_in);
 }
 
@@ -118,7 +114,6 @@ sub process_unprioritised_in() {
 }
 
 sub process_team_orders() {
-    #    my ($ref, $team_order_hash) = @_;
     my ($ref) = @_;
 
     my %all_team_sprints_and_unprioritised_in = %{$ref};
@@ -132,10 +127,7 @@ sub process_team_orders() {
         # This means, that table is sprint and not unprioritised_in
         if ($sprint_id != -1) {
             foreach my $bug (@{$bugs}) {
-                #                my $old_team_order = $team_order_hash->{$bug};
-                #                if (!exists $team_order_hash->{$bug}) {
                 my $old_team_order = _old_team_order($bug);
-                #                if (!_exists_bug_order($bug->id());
                 if ($old_team_order == -1) {
                     Bugzilla->dbh->do('INSERT INTO scrums_bug_order (bug_id, team) values (?, ?)', undef, $bug, $counter);
                 }

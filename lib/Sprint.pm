@@ -49,6 +49,7 @@ use constant DB_COLUMNS => qw(
   description
   start_date
   end_date
+  estimated_capacity
   );
 
 use constant REQUIRED_CREATE_FIELDS => qw(
@@ -67,6 +68,7 @@ use constant UPDATE_COLUMNS => qw(
   description
   start_date
   end_date
+  estimated_capacity
   );
 
 use constant VALIDATORS => { start_date => \&_check_start_date, end_date => \&_check_end_date };
@@ -166,6 +168,64 @@ sub _check_date {
 
 sub get_bugs {
     my $self = shift;
+    if (!$self->{'my_bugs'}) {
+        $self->set('my_bugs', $self->_fetch_bugs());
+    }
+    return $self->{'my_bugs'};
+}
+
+sub get_work_done {
+    my $self = shift;
+
+    my $dbh = Bugzilla->dbh;
+    my $sth = $dbh->prepare(
+        'select
+            sum(work_time) as w
+        from 
+            longdescs ld
+        inner join
+            scrums_sprint_bug_map sbm on
+            sbm.bug_id = ld.bug_id
+        where
+            sprint_id = ? and 
+            work_time > 0'
+                           );
+    $sth->execute($self->id);
+    my ($work_done) = $sth->fetchrow_array();
+    return $work_done;
+}
+
+sub get_capacity_summary {
+    my $self = shift;
+
+    my %capacity;
+    my $capacity = \%capacity;
+    my $estimate = $self->estimated_capacity();
+
+    my $work_done = $self->get_work_done();
+
+    my $remaining_work = $self->calculate_remaining();
+
+    $capacity{sprint_capacity} = $estimate;
+    $capacity{work_done}       = $work_done;
+    $capacity{remaining_work}  = $remaining_work;
+    $capacity{free_capacity}   = $estimate - $work_done - $remaining_work;
+    return $capacity;
+}
+
+sub calculate_remaining {
+    my $self = shift;
+
+    my $cum_rem     = 0;
+    my $sprint_bugs = $self->get_bugs();
+    for my $bug (@$sprint_bugs) {
+        $cum_rem = $cum_rem + @$bug[1];
+    }
+    return $cum_rem;
+}
+
+sub _fetch_bugs {
+    my $self = shift;
     my $dbh  = Bugzilla->dbh;
     my ($sprint_bugs) = $dbh->selectall_arrayref(
         'select
@@ -190,23 +250,74 @@ sub get_bugs {
     return $sprint_bugs;
 }
 
-sub set_name             { $_[0]->set('name',             $_[1]); }
-sub set_nominal_schedule { $_[0]->set('nominal_schedule', $_[1]); }
-sub set_status           { $_[0]->set('status',           $_[1]); }
-sub set_is_active        { $_[0]->set('is_active',        $_[1]); }
-sub set_description      { $_[0]->set('description',      $_[1]); }
-sub set_start_date       { $_[0]->set('start_date',       $_[1]); }
-sub set_end_date         { $_[0]->set('end_date',         $_[1]); }
+sub set_name               { $_[0]->set('name',               $_[1]); }
+sub set_nominal_schedule   { $_[0]->set('nominal_schedule',   $_[1]); }
+sub set_status             { $_[0]->set('status',             $_[1]); }
+sub set_is_active          { $_[0]->set('is_active',          $_[1]); }
+sub set_description        { $_[0]->set('description',        $_[1]); }
+sub set_start_date         { $_[0]->set('start_date',         $_[1]); }
+sub set_end_date           { $_[0]->set('end_date',           $_[1]); }
+sub set_estimated_capacity { $_[0]->set('estimated_capacity', $_[1]); }
+
+###############################
+### Testing utility methods ###
+###############################
+
+sub add_bug_into_sprint {
+    my $self = shift;
+    my ($added_bug_id, $preceding_bug_id) = @_;
+
+    my $dbh = Bugzilla->dbh;
+
+    $dbh->bz_start_transaction();
+
+    my $sth1 = $dbh->prepare(
+        'select 
+        team 
+    from
+        scrums_bug_order
+    where
+        bug_id = ?'
+                            );
+    $sth1->execute($preceding_bug_id);
+    my ($preceding_team) = $sth1->fetchrow_array;
+
+    $dbh->do('INSERT INTO scrums_sprint_bug_map (bug_id, sprint_id) values (?, ?)', undef, $added_bug_id, $self->{'id'});
+
+    $dbh->do(
+        'update
+        scrums_bug_order bo
+    set
+        team = team + 1
+    where exists
+    (select null from
+        scrums_sprint_bug_map sbm
+    inner join
+        scrums_sprints s
+    on
+        s.id = sbm.sprint_id and
+        s.team_id = ? and
+        s.is_active = 1
+    where
+        sbm.bug_id = bo.bug_id and
+        team > ?)', undef, $self->{'team_id'}, $preceding_team
+    );
+
+    $dbh->do('INSERT INTO scrums_bug_order (bug_id, team) values (?, ?)', undef, $added_bug_id, $preceding_team + 1);
+
+    $dbh->bz_commit_transaction();
+}
 
 ###############################
 ####      Accessors        ####
 ###############################
 
-sub name        { return $_[0]->{'name'}; }
-sub status      { return $_[0]->{'status'}; }
-sub is_active   { return $_[0]->{'is_active'}; }
-sub description { return $_[0]->{'description'}; }
-sub team_id     { return $_[0]->{'team_id'}; }
+sub name               { return $_[0]->{'name'}; }
+sub status             { return $_[0]->{'status'}; }
+sub is_active          { return $_[0]->{'is_active'}; }
+sub description        { return $_[0]->{'description'}; }
+sub team_id            { return $_[0]->{'team_id'}; }
+sub estimated_capacity { return $_[0]->{'estimated_capacity'}; }
 
 sub nominal_schedule {
     my $self = shift;

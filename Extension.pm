@@ -34,6 +34,7 @@ use Bugzilla::Extension::Scrums::Teams;
 use Bugzilla::Extension::Scrums::Releases;
 use Bugzilla::Extension::Scrums::Sprintslib;
 use Bugzilla::Extension::Scrums::LoadTestData;
+use Bugzilla::Extension::Scrums::DebugLibrary;
 
 use Bugzilla::Util qw(trick_taint);
 
@@ -135,18 +136,22 @@ sub buglist_supptables {
     my ($self, $args) = @_;
 
     my $supptables = $args->{'supptables'};
+    my $fields     = $args->{'fields'};
+    
+    # Add this table to what can be referenced in MySQL when displaying search results.
 
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN scrums_bug_order ON scrums_bug_order.bug_id = bugs.bug_id');
-
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN dependencies ON dependencies.dependson = bugs.bug_id');
-
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN scrums_sprint_bug_map ON scrums_sprint_bug_map.bug_id = bugs.bug_id');
-
-    # Add this table to what can be referenced in MySQL when displaying search results
-    push(@$supptables, 'LEFT JOIN scrums_sprints ON scrums_sprints.id = scrums_sprint_bug_map.sprint_id ');
+    foreach my $field (@$fields) {
+        if (($field eq 'scrums_team_order') || ($field eq 'scrums_release_order') || ($field eq 'scrums_program_order')) {
+            push(@$supptables, 'LEFT JOIN scrums_bug_order ON scrums_bug_order.bug_id = bugs.bug_id');
+        }
+        elsif ($field eq 'scrums_blocked') {
+            push(@$supptables, 'LEFT JOIN dependencies ON dependencies.dependson = bugs.bug_id');
+        }
+        elsif ($field eq 'sprint_name') {
+            push(@$supptables, 'LEFT JOIN scrums_sprint_bug_map ON scrums_sprint_bug_map.bug_id = bugs.bug_id');
+            push(@$supptables, 'LEFT JOIN scrums_sprints ON scrums_sprints.id = scrums_sprint_bug_map.sprint_id ');
+        }
+    }
 
     return;
 }
@@ -302,10 +307,11 @@ sub db_schema_abstract_schema {
                                                 nominal_schedule => { TYPE => 'DATE',         NOTNULL => 1 },
                                                 status           => { TYPE => 'varchar(20)',  NOTNULL => 1 },
                                                 is_active        => { TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE' },
-                                                description => { TYPE => 'varchar(255)' },
-                                                item_type   => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' },
-                                                start_date  => { TYPE => 'DATE' },
-                                                end_date    => { TYPE => 'DATE' },
+                                                description        => { TYPE => 'varchar(255)' },
+                                                item_type          => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' },
+                                                start_date         => { TYPE => 'DATE' },
+                                                end_date           => { TYPE => 'DATE' },
+                                                estimated_capacity => { TYPE => 'decimal(7,2)' },
                                               ]
                                   };
 
@@ -424,6 +430,10 @@ sub install_update_db {
                                       };
     Bugzilla->dbh->bz_add_column("scrums_team", "scrum_master", TEAM_SCRUM_MASTER, undef);
 
+    use constant CAPACITY_DEFINITION => { TYPE => 'decimal(7,2)' };
+
+    Bugzilla->dbh->bz_add_column("scrums_sprints", "estimated_capacity", CAPACITY_DEFINITION, undef);
+
     return;
 }
 
@@ -452,6 +462,9 @@ sub page_before_template {
 
     if ($page eq 'scrums/loadtestdata.html') {
         load_test_data($vars);
+    }
+    if ($page eq 'scrums/testing_utility.html') {
+        debug_function($vars);
     }
 
     # Teams

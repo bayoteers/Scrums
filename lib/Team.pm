@@ -349,9 +349,7 @@ sub unprioritised_bugs {
         b.bug_status,
         p.realname,
         left(b.short_desc, 40),
-        b.short_desc,
-        b.creation_ts,
-        b.bug_severity
+        b.short_desc
     from 
 	scrums_componentteam sct
     inner join
@@ -388,9 +386,7 @@ sub unprioritised_items {
         b.bug_status,
         p.realname,
         left(b.short_desc, 40),
-        b.short_desc,
-        b.creation_ts,
-        b.bug_severity
+        b.short_desc
     from 
 	scrums_componentteam sct
     inner join
@@ -407,43 +403,9 @@ sub unprioritised_items {
 	bug_id', undef, $self->id, $self->id
     );
 
-
     return $unscheduled_items;
 
 }
-
-##
-## Condition for task to be unscheduled is, that it is not in any active sprint and neither in team's product backlog (item_type =2)
-## Task has severity "change request", "feature" or "task".
-##
-#sub unprioritised_tasks {
-#    my $self = shift;
-#
-#    my $dbh = Bugzilla->dbh;
-#
-#    my ($unscheduled_tasks) = $dbh->selectall_arrayref(
-#        'select
-#	b.bug_id,
-#	b.bug_status,
-#        b.bug_severity,
-#        left(b.short_desc, 40)
-#    from
-#	scrums_componentteam sct
-#    inner join
-#	bugs b on b.component_id = sct.component_id
-#    inner join
-#	bug_status bs on b.bug_status = bs.value
-#    where
-#        b.bug_severity in("change request", "feature", "task") and
-#	sct.teamid = ? and
-#	bs.is_open = 1 and
-#        not exists (select null from scrums_sprint_bug_map sbm inner join scrums_sprints spr on sbm.sprint_id = spr.id where b.bug_id = sbm.bug_id and spr.is_active = 1 and spr.team_id = ?)
-#    order by
-#	bug_id', undef, $self->id, $self->id
-#    );
-#
-#    return $unscheduled_tasks;
-#}
 
 sub mysort {
     lc($a->owner_user->name) cmp lc($b->owner_user->name);
