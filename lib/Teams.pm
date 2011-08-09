@@ -584,14 +584,14 @@ sub show_team_and_sprints {
         }
     }
     elsif ($cgi->param('deletesprint') ne "") {
-        $sprint_id = $cgi->param('deletesprint');
+        $sprint_id = $cgi->param('sprintid');
         if ($sprint_id =~ /^([0-9]+)$/) {
             $sprint_id = $1;        # $data now untainted
             _delete_sprint($vars, $sprint_id);
         }
     }
     elsif ($cgi->param('archivesprint') ne "") {
-        $sprint_id = $cgi->param('archivesprint');
+        $sprint_id = $cgi->param('sprintid');
         if ($sprint_id =~ /^([0-9]+)$/) {
             $sprint_id = $1;        # $data now untainted
             _archive_sprint($vars, $sprint_id);

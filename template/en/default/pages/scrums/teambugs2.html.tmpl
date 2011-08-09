@@ -35,13 +35,6 @@
       <input type='hidden' name='teamid' value='[% team.id %]' />
       <# if (sprintid != 0) { print("<input type='hidden' name='sprintid' value='"+sprintid+"' />"); } #>
       <input type='hidden' name='id' value='scrums/ajaxsprintbugs.html' />
-      <# if (edit) { #>
-      <input type='hidden' name='schema' value='editsprint' />
-      <input type="hidden" name="editsprint" value="true" />
-      <# } else { #>
-      <input type='hidden' name='schema' value='newsprint' />
-      <input type="hidden" name="newsprint" value="true" />
-      <# } #>
 
       <table>
         <tr>
@@ -66,10 +59,21 @@
         <tr><td colspan="4"></td></tr>
         <tr>
           <td colspan="4" align="right">
-            [% submittext = (editsprint != "" ? "Save" : "Create") %]
-
             <input type="button" value="Cancel" onclick="get_sprint();"/>
-            <input type="submit" name='submit' value="[% submittext %]" onclick="return checkvalues()"/>
+              <# if (edit) { #>
+              <input type='hidden' name='schema' value='editsprint' />
+                <input type="submit" name='editsprint' value="Save" onclick="return checkvalues();"/>
+              <# } else { #>
+              <input type='hidden' name='schema' value='newsprint' />
+                <input type="submit" name='newsprint' value="Create" onclick="return checkvalues();"/>
+              <# } #>
+            
+          </td>
+        </tr>
+        <tr>
+          <td colspan="4" align="right">
+            <input type="submit" value="Delete" name='deletesprint' />
+            <input type="submit" name='archivesprint' value="Archive" />
           </td>
         </tr>
       </table>
