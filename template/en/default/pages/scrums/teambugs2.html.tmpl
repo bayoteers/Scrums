@@ -84,6 +84,163 @@
   });
 </script>
 
+<script type="text/javascript">
+    // Id of that field, which is currently in editable state
+    var editedFieldid = "";
+  
+    // Value (index) of select-element, which was selected when field became to editable state
+    var originalSelectedIndex = "";
+
+    function checkIfEditedFieldChanged(mustsave, mustask) {
+        var newValue = "";
+        var userId = editedFieldid.match(/^\d{1,6}/);
+        editableEl = document.getElementById(editedFieldid + "_editable");
+        var selectEl = editableEl.getElementsByTagName("select")[0];
+        var selectedIndex = selectEl.selectedIndex;
+
+        if (originalSelectedIndex != selectedIndex) {
+            // If value is not saved (or it has not changed), original value is restored
+            newValue = selectEl.options[selectedIndex].value;
+            if (decidetosave(editedFieldid, mustsave, mustask)) {
+                save(editedFieldid, newValue);
+                makeSelectStatic(editedFieldid, selectEl.value);
+            } else {
+                makeSelectStatic(editedFieldid, originalValue);
+            }
+        } 
+        else {
+            makeSelectStatic(editedFieldid, originalValue);
+        }
+        editedFieldid = "";
+        originalValue = "";
+    }
+  
+    /**
+     * Function solves whether changed value of field will be saved or not.
+     */
+    function decidetosave(fieldid, mustsave, mustask) {
+        var decission = false;
+  
+        // If mustsave is false, this function does nothing, but this is really for clarity of code.
+        if (mustsave) {
+            if (mustask) {
+                if (confirm("Do you want to save changes")) {
+                    decission = true;
+                } 
+		else {
+                    decission = false;
+                }
+            } else {
+                decission = true;
+            }
+        } 
+	else {
+            decission = false;
+        }
+        return decission;
+    }
+  
+    /**
+     * Function saves value.
+     */
+    function save(fieldid, newValue, mustask) {
+        var userId = fieldid.match(/^\d{1,6}/);
+  
+        savePersonCapacity(userId, newValue); 
+    }
+
+    /**
+     * Function is call-back function, that is called after succesfull ajax call returns.
+     * Ajax call if succesfull, if server responds without throwing exception. Ordered
+     * errors are shown in error message. Function shows status of saving to user.
+     */
+    function saveResponse(response, status, xhr) {
+        var retObj = eval("(" + response + ")");
+
+        if (retObj.errors) {
+            alert("There are errors: " + retObj.errormsg);
+        } 
+	else {
+            alert("Success");
+        } 
+    }
+  
+    /**
+     * Function saves value of one bug field into database by doing ajax-call.
+     */
+    function savePersonCapacity(personId, capacityValue) {
+        var json_params = '{ "method": "personcapacity.update", "params": { "sprint_id" : [% active_sprint.id() %], "person_id" : '+personId+', "capacity": '+capacityValue+' } }';
+  
+        $.post('page.cgi?id=scrums/ajax.html', {
+            schema: 'personcapacity',
+            action: 'update',
+            data: json_params
+        }, saveResponse, 'text');
+    }
+  
+    function makeeditable(fieldid) {
+        var status = false;
+        var staticId = fieldid + "_static";
+        var editableId = fieldid + "_editable";
+        var staticEl = document.getElementById(staticId);
+        var editableEl = document.getElementById(editableId);
+  
+        if (editedFieldid != "" && editedFieldid != fieldid) {
+            status = checkIfEditedFieldChanged(true /* must save */ , true /* must ask first */ );
+        }
+
+        editedFieldid = fieldid;
+        // Visibility is changed by changing CSS-style of TR-elements.
+        staticEl.style.visibility = 'collapse';
+        editableEl.style.visibility = 'visible';
+  
+        var spanEl = staticEl.getElementsByTagName("span")[0];
+        // Title of element equals actual value in every field
+        var textVal = spanEl.title;
+        var selectEl = editableEl.getElementsByTagName("select")[0];
+        var allOptions = selectEl.options;
+        var selectedIndex = 0;
+        var i = 0;
+        for (i = 0; i < allOptions.length; i++) {
+            if (allOptions[i].value == textVal) {
+                selectedIndex = i;
+                break;
+            }
+        }
+        var selectedItem = selectEl.options[selectedIndex];
+        originalSelectedIndex = selectedIndex;
+        originalValue = selectedItem.value;
+        selectEl.value = selectedItem.value;
+    }
+  
+    /**
+     * Function makes static field visible and makes editable field hidden
+     */
+    function makeSelectStatic(fieldid, currentValue) {
+        var staticId = fieldid + "_static";
+        var editableId = fieldid + "_editable";
+        var staticEl = document.getElementById(staticId);
+        var editableEl = document.getElementById(editableId);
+  
+        // Value is set to select-element once more. This has meaning, if original value is restored.
+        var selectEl = editableEl.getElementsByTagName("select")[0];
+        selectEl.value = currentValue;
+  
+        var newText = '<span title="' + currentValue + '">' +
+                '<table><tr><td>' + 
+		currentValue + 
+		'</td><td><span class="ui-icon ui-icon-triangle-1-s" title="edit"></span></td></tr></table>' +
+ 		'</span>';
+  
+        var td = staticEl.getElementsByTagName("td")[0];
+        td.innerHTML = newText;
+  
+        staticEl.style.visibility = 'visible';
+        editableEl.style.visibility = 'collapse';
+    }
+</script>
+
+
 <div class="bz_title_container">
   [% team.name %] Sprint
 </div>
@@ -106,6 +263,75 @@ Estimated free capacity: [% capacity.free_capacity %]<br>
       <input type='button' value='Save' OnClick='save_all();'/> 
     </td>
   </tr>
+</table>
+
+[% members = team.members() %]
+<table>
+  <tr>
+    <th>
+      Team member
+    </th>
+    <th>
+      Capacity estimate
+    <th>
+    <th>
+      Work in sprint
+    <th>
+  </tr>
+  [% FOREACH user IN members %]
+    <tr>
+      <td>
+        [% user.name() %]
+      </td>
+      <td>
+        <table>
+          <tr id="[% user.userid %]_static">
+            <td ondblclick="makeeditable('[% user.userid %]');">
+              <span title='[% active_sprint.get_member_capacity(user.userid) %]'> 
+                <table>
+		  <tr>
+ 	            <td>
+		      [% active_sprint.get_member_capacity(user.userid) %]
+		    </td>
+		    <td>
+		      <span class="ui-icon ui-icon-triangle-1-s" title="edit">
+		      </span>
+		    </td> 
+	          </tr>
+                </table>
+              </span>
+            </td>
+          </tr>
+          <tr id="[% user.userid %]_editable" style="visibility: collapse;">
+            <td>
+              <table>
+                <tr>
+                  <td>
+                    <select>
+                      <option>0.00</option>
+                      <option>0.25</option>
+                      <option>0.50</option>
+                      <option>0.75</option>
+                      <option>1.00</option>
+                    </select>
+                  </td>
+                  <td>
+                    <span class="ui-icon ui-icon-arrowreturnthick-1-w" title="cancel"" onclick="checkIfEditedFieldChanged(false);"></span>
+                  </td>
+                  <td>
+                    <span class="ui-icon ui-icon-check" title="save" onclick="checkIfEditedFieldChanged(true);"></span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td>
+        [% active_sprint.get_member_workload(user.userid) %]
+      </td>
+    </tr>
+  [% END %]
 </table>
 
 [% team_sprint = team_sprints_array.first() %]

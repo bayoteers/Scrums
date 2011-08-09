@@ -405,21 +405,18 @@ sub _show_team_bugs {
     my %sprint_bug_map;
     my @team_sprints_array;
 
-    my $capacity;
-    my $first = 1;
     for my $sprint (@{$sprints}) {
         my $spr_bugs = $sprint->get_bugs();
         my %team_sprint;
         $team_sprint{'sprint'} = $sprint;
         $team_sprint{'bugs'}   = $spr_bugs;
-        if ($first) {
-            $capacity = $sprint->get_capacity_summary();
-            $first    = 0;
-        }
         push @team_sprints_array, \%team_sprint;
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
-    $vars->{'capacity'}           = $capacity;
+
+    my $active_sprint = @{$sprints}[0];
+    $vars->{'active_sprint'} = $active_sprint;
+    $vars->{'capacity'}      = $active_sprint->get_capacity_summary();
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
     my $team_backlog = @$backlogs[0];
@@ -478,6 +475,7 @@ sub edit_sprint {
     $vars->{'teamid'} = $team_id;
     my $editsprint = $cgi->param('editsprint');
     $vars->{'editsprint'} = $editsprint;
+    my $previous_sprint = undef;
     if ($editsprint eq "true") {
         my $sprint_id = $cgi->param('sprintid');
         $vars->{'sprintid'} = $sprint_id;
@@ -489,7 +487,18 @@ sub edit_sprint {
             $vars->{'start_date'}        = $sprint->start_date();
             $vars->{'end_date'}          = $sprint->end_date();
             $vars->{'estimatedcapacity'} = $sprint->estimated_capacity();
+            $vars->{'personcapacity'}    = $sprint->get_person_capacity();
+
+            $previous_sprint = $sprint->get_previous_sprint();
         }
+    }
+    if (defined $previous_sprint && ref($previous_sprint)) {
+        my $pred_estimate = $previous_sprint->get_predictive_estimate();
+        $vars->{'prediction'} = $pred_estimate->{'prediction'};
+        $vars->{'history'}    = $pred_estimate->{'history'};
+    }
+    else {
+        $vars->{'prediction'} = '-';
     }
 }
 
