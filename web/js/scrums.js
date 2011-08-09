@@ -341,21 +341,29 @@ function edit_sprint()
 {
 
     sprint = all_lists[0];
-    $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, extra_middle: '', sprintid: sprint.id }));
+    $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: true, sprintid: sprint.id }));
     $("input[name=sprintname]").val(sprint.name.replace('Sprint ', ''));
     $("input[name=nominalschedule]").val(sprint.nominal_schedule);
     $("input[name=description]").val(sprint.description);
     $("input[name=start_date]").val(sprint.start_date);
     $("input[name=end_date]").val(sprint.end_date);
     $("input[name=submit]").val('Save');
-    $('#new_sprint_form').ajaxForm(create_sprint);
+    // prepare Options Object 
+    var options = { 
+        success:   create_sprint,
+        dataType: 'json'
+        } 
+    $('#new_sprint_form').ajaxForm(options);
+        var range_begin = "";
+        var range_end = "";
+        var nominal_date = "";
+
+        $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("#datepicker_nominal").datepicker({ dateFormat: 'yy-mm-dd' });
 
 }
 
-function get_sprint()
-{
-    if ($('#selected_sprint').val() == 'new_sprint')
-    {
         function archive()
         {
         gettime();
@@ -382,7 +390,8 @@ function get_sprint()
         {
         gettime();
 
-        var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
+        //var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
+        var sprintname = $('input[name=sprintname]').val();
 
         if(sprintname == '')
         {
@@ -410,10 +419,28 @@ function get_sprint()
         return confirm("Are you sure you want to delete sprint '[% sprintname %]'?");
         }
 
-        $('#sprint_info').html('Create new sprint');
-        $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, extra_middle: '', sprintid: 0 }));
+        function gettime() 
+        {
+            range_begin = $('#datepicker_min').val();
+            range_end = $('#datepicker_max').val();
+            nominal_date = $('#datepicker_nominal').val();
+        }
 
-        $('#new_sprint_form').ajaxForm(create_sprint);
+
+
+function get_sprint()
+{
+    if ($('#selected_sprint').val() == 'new_sprint')
+    {
+
+
+        $('#sprint_info').html('Create new sprint');
+        $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: false, sprintid: 0 }));
+        var options = { 
+            success:   create_sprint,
+            dataType: 'json'
+            } 
+        $('#new_sprint_form').ajaxForm(options);
 
         var range_begin = "";
         var range_end = "";
@@ -422,14 +449,6 @@ function get_sprint()
         $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
         $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
         $("#datepicker_nominal").datepicker({ dateFormat: 'yy-mm-dd' });
-
-        function gettime() 
-        {
-            range_begin = $('#datepicker_min').val();
-            range_end = $('#datepicker_max').val();
-            nominal_date = $('#datepicker_nominal').val();
-        }
-
 
 
     } else
@@ -443,6 +462,20 @@ function get_sprint()
 
 function create_sprint(data)
 {
+    var sprint_select_name = data.name;
+    if (data.is_current)
+    {
+        sprint_select_name = '*'+sprint_select_name;
+    }
+    s_option = $('#selected_sprint option[value='+data.id+']');
+    if (s_option.val())
+    {
+        s_option.text(sprint_select_name);
+    } else
+    { 
+        $('#selected_sprint').children().each(function () { $(this).removeAttr('selected');});
+        $('#selected_sprint option:last-child').before('<option value="'+data.id+'" selected="selected">'+sprint_select_name+'</option>');
+    }
     show_sprint(data);
 }
 

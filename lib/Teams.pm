@@ -402,13 +402,15 @@ sub ajax_sprint_bugs {
     my $teamid;
     my $sprintid;
     if ($cgi->param('teamid') =~ /(\d+)/) {
-        $teamid = $cgi->param('teamid');
-        $teamid =~ /(\d+)/;
+        $teamid = $1;
+        #$teamid = $cgi->param('teamid');
+        #$teamid =~ /(\d+)/;
     }
 
     if ($cgi->param('sprintid') =~ /(\d+)/) {
-        $sprintid = $cgi->param('sprintid');
-        $sprintid =~ /(\d+)/;
+        $sprintid = $1;
+        #$sprintid = $cgi->param('sprintid');
+        #$sprintid =~ /(\d+)/;
     }
     my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, is_active => 1, item_type => 1 });
     $vars->{'json_text'} = '';
@@ -556,12 +558,13 @@ sub show_team_and_sprints {
 
     my $error     = "";
     my $cgi       = Bugzilla->cgi;
-    my $sprint_id = $cgi->param('sprintid');
+    my $sprint_id;
 
     if ($cgi->param('newsprint') ne "") {
         _new_sprint($vars);
     }
     elsif ($cgi->param('editsprint') ne "") {
+        my $sprint_id = $cgi->param('sprintid');
         if ($sprint_id ne "") {
             if ($sprint_id =~ /^([0-9]+)$/) {
                 $sprint_id = $1;    # $data now untainted

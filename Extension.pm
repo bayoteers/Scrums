@@ -501,6 +501,11 @@ sub page_before_template {
             #$cgi->param('sprintid') = 1;
             ajax_sprint_bugs($vars);
             #show_team_and_sprints($vars);
+        } elsif ($schema eq "editsprint") {
+            $vars->{'editsprint'} = 1;
+            show_team_and_sprints($vars);
+            ajax_sprint_bugs($vars);
+        
         } else {
             ajax_sprint_bugs($vars);
         }

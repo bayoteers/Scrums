@@ -35,12 +35,13 @@
       <input type='hidden' name='teamid' value='[% team.id %]' />
       <# if (sprintid != 0) { print("<input type='hidden' name='sprintid' value='"+sprintid+"' />"); } #>
       <input type='hidden' name='id' value='scrums/ajaxsprintbugs.html' />
+      <# if (edit) { #>
+      <input type='hidden' name='schema' value='editsprint' />
+      <input type="hidden" name="editsprint" value="true" />
+      <# } else { #>
       <input type='hidden' name='schema' value='newsprint' />
-      [% IF editsprint %]
-        <input type="hidden" name="editsprint" value="true" />
-      [% ELSE %]
-        <input type="hidden" name="newsprint" value="true" />
-      [% END %]
+      <input type="hidden" name="newsprint" value="true" />
+      <# } #>
 
       <table>
         <tr>
@@ -67,7 +68,7 @@
           <td colspan="4" align="right">
             [% submittext = (editsprint != "" ? "Save" : "Create") %]
 
-            <input type="button" value="Cancel" onclick="cancel()"/>
+            <input type="button" value="Cancel" onclick="get_sprint();"/>
             <input type="submit" name='submit' value="[% submittext %]" onclick="return checkvalues()"/>
           </td>
         </tr>
@@ -166,10 +167,10 @@
 <input type='hidden' value='[% team.id %]' name='teamid' />
 Select sprint:
 <select name='sprintid' onchange='get_sprint();' id='selected_sprint'>
-[% FOREACH name IN team_sprints_array %]
-<option value="[% name.sprint.id() %]"[% IF name.sprint.id() == sprint.id() %] selected='selected'[% END %]>
-[% IF name.sprint.is_current() %]*[% END %][% name.sprint.name %]</option>[% END %]
-<option value="new_sprint">&#060; new sprint &#062;</option>
+    [% FOREACH name IN team_sprints_array %]
+    <option value="[% name.sprint.id() %]"[% IF name.sprint.id() == sprint.id() %] selected='selected'[% END %]>
+    [% IF name.sprint.is_current() %]*[% END %][% name.sprint.name %]</option>[% END %]
+    <option value="new_sprint">&#060; new sprint &#062;</option>
 </select>
 </form>
 
@@ -195,10 +196,12 @@ Select sprint:
 <!-- team_sprint = team_sprints_array.first() -->
 [% team_sprint = sprint %]
 
+<!--
 <p>
   <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add Sprint</a> 
 | <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&status='[% team_sprint.sprint.status() %]'&sprintname='[% team_sprint.sprint.name() %]'&nominalschedule='[% team_sprint.sprint.nominal_schedule() %]'&description='[% team_sprint.sprint.description() %]'&editsprint=true">Edit Sprint</a>
 </p>
+-->
 
 <hr />
 
