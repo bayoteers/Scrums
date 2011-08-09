@@ -396,38 +396,36 @@ sub db_schema_abstract_schema {
                                                      ]
                                          };
 
-    return;
-
     # "scrums_sprint_estimate" is sprint capacity of a user, who belongs to team.
     $schema->{'scrums_sprint_estimate'} = {
-                                       FIELDS => [
-                                                   sprintid => {
-                                                               TYPE       => 'INT2',
-                                                               NOTNULL    => 1,
-                                                               REFERENCES => {
-                                                                               TABLE  => 'scrums_sprints',
-                                                                               COLUMN => 'id',
-                                                                               DELETE => 'CASCADE'
-                                                                             }
-                                                             },
-                                                   userid => {
-                                                               TYPE       => 'INT3',
-                                                               NOTNULL    => 1,
-                                                               REFERENCES => {
-                                                                               TABLE  => 'profiles',
-                                                                               COLUMN => 'userid',
-                                                                               DELETE => 'CASCADE'
-                                                                             }
-                                                             },
-                                                   estimated_capacity => { TYPE => 'decimal(4,2)', NOTNULL => 1, DEFAULT => '0.00' },
-                                                 ],
-                                       INDEXES => [
-                                                    scrums_sprint_estimate_unique_idx => {
-                                                                                            FIELDS => [qw(sprintid userid)],
-                                                                                            TYPE   => 'UNIQUE'
-                                                                                          },
-                                                  ],
-                                     };
+                                            FIELDS => [
+                                                        sprintid => {
+                                                                      TYPE       => 'INT2',
+                                                                      NOTNULL    => 1,
+                                                                      REFERENCES => {
+                                                                                      TABLE  => 'scrums_sprints',
+                                                                                      COLUMN => 'id',
+                                                                                      DELETE => 'CASCADE'
+                                                                                    }
+                                                                    },
+                                                        userid => {
+                                                                    TYPE       => 'INT3',
+                                                                    NOTNULL    => 1,
+                                                                    REFERENCES => {
+                                                                                    TABLE  => 'profiles',
+                                                                                    COLUMN => 'userid',
+                                                                                    DELETE => 'CASCADE'
+                                                                                  }
+                                                                  },
+                                                        estimated_capacity => { TYPE => 'decimal(4,2)', NOTNULL => 1, DEFAULT => '0.00' },
+                                                      ],
+                                            INDEXES => [
+                                                         scrums_sprint_estimate_unique_idx => {
+                                                                                                FIELDS => [qw(sprintid userid)],
+                                                                                                TYPE   => 'UNIQUE'
+                                                                                              },
+                                                       ],
+                                          };
 }
 
 sub install_update_db {
@@ -543,7 +541,7 @@ sub page_before_template {
         my $schema = $cgi->param('schema');
 
         if ($schema eq "personcapacity") {
-            my $data    = $cgi->param('data');
+            my $data = $cgi->param('data');
             handle_person_capacity($data, $vars);
         }
         elsif ($schema eq "release") {

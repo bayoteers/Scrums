@@ -263,12 +263,10 @@ sub set_member_capacity {
     $sth->execute($self->id, $user_id);
     my ($old_capacity) = $sth->fetchrow_array();
     if ($old_capacity) {
-        Bugzilla->dbh->do('UPDATE scrums_sprint_estimate set estimated_capacity = ? where sprintid = ? and userid = ?',
-                          undef, $capacity, $self->id, $user_id);
+        Bugzilla->dbh->do('UPDATE scrums_sprint_estimate set estimated_capacity = ? where sprintid = ? and userid = ?', undef, $capacity, $self->id, $user_id);
     }
     else {
-        Bugzilla->dbh->do('INSERT INTO scrums_sprint_estimate (estimated_capacity, sprintid, userid) values (?, ?, ?)',
-                          undef, $capacity, $self->id, $user_id);
+        Bugzilla->dbh->do('INSERT INTO scrums_sprint_estimate (estimated_capacity, sprintid, userid) values (?, ?, ?)', undef, $capacity, $self->id, $user_id);
     }
 }
 
@@ -283,6 +281,132 @@ sub get_member_workload {
         }
     }
     return $cum_member_workload;
+}
+
+sub get_person_capacity {
+    my ($self) = @_;
+
+    my $dbh = Bugzilla->dbh;
+    my $sth = $dbh->prepare(
+        'select
+            sum(estimated_capacity)
+        from 
+            scrums_sprint_estimate
+        where
+            sprintid = ?'
+                           );
+    $sth->execute($self->id);
+    my $total_person_capacity = 0;
+    my ($person_capacity) = $sth->fetchrow_array();
+    if ($person_capacity) {
+        $total_person_capacity = $person_capacity;
+    }
+    return $total_person_capacity;
+}
+
+sub get_previous_sprint {
+    my ($self) = @_;
+
+    my $dbh = Bugzilla->dbh;
+
+    my $sth = $dbh->prepare('
+        select 
+	    id
+        from 
+	    scrums_sprints s1
+        where 
+	    not exists (select null 
+        from 
+	    scrums_sprints s2
+        where 
+	    s2.nominal_schedule > s1.nominal_schedule and
+	    s2.nominal_schedule < ? and
+	    s2.team_id = ? and
+	    s2.item_type = 1)
+        and 
+	    s1.nominal_schedule < ? and
+	    s1.team_id = ? and
+	    s1.item_type = 1');
+    $sth->execute($self->nominal_schedule, $self->team_id, $self->nominal_schedule, $self->team_id);
+    my ($previous_sprint_id) = $sth->fetchrow_array();
+    my $sprint = undef;
+    if ($previous_sprint_id) {
+        $sprint = Bugzilla::Extension::Scrums::Sprint->new($previous_sprint_id);
+    }
+    return $sprint;
+}
+
+sub get_predictive_estimate {
+    my ($self) = @_;
+
+    my %pred_estimate;
+    my $pred_estimate = \%pred_estimate;
+    my ($total_work_1, $tot_persons_1, $total_work_2, $tot_persons_2, $total_work_3, $tot_persons_3);
+    my $prediction     = 0;
+    my $work_done      = $self->get_work_done();
+    my $remaining_work = $self->calculate_remaining();
+    $total_work_1  = $work_done + $remaining_work;
+    $tot_persons_1 = $self->get_person_capacity();
+
+    my $sprint_m2 = $self->get_previous_sprint();
+    my @previous_sprints;
+
+    my (@sprint_hist1, @sprint_hist2, @sprint_hist3);
+    push @sprint_hist1,     'Sprint current-1';
+    push @sprint_hist1,     $total_work_1;
+    push @sprint_hist1,     $tot_persons_1;
+    push @previous_sprints, \@sprint_hist1;
+
+    if (!$sprint_m2) {
+        $prediction = $total_work_1;
+    }
+    else {
+        $work_done      = $sprint_m2->get_work_done();
+        $remaining_work = $sprint_m2->calculate_remaining();
+        $total_work_2   = $work_done + $remaining_work;
+        $tot_persons_2  = $sprint_m2->get_person_capacity();
+        push @sprint_hist2,     'Sprint current-2';
+        push @sprint_hist2,     $total_work_2;
+        push @sprint_hist2,     $tot_persons_2;
+        push @previous_sprints, \@sprint_hist2;
+
+        my $sprint_m3 = $sprint_m2->get_previous_sprint();
+        if (!$sprint_m3) {
+            $prediction = ($total_work_1 + $total_work_2) / 2;
+        }
+        else {
+            $work_done      = $sprint_m3->get_work_done();
+            $remaining_work = $sprint_m3->calculate_remaining();
+            $total_work_3   = $work_done + $remaining_work;
+            $tot_persons_3  = $sprint_m3->get_person_capacity();
+            push @sprint_hist3,     'Sprint current-3';
+            push @sprint_hist3,     $total_work_3;
+            push @sprint_hist3,     $tot_persons_3;
+            push @previous_sprints, \@sprint_hist3;
+            my $temp;
+
+            if ($total_work_2 > $total_work_3) {
+                $temp         = $total_work_3;
+                $total_work_3 = $total_work_2;
+                $total_work_2 = $temp;
+            }
+            if ($total_work_1 > $total_work_3) {
+                $temp         = $total_work_3;
+                $total_work_3 = $total_work_1;
+                $total_work_1 = $temp;
+            }
+            if ($total_work_1 > $total_work_2) {
+                $temp         = $total_work_2;
+                $total_work_2 = $total_work_1;
+                $total_work_1 = $temp;
+            }
+            $prediction = $total_work_2;
+        }
+    }
+    $pred_estimate->{'prediction'} = $prediction;
+    $pred_estimate->{'history'}    = \@previous_sprints;
+
+    return \%pred_estimate;
 }
 
 sub _fetch_bugs {

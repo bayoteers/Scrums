@@ -143,8 +143,48 @@
       </td>
     </tr>
     <tr>
-      <th>Estimated capacity:</th>
+      <th>&nbsp;</th>
+      <th colspan="2">Capacity</th>
+    </tr>
+    <tr>
+      <th>Estimated persons:</th>
+      <td colspan="2">[% personcapacity %]</td>
+    </tr>
+    <tr>
+      <th>Estimated total work:</th>
       <td colspan="2"><input type="text" name="estimatedcapacity" value="[% estimatedcapacity %]"></td>
+    </tr>
+    <tr>
+      <th>
+      Predictive estimate: 
+      </th>
+      <td>
+	Total work [% prediction %]
+      </td>
+    </tr>
+    <tr>
+      <td>
+	&nbsp;
+      </td>
+      <td>
+	[% IF history %]
+          <table>
+	    [% FOREACH sprint IN history %] 
+              <tr>
+                <td>
+	 	  [% sprint.0 %]: 
+	        </td>
+		<td style="min-width: 110px;">
+                  Total work [% sprint.1 %]
+		</td>
+		<td>
+		  Total persons [% sprint.2 %]
+		</td>
+	      </tr>
+	    [% END %]
+	  </table>
+        [% END %]
+      </td>
     </tr>
     <tr><td colspan="4"></td></tr>
     <tr>

@@ -475,6 +475,7 @@ sub edit_sprint {
     $vars->{'teamid'} = $team_id;
     my $editsprint = $cgi->param('editsprint');
     $vars->{'editsprint'} = $editsprint;
+    my $previous_sprint = undef;
     if ($editsprint eq "true") {
         my $sprint_id = $cgi->param('sprintid');
         $vars->{'sprintid'} = $sprint_id;
@@ -486,7 +487,18 @@ sub edit_sprint {
             $vars->{'start_date'}        = $sprint->start_date();
             $vars->{'end_date'}          = $sprint->end_date();
             $vars->{'estimatedcapacity'} = $sprint->estimated_capacity();
+            $vars->{'personcapacity'}    = $sprint->get_person_capacity();
+
+            $previous_sprint = $sprint->get_previous_sprint();
         }
+    }
+    if (defined $previous_sprint && ref($previous_sprint)) {
+        my $pred_estimate = $previous_sprint->get_predictive_estimate();
+        $vars->{'prediction'} = $pred_estimate->{'prediction'};
+        $vars->{'history'}    = $pred_estimate->{'history'};
+    }
+    else {
+        $vars->{'prediction'} = '-';
     }
 }
 
