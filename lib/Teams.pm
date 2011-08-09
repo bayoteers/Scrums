@@ -395,7 +395,7 @@ sub edit_team {
 
 sub ajax_sprint_bugs {
     my ($vars) = @_;
-    my $cgi     = Bugzilla->cgi;
+    my $cgi = Bugzilla->cgi;
     # security checks?
     my @sprints;
 
@@ -414,16 +414,23 @@ sub ajax_sprint_bugs {
     }
     my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, is_active => 1, item_type => 1 });
     $vars->{'json_text'} = '';
-    if ($sprints)
-    {
+    if ($sprints) {
         use JSON;
         use Data::Dumper qw(Dumper);
         for my $sprint (@{$sprints}) {
             $vars->{'sprint'} = $sprint;
             $vars->{'json_text'} = to_json(
-                { name => $sprint->name(), id => $sprint->id(), bugs => $sprint->get_bugs(),
-                  description => $sprint->description(), nominal_schedule => $sprint->nominal_schedule(),
-                  _status => $sprint->status(), end_date => $sprint->end_date(), start_date => $sprint->start_date()});
+                                           {
+                                             name             => $sprint->name(),
+                                             id               => $sprint->id(),
+                                             bugs             => $sprint->get_bugs(),
+                                             description      => $sprint->description(),
+                                             nominal_schedule => $sprint->nominal_schedule(),
+                                             _status          => $sprint->status(),
+                                             end_date         => $sprint->end_date(),
+                                             start_date       => $sprint->start_date()
+                                           }
+                                          );
         }
     }
 }
@@ -447,8 +454,7 @@ sub _show_team_bugs {
 
     my $show_sprint;
     my $show_sprint_id = 0;
-    if (defined($cgi->param('sprintid')))
-    {
+    if (defined($cgi->param('sprintid'))) {
         $show_sprint_id = $cgi->param('sprintid');
     }
 
@@ -460,27 +466,24 @@ sub _show_team_bugs {
         $team_sprint{'sprint'} = $sprint;
         $team_sprint{'bugs'}   = $spr_bugs;
         push @team_sprints_array, \%team_sprint;
-        if ($show_sprint_id)
-        {
-            if ($sprint->id() == $show_sprint_id)
-            {
+        if ($show_sprint_id) {
+            if ($sprint->id() == $show_sprint_id) {
                 $show_sprint = $sprint;
             }
-        } else
-        {
-            if ($sprint->is_current())
-            {
+        }
+        else {
+            if ($sprint->is_current()) {
                 $show_sprint = $sprint;
             }
         }
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
 
-    if(!$show_sprint) {
+    if (!$show_sprint) {
         $show_sprint = @{$sprints}[0];
     }
 
-    $vars->{'sprint'} = $show_sprint;
+    $vars->{'sprint'}   = $show_sprint;
     $vars->{'capacity'} = $show_sprint->get_capacity_summary();
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
@@ -490,10 +493,10 @@ sub _show_team_bugs {
     }
     my $team_backlog = @$backlogs[0];
     my %backlog_container;
-    $backlog_container{'sprint'} = $team_backlog;
-    $backlog_container{'bugs'}   = $team_backlog->get_bugs();
-    $backlog_container{'sprint_names'}   = \@sprint_names;
-    $vars->{'backlog'}           = \%backlog_container;
+    $backlog_container{'sprint'}       = $team_backlog;
+    $backlog_container{'bugs'}         = $team_backlog->get_bugs();
+    $backlog_container{'sprint_names'} = \@sprint_names;
+    $vars->{'backlog'}                 = \%backlog_container;
 }
 
 sub show_archived_sprints {
@@ -572,14 +575,14 @@ sub edit_sprint {
         $vars->{'prediction'} = '-';
     }
 
-#    return $sprint_id; ?????
+    #    return $sprint_id; ?????
 }
 
 sub show_team_and_sprints {
     my ($vars) = @_;
 
-    my $error     = "";
-    my $cgi       = Bugzilla->cgi;
+    my $error = "";
+    my $cgi   = Bugzilla->cgi;
     my $sprint_id;
 
     if ($cgi->param('newsprint') ne "") {
