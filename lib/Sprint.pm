@@ -538,9 +538,12 @@ sub is_current {
     }
     use Time::Local;
     my $now = time;
-    my ($yyyy, $mm, $dd) = ($self->start_date() =~ /(\d+)-(\d+)-(\d+)/);
+    my $yyyy;
+    my $mm;
+    my $dd;
+    ($yyyy, $mm, $dd) = ($self->start_date() =~ /(\d+)-(\d+)-(\d+)/);
     my $sdate = timelocal(0, 0, 0, $dd, $mm-1, $yyyy);
-    my ($yyyy, $mm, $dd) = ($self->end_date() =~ /(\d+)-(\d+)-(\d+)/);
+    ($yyyy, $mm, $dd) = ($self->end_date() =~ /(\d+)-(\d+)-(\d+)/);
     my $edate = timelocal(0, 0, 0, $dd, $mm-1, $yyyy);
 
     return ($now >= $sdate and $now <= $edate)
