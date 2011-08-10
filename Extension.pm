@@ -137,7 +137,7 @@ sub buglist_supptables {
 
     my $supptables = $args->{'supptables'};
     my $fields     = $args->{'fields'};
-    
+
     # Add this table to what can be referenced in MySQL when displaying search results.
 
     foreach my $field (@$fields) {
@@ -400,7 +400,36 @@ sub db_schema_abstract_schema {
                                                      ]
                                          };
 
-    return;
+    # "scrums_sprint_estimate" is sprint capacity of a user, who belongs to team.
+    $schema->{'scrums_sprint_estimate'} = {
+                                            FIELDS => [
+                                                        sprintid => {
+                                                                      TYPE       => 'INT2',
+                                                                      NOTNULL    => 1,
+                                                                      REFERENCES => {
+                                                                                      TABLE  => 'scrums_sprints',
+                                                                                      COLUMN => 'id',
+                                                                                      DELETE => 'CASCADE'
+                                                                                    }
+                                                                    },
+                                                        userid => {
+                                                                    TYPE       => 'INT3',
+                                                                    NOTNULL    => 1,
+                                                                    REFERENCES => {
+                                                                                    TABLE  => 'profiles',
+                                                                                    COLUMN => 'userid',
+                                                                                    DELETE => 'CASCADE'
+                                                                                  }
+                                                                  },
+                                                        estimated_capacity => { TYPE => 'decimal(4,2)', NOTNULL => 1, DEFAULT => '0.00' },
+                                                      ],
+                                            INDEXES => [
+                                                         scrums_sprint_estimate_unique_idx => {
+                                                                                                FIELDS => [qw(sprintid userid)],
+                                                                                                TYPE   => 'UNIQUE'
+                                                                                              },
+                                                       ],
+                                          };
 }
 
 sub install_update_db {
@@ -506,20 +535,22 @@ sub page_before_template {
         if ($schema eq "newsprint") {
             $vars->{'editsprint'} = 1;
             #$cgi->param('editsprint') = 1;
-            $cgi->param(-name=>'editsprint',-value=>'true');
+            $cgi->param(-name => 'editsprint', -value => 'true');
             my $sprintid = _new_sprint($vars);
             #my $sprintid = edit_sprint($vars);
-            $cgi->param(-name=>'sprintid',-value=>$sprintid);
+            $cgi->param(-name => 'sprintid', -value => $sprintid);
             #$vars->{'sprintid'} = $sprintid;
             #$cgi->param('sprintid') = 1;
             ajax_sprint_bugs($vars);
             #show_team_and_sprints($vars);
-        } elsif ($schema eq "editsprint") {
+        }
+        elsif ($schema eq "editsprint") {
             $vars->{'editsprint'} = 1;
             show_team_and_sprints($vars);
             ajax_sprint_bugs($vars);
-        
-        } else {
+
+        }
+        else {
             ajax_sprint_bugs($vars);
         }
     }
@@ -539,7 +570,11 @@ sub page_before_template {
         my $cgi    = Bugzilla->cgi;
         my $schema = $cgi->param('schema');
 
-        if ($schema eq "release") {
+        if ($schema eq "personcapacity") {
+            my $data = $cgi->param('data');
+            handle_person_capacity($data, $vars);
+        }
+        elsif ($schema eq "release") {
             handle_release_bug_data($vars);
         }
         elsif ($schema eq "backlog") {
