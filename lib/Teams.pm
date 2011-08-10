@@ -418,19 +418,23 @@ sub ajax_sprint_bugs {
         use JSON;
         use Data::Dumper qw(Dumper);
         for my $sprint (@{$sprints}) {
-            $vars->{'sprint'} = $sprint;
+            $vars->{'sprint'}            = $sprint;
+            $vars->{'prediction'}        = $sprint->get_predictive_estimate()->{'prediction'};
+            $vars->{'history'}           = $sprint->get_predictive_estimate()->{'history'};
+            $vars->{'estimatedcapacity'} = $sprint->estimated_capacity();
+            $vars->{'personcapacity'}    = $sprint->get_person_capacity();
             $vars->{'json_text'} = to_json(
-                                           {
-                                             name             => $sprint->name(),
-                                             id               => $sprint->id(),
-                                             bugs             => $sprint->get_bugs(),
-                                             description      => $sprint->description(),
-                                             nominal_schedule => $sprint->nominal_schedule(),
-                                             _status          => $sprint->status(),
-                                             end_date         => $sprint->end_date(),
-                                             start_date       => $sprint->start_date()
-                                           }
-                                          );
+                {
+                   name             => $sprint->name(),
+                   id               => $sprint->id(),
+                   bugs             => $sprint->get_bugs(),
+                   description      => $sprint->description(),
+                   nominal_schedule => $sprint->nominal_schedule(),
+                   _status          => $sprint->status(),
+                   end_date         => $sprint->end_date(),
+                   start_date       => $sprint->start_date()
+                }    # json_text is not used!
+            );
         }
     }
 }
@@ -483,8 +487,8 @@ sub _show_team_bugs {
         $show_sprint = @{$sprints}[0];
     }
 
-    $vars->{'sprint'}   = $show_sprint;
-    $vars->{'capacity'} = $show_sprint->get_capacity_summary();
+    $vars->{'active_sprint'} = $show_sprint;
+    $vars->{'capacity'}      = $show_sprint->get_capacity_summary();
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
     my @sprint_names;

@@ -42,6 +42,11 @@ function listObject(ul_id, h_id, id, name, li_tmpl) {
     this.show_priority = true;
     this.show_creation_date = false;
     this.show_severity = false;
+
+    this.estimatedcapacity = null;
+    this.personcapacity = null;
+    this.pred_estimate = "-";
+    this.history = "";
 }
 
 var from_list_ul_id = '';
@@ -327,6 +332,11 @@ function show_sprint(data)
     sprint.start_date = data.start_date;
     sprint.end_date = data.end_date;
 
+    sprint.estimatedcapacity = data.estimatedcapacity
+    sprint.personcapacity = data.personcapacity
+    sprint.pred_estimate = data.prediction;
+    sprint.history = data.history;
+
     $('#sprint_info').html(sprint.start_date+' - '+sprint.end_date+"<br /><input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
     $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
     update_lists(sprint, 0, data.bugs);
@@ -348,6 +358,10 @@ function edit_sprint()
     $("input[name=start_date]").val(sprint.start_date);
     $("input[name=end_date]").val(sprint.end_date);
     $("input[name=submit]").val('Save');
+    $('#personcapacity').html(sprint.personcapacity);
+    $("input[name=estimatedcapacity]").val(sprint.estimatedcapacity);
+    $('#estimate').html(sprint.pred_estimate);
+    $('#history').html(sprint.history);
     // prepare Options Object 
     var options = { 
         success:   create_sprint,
