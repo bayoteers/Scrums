@@ -207,7 +207,7 @@
             // If value is not saved (or it has not changed), original value is restored
             newValue = selectEl.options[selectedIndex].value;
             if (decidetosave(editedFieldid, mustsave, mustask)) {
-                save(editedFieldid, newValue);
+                savefield(editedFieldid, newValue);
                 makeSelectStatic(editedFieldid, selectEl.value);
             } else {
                 makeSelectStatic(editedFieldid, originalValue);
@@ -248,7 +248,7 @@
     /**
      * Function saves value.
      */
-    function save(fieldid, newValue, mustask) {
+    function savefield(fieldid, newValue, mustask) {
         var userId = fieldid.match(/^\d{1,6}/);
   
         savePersonCapacity(userId, newValue); 
@@ -455,15 +455,10 @@ Estimated free capacity: [% capacity.free_capacity %]<br>
   [% END %]
 </table>
 
-<!-- team_sprint = team_sprints_array.first() -->
-[% # ????? team_sprint = sprint %]
-
-<!-- <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% sprint.id() %]&editsprint=true">Edit Sprint</a> -->
-
 <!--
 <p>
   <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&addsprint=true">Add Sprint</a> 
-| <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% team_sprint.sprint.id() %]&editsprint=true">Edit Sprint</a>
+| <a href="page.cgi?id=scrums/newsprint.html&teamid=[% team.id %]&sprintid=[% sprint.id() %]&editsprint=true">Edit Sprint</a>
 </p>
 -->
 
