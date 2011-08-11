@@ -542,11 +542,11 @@ sub is_current {
     my $mm;
     my $dd;
     ($yyyy, $mm, $dd) = ($self->start_date() =~ /(\d+)-(\d+)-(\d+)/);
-    my $sdate = timelocal(0, 0, 0, $dd, $mm-1, $yyyy);
+    my $sdate = timelocal(0, 0, 0, $dd, $mm - 1, $yyyy);
     ($yyyy, $mm, $dd) = ($self->end_date() =~ /(\d+)-(\d+)-(\d+)/);
-    my $edate = timelocal(0, 0, 0, $dd, $mm-1, $yyyy);
+    my $edate = timelocal(0, 0, 0, $dd, $mm - 1, $yyyy);
 
-    return ($now >= $sdate and $now <= $edate)
+    return ($now >= $sdate and $now <= $edate);
 }
 
 1;
