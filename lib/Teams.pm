@@ -488,9 +488,12 @@ sub _show_team_bugs {
     }
 
     $vars->{'active_sprint'} = $show_sprint;
-    $vars->{'capacity'}      = $show_sprint->get_capacity_summary();
+    if ($show_sprint) {
+        $vars->{'capacity'} = $show_sprint->get_capacity_summary();
+    }
 
     my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
+    # There is always a backlog
     my @sprint_names;
     for my $sprint (@{$backlogs}) {
         push @sprint_names, $sprint->name();
