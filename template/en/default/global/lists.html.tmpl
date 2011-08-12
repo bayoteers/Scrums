@@ -122,6 +122,18 @@
   </div>
 </script>
 
+<script type='text/javascript'>
+function parseHashTemplate(id, attrs)
+{
+    return parseTemplate($('#'+id).html(), attrs);
+}
+</script>
+
+<script id="ArchiveListTmpl" type="text/html">
+<# print(parseHashTemplate('ListTmpl', { list: list })); #>
+<a href="page.cgi?id=scrums/sprintburndown.html&#038;sprintid=<#= list.id #>">Burndown Chart</a>
+</script>
+
 <script id="ReleaseListTmpl" type="text/html">
   <h3 id="<#= list.h_id #>"><#= list.name #></h3>
 

@@ -51,7 +51,7 @@
         list.description = sprint_list_data[id][4]
 
         // Static list instead of sortable
-        html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: '' });
+        html = parseTemplate($('#ArchiveListTmpl').html(), { list: list, extra_middle: '' });
 
         $(html).appendTo($('#sprints'));
         update_lists(list, 0, sprint_list_data[id][1]);
