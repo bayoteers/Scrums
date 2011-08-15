@@ -530,6 +530,30 @@ sub end_date {
     return $self->{'end_date'};
 }
 
+sub get_following_sprint {
+    my ($self) = @_;
+
+    my $dbh = Bugzilla->dbh;
+
+    my $sth = $dbh->prepare('
+        select 
+	    id
+        from 
+	    scrums_sprints
+        where 
+	    start_date >= ? and
+	    team_id = ? and
+	    item_type = 1
+        order by start_date asc limit 1');
+    $sth->execute($self->end_date(), $self->team_id);
+    my ($sprint_id) = $sth->fetchrow_array();
+    my $sprint = undef;
+    if ($sprint_id) {
+        $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    }
+    return $sprint;
+}
+
 sub is_current {
     my $self = shift;
 
@@ -546,7 +570,25 @@ sub is_current {
     ($yyyy, $mm, $dd) = ($self->end_date() =~ /(\d+)-(\d+)-(\d+)/);
     my $edate = timelocal(0, 0, 0, $dd, $mm - 1, $yyyy);
 
-    return ($now >= $sdate and $now <= $edate);
+    if ($now >= $sdate and $now <= $edate)
+    {
+        return 1;
+    }
+
+    if ($edate <= $now)
+    {
+        # if there's no following sprint or it hasn't started yet then this is still the current
+        my $following_sprint = $self->get_following_sprint();
+        if ($following_sprint == undef)
+        {
+            return 1;
+        }
+        ($yyyy, $mm, $dd) = ($following_sprint->start_date() =~ /(\d+)-(\d+)-(\d+)/);
+        my $fsdate = timelocal(0, 0, 0, $dd, $mm - 1, $yyyy);
+
+        return $now < $fsdate;
+    }
+    return 0;
 }
 
 1;
