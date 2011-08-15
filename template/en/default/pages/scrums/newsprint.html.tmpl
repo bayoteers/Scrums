@@ -65,7 +65,7 @@
 
   function cancel()
   {
-    window.location = "page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]";  
+    window.location = "page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]";  
   }
 
   function checkvalues()
@@ -109,7 +109,7 @@
 </script>
 
 <form method="post" name="newsprint" action="page.cgi">
-  <input type="hidden" name="id" value="scrums/teambugs2.html" />
+  <input type="hidden" name="id" value="scrums/teambugs.html" />
   <input type="hidden" name="teamid" value="[% teamid %]" />
   <input type="hidden" name="sprintid" value="[% sprintid %]" />
 
@@ -196,14 +196,14 @@
 </form>
 
 [% IF editsprint %]
-  <a href="page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]&archivesprint=[% sprintid %]" onclick='return archive();'>Archive Sprint</a>
+  <a href="page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]&archivesprint=[% sprintid %]" onclick='return archive();'>Archive Sprint</a>
 [% END %]
 
 [% IF sprintid %]
   [% IF editsprint %]
     |
   [% END %]
-  <a href="page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]&deletesprint=[% sprintid %]" onclick='return askconfirm()'>Delete Sprint</a>
+  <a href="page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]&deletesprint=[% sprintid %]" onclick='return askconfirm()'>Delete Sprint</a>
 [% END %]
 
 [% PROCESS global/footer.html.tmpl %]
