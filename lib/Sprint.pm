@@ -85,10 +85,10 @@ use constant VALIDATORS => {};
 sub check_start_date {
     my ($self, $start_date) = @_;
 
-    my $this_id = $self->id();
-    my $team_id = $self->team_id();
+    my $this_id   = $self->id();
+    my $team_id   = $self->team_id();
     my $errordata = Bugzilla::Extension::Scrums::Sprint->_check_date($this_id, $team_id, $start_date);
-    if($errordata) {
+    if ($errordata) {
         ThrowUserError('scrums_overlapping_sprint', $errordata);
     }
     return $start_date;
@@ -97,10 +97,10 @@ sub check_start_date {
 sub check_end_date {
     my ($self, $end_date) = @_;
 
-    my $this_id = $self->id();
-    my $team_id = $self->team_id();
+    my $this_id   = $self->id();
+    my $team_id   = $self->team_id();
     my $errordata = Bugzilla::Extension::Scrums::Sprint->_check_date($this_id, $team_id, $end_date);
-    if($errordata) {
+    if ($errordata) {
         ThrowUserError('scrums_overlapping_sprint', $errordata);
     }
     return $end_date;
@@ -110,8 +110,8 @@ sub validate_date {
     my ($self, $this_id, $team_id, $tested_date) = @_;
 
     my $err = Bugzilla::Extension::Scrums::Sprint->_check_date($this_id, $team_id, $tested_date);
-    if($err) {
-        return "Sprint is overlapping another sprint '" .  $err->{name} . "', start: " . $err->{start} . ", end: " . $err->{end};
+    if ($err) {
+        return "Sprint is overlapping another sprint '" . $err->{name} . "', start: " . $err->{start} . ", end: " . $err->{end};
     }
     return undef;
 }
@@ -151,10 +151,10 @@ sub _check_date {
                 $end_date = "null";
             }
             my %errordata;
-            $errordata{'name'} = $name;
+            $errordata{'name'}  = $name;
             $errordata{'start'} = $start_date;
-            $errordata{'end'} = $end_date;
-            $err = \%errordata;
+            $errordata{'end'}   = $end_date;
+            $err                = \%errordata;
             return $err;
         }
     }
@@ -183,10 +183,10 @@ sub _check_date {
                 $end_date = "null";
             }
             my %errordata;
-            $errordata{'name'} = $name;
+            $errordata{'name'}  = $name;
             $errordata{'start'} = $start_date;
-            $errordata{'end'} = $end_date;
-            $err = \%errordata;
+            $errordata{'end'}   = $end_date;
+            $err                = \%errordata;
             return $err;
         }
     }
