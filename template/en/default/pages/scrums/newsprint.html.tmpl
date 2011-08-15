@@ -23,9 +23,6 @@
     title = "Create new sprint" 
 %]
 
-<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.5.1.min.js"></script>
-<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.14.custom.min.js"></script>
-
 <script scripttype="text/javascript">
   $(function () {
       init();
@@ -159,30 +156,30 @@
       Predictive estimate: 
       </th>
       <td>
-	Total work [% prediction %]
+        Total work [% prediction %]
       </td>
     </tr>
     <tr>
       <td>
-	&nbsp;
+        &nbsp;
       </td>
       <td>
-	[% IF history %]
+        [% IF history %]
           <table>
-	    [% FOREACH sprint IN history %] 
+            [% FOREACH sprint IN history %] 
               <tr>
                 <td>
-	 	  [% sprint.0 %]: 
-	        </td>
-		<td style="min-width: 110px;">
+                  [% sprint.0 %]: 
+                </td>
+                <td style="min-width: 110px;">
                   Total work [% sprint.1 %]
-		</td>
-		<td>
-		  Total persons [% sprint.2 %]
-		</td>
-	      </tr>
-	    [% END %]
-	  </table>
+                </td>
+                <td>
+                  Total persons [% sprint.2 %]
+                </td>
+              </tr>
+            [% END %]
+          </table>
         [% END %]
       </td>
     </tr>

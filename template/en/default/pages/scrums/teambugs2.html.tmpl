@@ -29,7 +29,7 @@
       <input type="hidden" name="teamid" value="<#= teamid #>" />
       <input type="hidden" name="sprintid" value="[% sprintid %]" />
 -->
-<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery.form.js"></script>
+
 <script id="NewSprintTmpl" type="text/html">
     <form id='new_sprint_form' action='page.cgi' method="post">
       <input type='hidden' name='teamid' value='[% team.id %]' />
@@ -59,25 +59,25 @@
         <tr>
           <th>Person capacity:</th>
           <td colspan=3" id="personcapacity">
-	    &nbsp;
+            &nbsp;
           </td>
         </tr>
         <tr>
           <th>Estimated cap.:</th>
           <td colspan=3" id="estimatedcapacity">
-	    <input type="text" name="estimatedcapacity" value="[% estimatedcapacity %]">
+            <input type="text" name="estimatedcapacity" value="[% estimatedcapacity %]">
           </td>
         </tr>
         <tr>
           <th>Predictive est.:</th>
           <td colspan=3" id="estimate">
-	    &nbsp;
+            &nbsp;
           </td>
         </tr>
         <tr>
           <td>&nbsp;</td>
           <td colspan=3" id="history">
-	    &nbsp;
+            &nbsp;
           </td>
         </tr>
         <tr><td colspan="4"></td></tr>
@@ -232,14 +232,14 @@
                 if (confirm("Do you want to save changes")) {
                     decission = true;
                 } 
-		else {
+                else {
                     decission = false;
                 }
             } else {
                 decission = true;
             }
         } 
-	else {
+        else {
             decission = false;
         }
         return decission;
@@ -265,7 +265,7 @@
         if (retObj.errors) {
             alert("There are errors: " + retObj.errormsg);
         } 
-	else {
+        else {
             alert("Success");
         } 
     }
@@ -333,9 +333,9 @@
   
         var newText = '<span title="' + currentValue + '">' +
                 '<table><tr><td>' + 
-		currentValue + 
-		'</td><td><span class="ui-icon ui-icon-triangle-1-s" title="edit"></span></td></tr></table>' +
- 		'</span>';
+                currentValue + 
+                '</td><td><span class="ui-icon ui-icon-triangle-1-s" title="edit"></span></td></tr></table>' +
+                '</span>';
   
         var td = staticEl.getElementsByTagName("td")[0];
         td.innerHTML = newText;
@@ -410,15 +410,15 @@ Estimated free capacity: [% capacity.free_capacity %]<br>
             <td ondblclick="makeeditable('[% user.userid %]');">
               <span title='[% active_sprint.get_member_capacity(user.userid) %]'> 
                 <table>
-		  <tr>
- 	            <td>
-		      [% active_sprint.get_member_capacity(user.userid) %]
-		    </td>
-		    <td>
-		      <span class="ui-icon ui-icon-triangle-1-s" title="edit">
-		      </span>
-		    </td> 
-	          </tr>
+                  <tr>
+                    <td>
+                      [% active_sprint.get_member_capacity(user.userid) %]
+                    </td>
+                    <td>
+                      <span class="ui-icon ui-icon-triangle-1-s" title="edit">
+                      </span>
+                    </td> 
+                  </tr>
                 </table>
               </span>
             </td>
