@@ -405,7 +405,7 @@ function edit_sprint()
 
         function cancel()
         {
-        window.location = "page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]";  
+        window.location = "page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]";  
         }
 
         function checkvalues()
