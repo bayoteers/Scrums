@@ -246,10 +246,10 @@ sub _new_team {
         my $new_id = $team->id();
         my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
                                                          {
-                                                           team_id          => $new_id,
-                                                           status           => "NEW",
-                                                           item_type        => 2,
-                                                           name             => "Product backlog",
+                                                           team_id     => $new_id,
+                                                           status      => "NEW",
+                                                           item_type   => 2,
+                                                           name        => "Product backlog",
                                                            description => "This is automatically generated static 'sprint' for the purpose of product backlog",
                                                            is_active   => 1
                                                          }
@@ -424,13 +424,13 @@ sub ajax_sprint_bugs {
             $vars->{'personcapacity'}    = $sprint->get_person_capacity();
             $vars->{'json_text'} = to_json(
                 {
-                   name             => $sprint->name(),
-                   id               => $sprint->id(),
-                   bugs             => $sprint->get_bugs(),
-                   description      => $sprint->description(),
-                   _status          => $sprint->status(),
-                   end_date         => $sprint->end_date(),
-                   start_date       => $sprint->start_date()
+                   name        => $sprint->name(),
+                   id          => $sprint->id(),
+                   bugs        => $sprint->get_bugs(),
+                   description => $sprint->description(),
+                   _status     => $sprint->status(),
+                   end_date    => $sprint->end_date(),
+                   start_date  => $sprint->start_date()
                 }    # json_text is not used!
             );
         }
@@ -655,14 +655,14 @@ sub update_team_bugs {
 sub _new_sprint {
     my ($vars) = @_;
 
-    my $cgi             = Bugzilla->cgi;
-    my $error           = "";
-    my $teamid          = $cgi->param('teamid');
-    my $name            = $cgi->param('sprintname');
-    my $description     = $cgi->param('description');
-    my $start_date      = $cgi->param('start_date');
-    my $end_date        = $cgi->param('end_date');
-    my $est_capacity    = $cgi->param('estimatedcapacity');
+    my $cgi          = Bugzilla->cgi;
+    my $error        = "";
+    my $teamid       = $cgi->param('teamid');
+    my $name         = $cgi->param('sprintname');
+    my $description  = $cgi->param('description');
+    my $start_date   = $cgi->param('start_date');
+    my $end_date     = $cgi->param('end_date');
+    my $est_capacity = $cgi->param('estimatedcapacity');
 
     ($error, $teamid, $name, $description, $start_date, $end_date, $est_capacity) =
       _sanitise_sprint_data($teamid, $name, $description, $start_date, $end_date, $est_capacity);
@@ -698,14 +698,14 @@ sub _new_sprint {
 sub _update_sprint {
     my ($vars, $sprint_id) = @_;
 
-    my $cgi             = Bugzilla->cgi;
-    my $error           = "";
-    my $teamid          = $cgi->param('teamid');
-    my $name            = $cgi->param('sprintname');
-    my $description     = $cgi->param('description');
-    my $start_date      = $cgi->param('start_date');
-    my $end_date        = $cgi->param('end_date');
-    my $est_capacity    = $cgi->param('estimatedcapacity');
+    my $cgi          = Bugzilla->cgi;
+    my $error        = "";
+    my $teamid       = $cgi->param('teamid');
+    my $name         = $cgi->param('sprintname');
+    my $description  = $cgi->param('description');
+    my $start_date   = $cgi->param('start_date');
+    my $end_date     = $cgi->param('end_date');
+    my $est_capacity = $cgi->param('estimatedcapacity');
 
     ($error, $teamid, $name, $description, $start_date, $end_date, $est_capacity) =
       _sanitise_sprint_data($teamid, $name, $description, $start_date, $end_date, $est_capacity);
@@ -771,7 +771,7 @@ sub _sanitise_sprint_data {
     }
 
     if ($description =~ /(.*)/) {
-        $description = $1;        # $data now untainted
+        $description = $1;    # $data now untainted
     }
     else {
         $error .= " Illegal description";
@@ -779,7 +779,7 @@ sub _sanitise_sprint_data {
     }
 
     if ($start_date =~ /^(\d{4}-\d{1,2}-\d{1,2})/) {
-        $start_date = $1;         # $data now untainted
+        $start_date = $1;     # $data now untainted
     }
     else {
         $error .= " Illegal start date";
@@ -787,7 +787,7 @@ sub _sanitise_sprint_data {
     }
 
     if ($end_date =~ /^(\d{4}-\d{1,2}-\d{1,2})/) {
-        $end_date = $1;           # $data now untainted
+        $end_date = $1;       # $data now untainted
     }
     else {
         $error .= " Illegal end date";
@@ -795,7 +795,7 @@ sub _sanitise_sprint_data {
     }
 
     if ($est_capacity =~ /(.*)/) {
-        $est_capacity = $1;       # $data now untainted
+        $est_capacity = $1;    # $data now untainted
     }
 
     return ($error, $teamid, $name, $description, $start_date, $end_date, $est_capacity);
@@ -806,7 +806,7 @@ sub _update_team {
 
     my $error = "";
     if ($name =~ /^([-\ \w]+)$/) {
-        $name = $1;               # $data now untainted
+        $name = $1;            # $data now untainted
     }
     else {
         $error = " Illegal name";
@@ -814,7 +814,7 @@ sub _update_team {
     }
 
     if ($owner =~ /^([0-9]+)$/) {
-        $owner = $1;              # $data now untainted
+        $owner = $1;           # $data now untainted
     }
     else {
         $error .= " Illegal owner";
@@ -822,7 +822,7 @@ sub _update_team {
     }
 
     if ($scrum_master =~ /^([0-9]+)$/) {
-        $scrum_master = $1;       # $data now untainted
+        $scrum_master = $1;    # $data now untainted
     }
     else {
         $scrum_master = "";
