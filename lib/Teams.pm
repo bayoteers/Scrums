@@ -675,24 +675,24 @@ sub _new_sprint {
 
         my $err = Bugzilla::Extension::Scrums::Sprint->validate_date(undef, $teamid, $start_date);
 
-        if($err) {
+        if ($err) {
             $vars->{errors} = $err;
         }
         else {
             my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
-                                                                 {
-                                                                   team_id            => $teamid,
-                                                                   status             => "NEW",
-                                                                   name               => $name,
-                                                                   nominal_schedule   => $nominalschedule,
-                                                                   description        => $description,
-                                                                   is_active          => 1,
-                                                                   item_type          => 1,
-                                                                   start_date         => $start_date,
-                                                                   end_date           => $end_date,
-                                                                   estimated_capacity => $est_capacity
-                                                                 }
-                                                                );
+                                                                     {
+                                                                       team_id            => $teamid,
+                                                                       status             => "NEW",
+                                                                       name               => $name,
+                                                                       nominal_schedule   => $nominalschedule,
+                                                                       description        => $description,
+                                                                       is_active          => 1,
+                                                                       item_type          => 1,
+                                                                       start_date         => $start_date,
+                                                                       end_date           => $end_date,
+                                                                       estimated_capacity => $est_capacity
+                                                                     }
+                                                                    );
         }
     }
     else {
@@ -720,11 +720,10 @@ sub _update_sprint {
         my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
 
         my $err = Bugzilla::Extension::Scrums::Sprint->validate_date($sprint_id, $teamid, $start_date);
-        if($err) {
+        if ($err) {
             $vars->{errors} = $err;
         }
-        else
-        {
+        else {
             $sprint->set_name($name);
             $sprint->set_nominal_schedule($nominalschedule);
             $sprint->set_start_date($start_date);
