@@ -37,13 +37,12 @@ use base qw(Bugzilla::Object);
 ###############################
 
 use constant DB_TABLE   => 'scrums_sprints';
-use constant LIST_ORDER => 'nominal_schedule';
+use constant LIST_ORDER => 'start_date';
 
 use constant DB_COLUMNS => qw(
   id
   team_id
   name
-  nominal_schedule
   status
   is_active
   description
@@ -55,14 +54,12 @@ use constant DB_COLUMNS => qw(
 use constant REQUIRED_CREATE_FIELDS => qw(
   team_id
   name
-  nominal_schedule
   status
   is_active
   );
 
 use constant UPDATE_COLUMNS => qw(
   name
-  nominal_schedule
   status
   is_active
   description
@@ -106,10 +103,18 @@ sub check_end_date {
     return $end_date;
 }
 
-sub validate_date {
-    my ($self, $this_id, $team_id, $tested_date) = @_;
+sub validate_span {
+    my ($self, $this_id, $team_id, $span_start_date, $span_end_date) = @_;
 
-    my $err = Bugzilla::Extension::Scrums::Sprint->_check_date($this_id, $team_id, $tested_date);
+    my $err = Bugzilla::Extension::Scrums::Sprint->_check_date($this_id, $team_id, $span_start_date);
+    if ($err) {
+        return "Sprint is overlapping another sprint '" . $err->{name} . "', start: " . $err->{start} . ", end: " . $err->{end};
+    }
+    $err = Bugzilla::Extension::Scrums::Sprint->_check_date($this_id, $team_id, $span_end_date);
+    if ($err) {
+        return "Sprint is overlapping another sprint '" . $err->{name} . "', start: " . $err->{start} . ", end: " . $err->{end};
+    }
+    $err = Bugzilla::Extension::Scrums::Sprint->_check_span($this_id, $team_id, $span_start_date, $span_end_date);
     if ($err) {
         return "Sprint is overlapping another sprint '" . $err->{name} . "', start: " . $err->{start} . ", end: " . $err->{end};
     }
@@ -191,6 +196,76 @@ sub _check_date {
         }
     }
 }
+
+sub _check_span {
+    my ($self, $this_id, $team_id, $ref_start_date, $ref_end_date) = @_;
+
+    my ($sprint_id, $name, $start_date, $end_date);
+    my $err = undef;
+    my $dbh = Bugzilla->dbh;
+
+    if ($ref_end_date == undef) {
+
+        my $sth = $dbh->prepare(
+                "select 
+                        id, 
+                        name, 
+                        start_date, 
+                        end_date        
+                from 
+                        scrums_sprints 
+                where
+                        item_type = 1 and 
+                        team_id = ? and
+                        start_date > ?"
+                           );
+        $sth->execute($team_id, $ref_start_date);
+        while (($sprint_id, $name, $start_date, $end_date) = $sth->fetchrow_array) {
+            if (!$this_id || $this_id != $sprint_id) {
+                my %errordata;
+                $errordata{'name'}  = $name;
+                $errordata{'start'} = $start_date;
+                $errordata{'end'}   = $end_date;
+                $err                = \%errordata;
+                return $err;
+            }
+        }
+    }
+    else {
+        my $sth = $dbh->prepare(
+                "select 
+                        id, 
+                        name, 
+                        start_date, 
+                        end_date 
+                from 
+                        scrums_sprints 
+                where 
+                        item_type = 1 and 
+                        (start_date > ? or start_date is null) and 
+                        (end_date < ? or end_date is null) and 
+                        team_id = ?"
+                        );
+        $sth->execute($ref_start_date, $ref_end_date, $team_id);
+        while (($sprint_id, $name, $start_date, $end_date) = $sth->fetchrow_array) {
+            if (!$this_id || $this_id != $sprint_id) {
+                if (!$start_date) {
+                    $start_date = "null";
+                }
+                if (!$end_date) {
+                    $end_date = "null";
+                }
+                my %errordata;
+                $errordata{'name'}  = $name;
+                $errordata{'start'} = $start_date;
+                $errordata{'end'}   = $end_date;
+                $err                = \%errordata;
+                return $err;
+            }
+        }
+    }
+}
+
 
 ###############################
 ####       Methods         ####
@@ -349,15 +424,15 @@ sub get_previous_sprint {
         from 
 	    scrums_sprints s2
         where 
-	    s2.nominal_schedule > s1.nominal_schedule and
-	    s2.nominal_schedule < ? and
+	    s2.start_date > s1.start_date and
+	    s2.start_date < ? and
 	    s2.team_id = ? and
 	    s2.item_type = 1)
         and 
-	    s1.nominal_schedule < ? and
+	    s1.start_date < ? and
 	    s1.team_id = ? and
 	    s1.item_type = 1');
-    $sth->execute($self->nominal_schedule, $self->team_id, $self->nominal_schedule, $self->team_id);
+    $sth->execute($self->start_date, $self->team_id, $self->start_date, $self->team_id);
     my ($previous_sprint_id) = $sth->fetchrow_array();
     my $sprint = undef;
     if ($previous_sprint_id) {
@@ -477,7 +552,6 @@ sub _fetch_bugs {
 }
 
 sub set_name               { $_[0]->set('name',               $_[1]); }
-sub set_nominal_schedule   { $_[0]->set('nominal_schedule',   $_[1]); }
 sub set_status             { $_[0]->set('status',             $_[1]); }
 sub set_is_active          { $_[0]->set('is_active',          $_[1]); }
 sub set_description        { $_[0]->set('description',        $_[1]); }
@@ -544,11 +618,6 @@ sub is_active          { return $_[0]->{'is_active'}; }
 sub description        { return $_[0]->{'description'}; }
 sub team_id            { return $_[0]->{'team_id'}; }
 sub estimated_capacity { return $_[0]->{'estimated_capacity'}; }
-
-sub nominal_schedule {
-    my $self = shift;
-    return $self->{'nominal_schedule'};
-}
 
 sub start_date {
     my $self = shift;

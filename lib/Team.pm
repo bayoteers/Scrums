@@ -323,7 +323,7 @@ sub get_team_current_sprint {
 	item_type = 1 and
 	is_active = 1 and
 	not exists (select null from scrums_sprints s2
-	where s2.team_id = s1.team_id and item_type = 1 and s2.nominal_schedule > s1.nominal_schedule)', undef, $self->id
+	where s2.team_id = s1.team_id and item_type = 1 and s2.start_date > s1.start_date)', undef, $self->id
     );
     if ($sprint_id) {
         return Bugzilla::Extension::Scrums::Sprint->new($sprint_id);

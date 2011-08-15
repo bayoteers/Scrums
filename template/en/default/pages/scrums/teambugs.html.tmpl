@@ -42,10 +42,6 @@
           <td colspan="2"><input type="text" name="sprintname" value="[% sprintname %]"></td>
         </tr>
         <tr>
-          <th>Nominal Schedule:</th>
-          <td><input onchange="gettime();" type="text" value="[% nominalschedule %]" name="nominalschedule" id="datepicker_nominal" size="08"></td>
-        </tr>
-        <tr>
           <th>Description:</th>
           <td colspan="2"><input size="40" type="text" name="description" value="[% description %]"></td>
         </tr>
@@ -125,7 +121,7 @@
   // data from backend
  var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %]
  [% bugid = bug.0 %]
- [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.nominal_schedule() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
  var backlog_bugs = [[% FOREACH bug IN backlog.bugs %]
  [% bugid = bug.0 %]
  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
@@ -169,7 +165,6 @@
     //$('#sprints').html(html);
 
     sprint._status = "[% active_sprint.sprint.status() %]";
-    sprint.nominal_schedule = "[% active_sprint.sprint.nominal_schedule() %]";
     sprint.description = "[% active_sprint.sprint.description() | replace( '"', '\"' ) %]";
 
     $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));

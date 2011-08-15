@@ -335,7 +335,6 @@ function show_sprint(result)
 
     var sprint = new listObject("sortable", "headers", data.id, 'Sprint '+data.name, $("#TeamBugLiTmpl"));
     sprint._status = data._status;
-    sprint.nominal_schedule = data.nominal_schedule;
     sprint.description = data.description;
     sprint.start_date = data.start_date;
     sprint.end_date = data.end_date;
@@ -361,7 +360,6 @@ function edit_sprint()
     sprint = all_lists[0];
     $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: true, sprintid: sprint.id }));
     $("input[name=sprintname]").val(sprint.name.replace('Sprint ', ''));
-    $("input[name=nominalschedule]").val(sprint.nominal_schedule);
     $("input[name=description]").val(sprint.description);
     $("input[name=start_date]").val(sprint.start_date);
     $("input[name=end_date]").val(sprint.end_date);
@@ -378,12 +376,9 @@ function edit_sprint()
     $('#new_sprint_form').ajaxForm(options);
         var range_begin = "";
         var range_end = "";
-        var nominal_date = "";
 
         $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
         $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
-        $("#datepicker_nominal").datepicker({ dateFormat: 'yy-mm-dd' });
-
 }
 
         function archive()
@@ -427,12 +422,6 @@ function edit_sprint()
           return false;
         }
 
-        if(nominal_date == "")
-        {
-          alert("Sprint must have nominal schedule.");
-          return false;
-        }
-
         return true;
         }
 
@@ -445,7 +434,6 @@ function edit_sprint()
         {
             range_begin = $('#datepicker_min').val();
             range_end = $('#datepicker_max').val();
-            nominal_date = $('#datepicker_nominal').val();
         }
 
 
@@ -466,13 +454,9 @@ function get_sprint()
 
         var range_begin = "";
         var range_end = "";
-        var nominal_date = "";
 
         $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
         $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
-        $("#datepicker_nominal").datepicker({ dateFormat: 'yy-mm-dd' });
-
-
     } else
     {
         $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
