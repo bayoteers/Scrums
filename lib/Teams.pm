@@ -581,8 +581,6 @@ sub edit_sprint {
     else {
         $vars->{'prediction'} = '-';
     }
-
-    #    return $sprint_id; ?????
 }
 
 sub show_team_and_sprints {
@@ -674,21 +672,28 @@ sub _new_sprint {
       _sanitise_sprint_data($teamid, $name, $nominalschedule, $description, $start_date, $end_date, $est_capacity);
 
     if ($teamid and $name and $nominalschedule) {
-        my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
-                                                                 {
-                                                                   team_id            => $teamid,
-                                                                   status             => "NEW",
-                                                                   name               => $name,
-                                                                   nominal_schedule   => $nominalschedule,
-                                                                   description        => $description,
-                                                                   is_active          => 1,
-                                                                   item_type          => 1,
-                                                                   start_date         => $start_date,
-                                                                   end_date           => $end_date,
-                                                                   estimated_capacity => $est_capacity
-                                                                 }
-                                                                );
-        return $sprint->id();
+
+        my $err = Bugzilla::Extension::Scrums::Sprint->validate_date(undef, $teamid, $start_date);
+
+        if ($err) {
+            $vars->{errors} = $err;
+        }
+        else {
+            my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
+                                                                     {
+                                                                       team_id            => $teamid,
+                                                                       status             => "NEW",
+                                                                       name               => $name,
+                                                                       nominal_schedule   => $nominalschedule,
+                                                                       description        => $description,
+                                                                       is_active          => 1,
+                                                                       item_type          => 1,
+                                                                       start_date         => $start_date,
+                                                                       end_date           => $end_date,
+                                                                       estimated_capacity => $est_capacity
+                                                                     }
+                                                                    );
+        }
     }
     else {
         ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });
@@ -713,13 +718,20 @@ sub _update_sprint {
 
     if ($teamid and $name and $nominalschedule) {
         my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
-        $sprint->set_name($name);
-        $sprint->set_nominal_schedule($nominalschedule);
-        $sprint->set_start_date($start_date);
-        $sprint->set_end_date($end_date);
-        $sprint->set_description($description);
-        $sprint->set_estimated_capacity($est_capacity);
-        $sprint->update();
+
+        my $err = Bugzilla::Extension::Scrums::Sprint->validate_date($sprint_id, $teamid, $start_date);
+        if ($err) {
+            $vars->{errors} = $err;
+        }
+        else {
+            $sprint->set_name($name);
+            $sprint->set_nominal_schedule($nominalschedule);
+            $sprint->set_start_date($start_date);
+            $sprint->set_end_date($end_date);
+            $sprint->set_description($description);
+            $sprint->set_estimated_capacity($est_capacity);
+            $sprint->update();
+        }
     }
     else {
         ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });

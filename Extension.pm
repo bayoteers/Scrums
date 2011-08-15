@@ -557,7 +557,7 @@ sub page_before_template {
     elsif ($page eq 'scrums/teambugs.html') {
         show_team_and_sprints($vars);
     }
-    elsif ($page eq 'scrums/teambugs2.html' || $page eq 'scrums/dailysprint.html') {
+    elsif ($page eq 'scrums/teambugs.html' || $page eq 'scrums/dailysprint.html') {
         show_team_and_sprints($vars);
     }
     elsif ($page eq 'scrums/backlogplanning.html') {

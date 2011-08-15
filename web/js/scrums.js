@@ -323,8 +323,16 @@ function save(lists, schema, obj_id, data_lists, call_back) {
     }, saveResponse        , 'text');
 }
 
-function show_sprint(data)
+function show_sprint(result)
 {
+    data = result.data;
+    if(result.errormsg != "")
+    {
+	alert(result.errormsg);
+	return;
+    }
+    data = result.data;
+
     var sprint = new listObject("sortable", "headers", data.id, 'Sprint '+data.name, $("#TeamBugLiTmpl"));
     sprint._status = data._status;
     sprint.nominal_schedule = data.nominal_schedule;
@@ -397,7 +405,7 @@ function edit_sprint()
 
         function cancel()
         {
-        window.location = "page.cgi?id=scrums/teambugs2.html&teamid=[% teamid %]";  
+        window.location = "page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]";  
         }
 
         function checkvalues()
@@ -474,8 +482,15 @@ function get_sprint()
     }
 }
 
-function create_sprint(data)
+function create_sprint(result)
 {
+    data = result.data;
+    if(result.errormsg != "")
+    {
+	alert(result.errormsg);
+	return;
+    }
+
     if (data.name)
     {
         var sprint_select_name = data.name;
@@ -492,7 +507,7 @@ function create_sprint(data)
             $('#selected_sprint').children().each(function () { $(this).removeAttr('selected');});
             $('#selected_sprint option:last-child').before('<option value="'+data.id+'" selected="selected">'+sprint_select_name+'</option>');
         }
-        show_sprint(data);
+        show_sprint(result);
     } else {
         $('#selected_sprint option').each(function () { if ($(this).attr('selected')) { $(this).remove(); return false; };});
         $('#selected_sprint option').first().attr('selected', 'selected');

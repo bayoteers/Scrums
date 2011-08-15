@@ -71,7 +71,8 @@ use constant UPDATE_COLUMNS => qw(
   estimated_capacity
   );
 
-use constant VALIDATORS => { start_date => \&_check_start_date, end_date => \&_check_end_date };
+# Validators can not be used, because exceptions can not be thrown to ajax caller
+use constant VALIDATORS => {};
 
 ###############################
 ####     Constructors     #####
@@ -81,26 +82,49 @@ use constant VALIDATORS => { start_date => \&_check_start_date, end_date => \&_c
 ####      Validators       ####
 ###############################
 
-sub _check_start_date {
+sub check_start_date {
     my ($self, $start_date) = @_;
 
-    $self->_check_date($start_date);
+    my $this_id   = $self->id();
+    my $team_id   = $self->team_id();
+    my $errordata = Bugzilla::Extension::Scrums::Sprint->_check_date($this_id, $team_id, $start_date);
+    if ($errordata) {
+        ThrowUserError('scrums_overlapping_sprint', $errordata);
+    }
     return $start_date;
 }
 
-sub _check_end_date {
+sub check_end_date {
     my ($self, $end_date) = @_;
 
-    $self->_check_date($end_date);
+    my $this_id   = $self->id();
+    my $team_id   = $self->team_id();
+    my $errordata = Bugzilla::Extension::Scrums::Sprint->_check_date($this_id, $team_id, $end_date);
+    if ($errordata) {
+        ThrowUserError('scrums_overlapping_sprint', $errordata);
+    }
     return $end_date;
 }
 
+sub validate_date {
+    my ($self, $this_id, $team_id, $tested_date) = @_;
+
+    my $err = Bugzilla::Extension::Scrums::Sprint->_check_date($this_id, $team_id, $tested_date);
+    if ($err) {
+        return "Sprint is overlapping another sprint '" . $err->{name} . "', start: " . $err->{start} . ", end: " . $err->{end};
+    }
+    return undef;
+}
+
 sub _check_date {
-    my ($self, $tested_date) = @_;
+    my ($self, $this_id, $team_id, $tested_date) = @_;
 
-    my $team_id = team_id();
+    if ($tested_date == undef) {
+        return;
+    }
+
     my ($sprint_id, $name, $start_date, $end_date);
-
+    my $err = undef;
     my $dbh = Bugzilla->dbh;
 
     my $sth = $dbh->prepare(
@@ -111,26 +135,27 @@ sub _check_date {
                         end_date        
                 from 
                         scrums_sprints 
-                where 
+                where
                         item_type = 1 and 
                         (start_date is null or end_date is null) and 
                         team_id = ?"
                            );
 
-    if ($tested_date == undef) {
-        return;
-    }
-
     $sth->execute($team_id);
-    if (($sprint_id, $name, $start_date, $end_date) = $sth->fetchrow_array) {
-        if ($self->id && $self->id != $sprint_id) {
+    while (($sprint_id, $name, $start_date, $end_date) = $sth->fetchrow_array) {
+        if (!$this_id || $this_id != $sprint_id) {
             if (!$start_date) {
                 $start_date = "null";
             }
             if (!$end_date) {
                 $end_date = "null";
             }
-            ThrowUserError('scrums_overlapping_sprint', { 'name' => $name, 'start' => $start_date, 'end' => $end_date });
+            my %errordata;
+            $errordata{'name'}  = $name;
+            $errordata{'start'} = $start_date;
+            $errordata{'end'}   = $end_date;
+            $err                = \%errordata;
+            return $err;
         }
     }
 
@@ -149,15 +174,20 @@ sub _check_date {
                         team_id = ?"
                         );
     $sth->execute($tested_date, $tested_date, $team_id);
-    if (($sprint_id, $name, $start_date, $end_date) = $sth->fetchrow_array) {
-        if ($self->id && $self->id != $sprint_id) {
+    while (($sprint_id, $name, $start_date, $end_date) = $sth->fetchrow_array) {
+        if (!$this_id || $this_id != $sprint_id) {
             if (!$start_date) {
                 $start_date = "null";
             }
             if (!$end_date) {
                 $end_date = "null";
             }
-            ThrowUserError('scrums_overlapping_sprint', { 'name' => $name, 'start' => $start_date, 'end' => $end_date });
+            my %errordata;
+            $errordata{'name'}  = $name;
+            $errordata{'start'} = $start_date;
+            $errordata{'end'}   = $end_date;
+            $err                = \%errordata;
+            return $err;
         }
     }
 }

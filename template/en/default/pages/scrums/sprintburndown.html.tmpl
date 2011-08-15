@@ -21,15 +21,8 @@
 
 [% PROCESS global/header.html.tmpl
     title = "Sprint Burndown"
-    style_urls = ['skins/standard/admin.css','extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css'] 
+    style_urls = ['skins/standard/admin.css'] 
 %]
-
-<link rel="stylesheet" href="extensions/Scrums/web/css/scrums.css">
-
-<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.5.1.min.js"></script>
-<script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.14.custom.min.js"></script>
-<script language="javascript" type="text/javascript" src="extensions/Scrums/web/js/jquery.flot.js"></script>
-<script language="javascript" type="text/javascript" src="extensions/Scrums/web/js/jquery.flot.pie.js"></script>
 
 <script type="text/javascript">
   var hours_rem = [[% FOREACH plot IN remaining_hours_plot %][[% plot.0 %], [% plot.1 %]],[% END %]];
