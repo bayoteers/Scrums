@@ -207,7 +207,7 @@ sub _check_span {
     if ($ref_end_date == undef) {
 
         my $sth = $dbh->prepare(
-                "select 
+            "select 
                         id, 
                         name, 
                         start_date, 
@@ -218,7 +218,7 @@ sub _check_span {
                         item_type = 1 and 
                         team_id = ? and
                         start_date > ?"
-                           );
+                               );
         $sth->execute($team_id, $ref_start_date);
         while (($sprint_id, $name, $start_date, $end_date) = $sth->fetchrow_array) {
             if (!$this_id || $this_id != $sprint_id) {
@@ -233,7 +233,7 @@ sub _check_span {
     }
     else {
         my $sth = $dbh->prepare(
-                "select 
+            "select 
                         id, 
                         name, 
                         start_date, 
@@ -245,7 +245,7 @@ sub _check_span {
                         (start_date > ? or start_date is null) and 
                         (end_date < ? or end_date is null) and 
                         team_id = ?"
-                        );
+                               );
         $sth->execute($ref_start_date, $ref_end_date, $team_id);
         while (($sprint_id, $name, $start_date, $end_date) = $sth->fetchrow_array) {
             if (!$this_id || $this_id != $sprint_id) {
@@ -265,7 +265,6 @@ sub _check_span {
         }
     }
 }
-
 
 ###############################
 ####       Methods         ####
