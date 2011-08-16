@@ -88,9 +88,19 @@ sub _delete_team {
         $team_id = $1;    # $data now untainted
         my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
 
-        my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 1, is_active => 1 });
-        if (scalar @{$sprints} > 0) {
-            ThrowUserError('team_has_active_sprint', {});
+        my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 1 });
+        for my $sprint (@{$sprints}) {
+            if (!$sprint->end_date()) {
+                ThrowUserError('team_has_active_sprint', {});
+            }
+            use Time::Local;
+            my $now = time;
+            my ($yyyy, $mm, $dd);
+            ($yyyy, $mm, $dd) = ($sprint->end_date() =~ /(\d+)-(\d+)-(\d+)/);
+            my $edate = timelocal(0, 0, 0, $dd, $mm - 1, $yyyy);
+            if ($now <= $edate) {
+                ThrowUserError('team_has_active_sprint', {});
+            }
         }
 
         my $components = $team->components();
@@ -195,10 +205,11 @@ sub _show_existing_team {
         }
     }
     $vars->{'team'} = $team;
-    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team->id(), is_active => 1, item_type => 1 });
+    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team->id(), item_type => 1 });
     if (@{$sprints}) {
-        $vars->{'active_sprint_id'}   = @{$sprints}[0]->id();
-        $vars->{'active_sprint_name'} = @{$sprints}[0]->name();
+        my $last = pop(@{$sprints});
+        $vars->{'active_sprint_id'}   = $last->id();
+        $vars->{'active_sprint_name'} = $last->name();
     }
 }
 
@@ -245,14 +256,13 @@ sub _new_team {
         }
         my $new_id = $team->id();
         my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
-                                                         {
-                                                           team_id     => $new_id,
-                                                           status      => "NEW",
-                                                           item_type   => 2,
-                                                           name        => "Product backlog",
-                                                           description => "This is automatically generated static 'sprint' for the purpose of product backlog",
-                                                           is_active   => 1
-                                                         }
+                                                          {
+                                                            team_id     => $new_id,
+                                                            status      => "NEW",
+                                                            item_type   => 2,
+                                                            name        => "Product backlog",
+                                                            description => "This is automatically generated static 'sprint' for the purpose of product backlog"
+                                                          }
         );
         _show_existing_team($vars, $team);
     }
@@ -411,7 +421,7 @@ sub ajax_sprint_bugs {
         #$sprintid = $cgi->param('sprintid');
         #$sprintid =~ /(\d+)/;
     }
-    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, is_active => 1, item_type => 1 });
+    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, item_type => 1 });
     $vars->{'json_text'} = '';
     if ($sprints) {
         use JSON;
@@ -449,7 +459,7 @@ sub _show_team_bugs {
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
     my @sprints;
 
-    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 1 });
+    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 1 });
 
     my %sprint_bug_map;
     my @team_sprints_array;
@@ -462,27 +472,27 @@ sub _show_team_bugs {
 
     my $capacity;
 
-    for my $sprint (@{$sprints}) {
-        my $spr_bugs = $sprint->get_bugs();
-        my %team_sprint;
-        $team_sprint{'sprint'} = $sprint;
-        $team_sprint{'bugs'}   = $spr_bugs;
-        push @team_sprints_array, \%team_sprint;
-        if ($show_sprint_id) {
-            if ($sprint->id() == $show_sprint_id) {
-                $show_sprint = $sprint;
-            }
+    my $sprint = pop(@{$sprints});
+
+    my $spr_bugs = $sprint->get_bugs();
+    my %team_sprint;
+    $team_sprint{'sprint'} = $sprint;
+    $team_sprint{'bugs'}   = $spr_bugs;
+    push @team_sprints_array, \%team_sprint;
+    if ($show_sprint_id) {
+        if ($sprint->id() == $show_sprint_id) {
+            $show_sprint = $sprint;
         }
-        else {
-            if ($sprint->is_current()) {
-                $show_sprint = $sprint;
-            }
+    }
+    else {
+        if ($sprint->is_current()) {
+            $show_sprint = $sprint;
         }
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
 
     if (!$show_sprint) {
-        $show_sprint = @{$sprints}[0];
+        $show_sprint = $sprint;
     }
 
     $vars->{'active_sprint'} = $show_sprint;
@@ -490,7 +500,7 @@ sub _show_team_bugs {
         $vars->{'capacity'} = $show_sprint->get_capacity_summary();
     }
 
-    my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
+    my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 2 });
     # There is always a backlog
     my @sprint_names;
     for my $sprint (@{$backlogs}) {
@@ -509,14 +519,15 @@ sub show_archived_sprints {
 
     my $team_id = Bugzilla->cgi->param('teamid');
     $vars->{'team'} = Bugzilla::Extension::Scrums::Team->new($team_id);
-    my $archived_sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 0, item_type => 1 });
+    my $archived_sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 1 });
+    pop(@{$archived_sprints});
     my @team_sprints_array;
     for my $sprint (@{$archived_sprints}) {
         my $spr_bugs = $sprint->get_bugs();
         my %team_sprint;
         $team_sprint{'sprint'} = $sprint;
         $team_sprint{'bugs'}   = $spr_bugs;
-        push @team_sprints_array, \%team_sprint;
+        unshift @team_sprints_array, \%team_sprint;
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
 }
@@ -530,7 +541,7 @@ sub show_backlog_and_items {
     $vars->{'team'}                = $team;
     $vars->{'unprioritised_items'} = $team->unprioritised_items();
 
-    my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, is_active => 1, item_type => 2 });
+    my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 2 });
     my $team_backlog = @$backlogs[0];
     my %backlog_container;
     $backlog_container{'sprint'} = $team_backlog;
@@ -609,14 +620,6 @@ sub show_team_and_sprints {
             _delete_sprint($vars, $sprint_id);
         }
     }
-    elsif ($cgi->param('archivesprint') ne "") {
-        $sprint_id = $cgi->param('sprintid');
-        if ($sprint_id =~ /^([0-9]+)$/) {
-            $sprint_id = $1;        # $data now untainted
-            _archive_sprint($vars, $sprint_id);
-        }
-    }
-
     _show_team_bugs($vars);
 }
 
@@ -681,7 +684,6 @@ sub _new_sprint {
                                                                        status             => "NEW",
                                                                        name               => $name,
                                                                        description        => $description,
-                                                                       is_active          => 1,
                                                                        item_type          => 1,
                                                                        start_date         => $start_date,
                                                                        end_date           => $end_date,
@@ -740,14 +742,6 @@ sub _delete_sprint {
         ThrowUserError('sprint_has_bugs');
     }
     $sprint->remove_from_db();
-}
-
-sub _archive_sprint {
-    my ($vars, $sprint_id) = @_;
-
-    my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
-    $sprint->set_is_active(0);
-    $sprint->update();
 }
 
 sub _sanitise_sprint_data {

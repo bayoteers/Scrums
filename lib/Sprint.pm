@@ -44,7 +44,6 @@ use constant DB_COLUMNS => qw(
   team_id
   name
   status
-  is_active
   description
   start_date
   end_date
@@ -55,13 +54,11 @@ use constant REQUIRED_CREATE_FIELDS => qw(
   team_id
   name
   status
-  is_active
   );
 
 use constant UPDATE_COLUMNS => qw(
   name
   status
-  is_active
   description
   start_date
   end_date
@@ -552,7 +549,6 @@ sub _fetch_bugs {
 
 sub set_name               { $_[0]->set('name',               $_[1]); }
 sub set_status             { $_[0]->set('status',             $_[1]); }
-sub set_is_active          { $_[0]->set('is_active',          $_[1]); }
 sub set_description        { $_[0]->set('description',        $_[1]); }
 sub set_start_date         { $_[0]->set('start_date',         $_[1]); }
 sub set_end_date           { $_[0]->set('end_date',           $_[1]); }
@@ -562,6 +558,8 @@ sub set_estimated_capacity { $_[0]->set('estimated_capacity', $_[1]); }
 ### Testing utility methods ###
 ###############################
 
+# Method updates team order only in those items, that are in current (this) sprint or
+# in product backlog. Any other sprints are considered inactive.
 sub add_bug_into_sprint {
     my $self = shift;
     my ($added_bug_id, $preceding_bug_id) = @_;
@@ -596,10 +594,11 @@ sub add_bug_into_sprint {
     on
         s.id = sbm.sprint_id and
         s.team_id = ? and
-        s.is_active = 1
+        (s.id = ? or
+        s.item_type = 2)
     where
         sbm.bug_id = bo.bug_id and
-        team > ?)', undef, $self->{'team_id'}, $preceding_team
+        team > ?)', undef, $self->{'team_id'}, $self->{'id'}, $preceding_team
     );
 
     $dbh->do('INSERT INTO scrums_bug_order (bug_id, team) values (?, ?)', undef, $added_bug_id, $preceding_team + 1);
@@ -613,7 +612,6 @@ sub add_bug_into_sprint {
 
 sub name               { return $_[0]->{'name'}; }
 sub status             { return $_[0]->{'status'}; }
-sub is_active          { return $_[0]->{'is_active'}; }
 sub description        { return $_[0]->{'description'}; }
 sub team_id            { return $_[0]->{'team_id'}; }
 sub estimated_capacity { return $_[0]->{'estimated_capacity'}; }
@@ -668,17 +666,14 @@ sub is_current {
     ($yyyy, $mm, $dd) = ($self->end_date() =~ /(\d+)-(\d+)-(\d+)/);
     my $edate = timelocal(0, 0, 0, $dd, $mm - 1, $yyyy);
 
-    if ($now >= $sdate and $now <= $edate)
-    {
+    if ($now >= $sdate and $now <= $edate) {
         return 1;
     }
 
-    if ($edate <= $now)
-    {
+    if ($edate <= $now) {
         # if there's no following sprint or it hasn't started yet then this is still the current
         my $following_sprint = $self->get_following_sprint();
-        if ($following_sprint == undef)
-        {
+        if ($following_sprint == undef) {
             return 1;
         }
         ($yyyy, $mm, $dd) = ($following_sprint->start_date() =~ /(\d+)-(\d+)-(\d+)/);

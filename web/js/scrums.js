@@ -377,26 +377,10 @@ function edit_sprint()
         var range_begin = "";
         var range_end = "";
 
-        $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
+        var today = new Date();
+        $("#datepicker_min").datepicker({ maxDate: today, dateFormat: 'yy-mm-dd' });
         $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
 }
-
-        function archive()
-        {
-        gettime();
-        if(range_end == "")
-        {
-            alert("End date is empty. Archived sprint must be stopped before archiving.");
-            return false;
-        }
-        if(range_begin == "")
-        {
-            alert("Sprint start date is empty");
-            return false;
-        }
-
-        return confirm("Are you sure you want to archive sprint '[% sprintname %]'?");
-        }
 
         function cancel()
         {
@@ -420,6 +404,12 @@ function edit_sprint()
         {
           alert("Sprint name can not start with whitespace");
           return false;
+        }
+
+        if(range_begin == "")
+        {
+            alert("Sprint must have start date");
+            return false;
         }
 
         return true;
@@ -455,7 +445,8 @@ function get_sprint()
         var range_begin = "";
         var range_end = "";
 
-        $("#datepicker_min").datepicker({ dateFormat: 'yy-mm-dd' });
+        var today = new Date();
+        $("#datepicker_min").datepicker({ maxDate: today, dateFormat: 'yy-mm-dd' });
         $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
     } else
     {

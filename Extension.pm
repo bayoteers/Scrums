@@ -304,9 +304,7 @@ sub db_schema_abstract_schema {
                                                                            }
                                                            },
                                                 name             => { TYPE => 'varchar(255)', NOTNULL => 1 },
-                                                nominal_schedule => { TYPE => 'DATE',         NOTNULL => 1 },
                                                 status           => { TYPE => 'varchar(20)',  NOTNULL => 1 },
-                                                is_active        => { TYPE => 'BOOLEAN',      NOTNULL => 1, DEFAULT => 'TRUE' },
                                                 description        => { TYPE => 'varchar(255)' },
                                                 item_type          => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' },
                                                 start_date         => { TYPE => 'DATE' },
@@ -462,6 +460,9 @@ sub install_update_db {
     use constant CAPACITY_DEFINITION => { TYPE => 'decimal(7,2)' };
 
     Bugzilla->dbh->bz_add_column("scrums_sprints", "estimated_capacity", CAPACITY_DEFINITION, undef);
+
+    Bugzilla->dbh->bz_drop_column("scrums_sprints", "nominal_schedule");
+    Bugzilla->dbh->bz_drop_column("scrums_sprints", "is_active");
 
     return;
 }
