@@ -600,17 +600,14 @@ sub is_current {
     ($yyyy, $mm, $dd) = ($self->end_date() =~ /(\d+)-(\d+)-(\d+)/);
     my $edate = timelocal(0, 0, 0, $dd, $mm - 1, $yyyy);
 
-    if ($now >= $sdate and $now <= $edate)
-    {
+    if ($now >= $sdate and $now <= $edate) {
         return 1;
     }
 
-    if ($edate <= $now)
-    {
+    if ($edate <= $now) {
         # if there's no following sprint or it hasn't started yet then this is still the current
         my $following_sprint = $self->get_following_sprint();
-        if ($following_sprint == undef)
-        {
+        if ($following_sprint == undef) {
             return 1;
         }
         ($yyyy, $mm, $dd) = ($following_sprint->start_date() =~ /(\d+)-(\d+)-(\d+)/);
