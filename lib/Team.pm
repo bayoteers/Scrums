@@ -421,7 +421,7 @@ sub unprioritised_items {
         (select id from scrums_sprints spr2 where spr2.team_id = ? and spr2.item_type = 1 and not exists 
         (select null from scrums_sprints spr3 where spr3.team_id = ? and spr3.item_type = 1 and spr3.start_date > spr2.start_date))))
     order by
-	bug_id', undef, $self->id, $self->id
+	bug_id', undef, $self->id, $self->id, $self->id
     );
 
     return $unscheduled_items;
