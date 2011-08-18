@@ -39,7 +39,7 @@
       </tr>
 </script>
 
-<script id="TeamBugLiTmpl" type="text/html">
+<script id="TeamBugTmpl" type="text/html">
       <tr id="<#= bug[0][0] #>" bug_order_nr='<#= counter #>'>
         <# if ($.inArray('order', show_columns) > -1) { #>
         <td class="colF sortable"> <span class="number"><#= counter #></span></td>
@@ -73,7 +73,7 @@
 </script>
 
 <script id="ListTmpl" type="text/html">
-  <h3 id="<#= list.h_id #>"><#= list.name #></h3>
+  <h3 id="<#= list.h_id #>"><#= list.name #> (<span id='items_<#= list.id #>'></span>)</h3>
 
   <div class='content' >
     <div class='scrollTableContainer' id='container'>

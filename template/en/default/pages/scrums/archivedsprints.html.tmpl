@@ -43,7 +43,7 @@
     for (id in sprint_list_data)
     {
         // last argument is the name
-        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0], $("#TeamBugLiTmpl"));
+        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0]);
         // last argument is the bug list
         // extra stuff for sprint
         list._status = sprint_list_data[id][2]

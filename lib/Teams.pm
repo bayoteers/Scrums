@@ -534,7 +534,8 @@ sub show_backlog_and_items {
     my $team_backlog = @$backlogs[0];
     my %backlog_container;
     $backlog_container{'sprint'} = $team_backlog;
-    $backlog_container{'bugs'}   = $team_backlog->get_bugs();
+    #$backlog_container{'bugs'}   = $team_backlog->get_bugs();
+    $backlog_container{'bugs'}   = $team_backlog->get_items();
     $vars->{'backlog'}           = \%backlog_container;
 }
 

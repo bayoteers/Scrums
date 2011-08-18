@@ -73,65 +73,111 @@ function select_step(list_id)
     }
 }
 
+function update_positions(lists, index, init_sorter)
+{
+    if (bug_positions.length < index +1)
+    {
+        bug_positions.push({});
+    } else
+    {
+        bug_positions[index] = {};
+    }
+
+    for (var i = 0; i < lists[index].list.length; i++)
+    {
+        bug_positions[index][lists[index].list[i][0][0]] = i;
+    }
+
+    if (init_sorter && init_sorter != undefined)
+    {
+        $("#table"+lists[index].ul_id).tablesorter();
+    } else
+    {
+        var table = $("#table"+lists[index].ul_id);
+        table.trigger("update");
+//'        table.trigger("update")
+//              .trigger("sorton", table.get(0).config.sortList)
+//                .trigger("appendCache")
+//                  .trigger("applyWidgets");
+    }
+
+    //$("#table"+bugs_list.ul_id).tablesorter({locale: 'de', useUI: false});
+    $('#items_' + lists[index].id).html(parseInt(lists[index].list.length));
+}
+
 function switch_lists(ui, lists) {
-    to_list_ul_id = ui.item.parent().attr('id');
-    old_position = parseInt(ui.item.find('span.number').text() - 1);
-    old_vis_position = parseInt(ui.item.attr('bug_order_nr'));
-    to_list = undefined;
-    from_list = undefined;
-    var new_entry_id = '';
-    new_position = -1;
+
+    var bug_id = ui.item.attr('id');
+
+    var to_i;
+    var from_i;
+    var old_position = parseInt(ui.item.attr('bug_order_nr') - 1);
+    var to_list_ul_id = ui.item.parent().attr('id');
+
     for (var l = 0; l < lists.length; l++) {
         list = lists[l];
         if (list.ul_id == to_list_ul_id) {
-            to_list = list;
+            to_i = l;
         }
         if (list.ul_id == from_list_ul_id) {
-            from_list = list;
+            from_i = l;
         }
-    }
-    $("#" + to_list.ul_id).find('tr').each(function(i) {
-    //$("#" + to_list.ul_id).find('li').each(function(i) {
-        if (to_list.visible.length == to_list.offset + i) {
-            if (to_list.visible.length > 0) {
-                // new value is plus one from the prev last
-                to_list.visible.push(to_list.visible[to_list.visible.length - 1] + 1)
-            } else {
-                // first item in the list
-                to_list.visible.push(0);
-            }
-            //alert('list '+to_list.list.length);
-        }
-        order = to_list.visible[to_list.offset + i];
-        if ($(this).attr('id') == ui.item.attr('id')) {
-            new_entry_id = $(this).attr('id');
-            new_position = order;
-            var temp = from_list.list.splice(old_position, 1);
-            to_list.list.splice(new_position, 0, temp[0]);
-            from_list.visible.splice(old_vis_position, 1);
-            //alert(to_list.visible.length);
-            vis_position = to_list.offset + i;
-            return false;
-        }
-    });
-    //FIXME nicer way to handle changes (than recreating the lists)!
-    to_list.visible = -1;
-    from_list.visible = -1;
-    update_lists(to_list);
-    update_lists(from_list);
-    if (new_entry_id)
-    {
-        $('#'+new_entry_id).children().each(function ()
-        {
-            $(this).effect( 'highlight', {color: '#404d6c'}, 1000 );
-        });
     }
 
+    var recreate_elems = false;
+    var skip_rows = 0;
+    //rewrite to list
+    $("#" + lists[to_i].ul_id).children('tr').each(function(position, elem)
+    {
+        if ($(elem).attr('id') == '')
+        {
+            skip_rows++;
+            $(elem).remove();
+            return true;
+        }
+        position -= skip_rows;
+        if ($(elem).attr('id') == bug_id)
+        {
+//            alert('f '+old_position+' t '+position);
+            lists[to_i].list.splice(position, 0, lists[from_i].list.splice(old_position, 1)[0]);
+            recreate_elems = true;
+
+            update_positions(lists, to_i);
+            update_positions(lists, from_i);
+
+        }
+        if (recreate_elems)
+        {
+            $(elem).replaceWith(create_bug_elem(lists[to_i], bug_positions[to_i][$(elem).attr('id')]));
+        }
+    });
+
+    //rewrite from list
+    $("#" + lists[from_i].ul_id).children('tr').each(function(position, elem)
+    {
+        $(elem).replaceWith(create_bug_elem(lists[from_i], bug_positions[from_i][$(elem).attr('id')]));
+    });
+
+    if (!lists[from_i].list.length)
+    {
+        $("#" + lists[from_i].ul_id).html(get_noitems_html());
+    }
+
+
+    $('#'+bug_id).children().each(function ()
+    {
+        $(this).effect( 'highlight', {color: '#404d6c'}, 1000 );
+    });
 }
 
 function bind_sortable_lists(lists) {
-    // DEMO
-    //$( "#sortable1, #sortable2, #demo1, #demo2"  ).sortable({
+
+    for (var l = 0; l < lists.length; l++)
+    {
+        list = lists[l];
+        update_positions(lists, l, true);
+    }
+
     ids = [];
     for (var i = 0; i < lists.length; i++) {
         ids.push("#" + lists[i].ul_id);
@@ -155,63 +201,53 @@ function bind_sortable_lists(lists) {
     }).disableSelection();
 }
 
-function update_lists(bugs_list, move_pos, data) {
+function create_bug_elem(list, position)
+{
+    var template;
+    if (list.li_tmpl) {
+        template = list.li_tmpl
+    }
+    else {
+        template = $("#TeamBugTmpl");
+    } 
+
+    return parseTemplate(template.html(),
+    {
+        bug: list.list[position],
+        counter: (position + 1),
+        show_columns: list.show_columns,
+    });
+}
+
+function update_lists(bugs_list, move_pos, data)
+{
     if (data != undefined) {
         bugs_list.list = data;
         //deep copy
         bugs_list.original_list = $.extend(true, [], data);
         bugs_list.visible = -1;
     }
-    if (bugs_list.visible == -1) {
-        // show all
-        bugs_list.visible = [];
-        for (var i = 0; i < bugs_list.list.length; i++) {
-            bugs_list.visible.push(i);
-        }
-    }
-    if (move_pos == undefined) {
-        move_pos = 0;
-    }
-    bugs_list.offset += move_pos;
-    if (bugs_list.offset < 0) {
-        bugs_list.offset = bugs_list.visible.length - (bugs_list.visible.length % bugs_list.offset_step);
-    }
-    if (bugs_list.offset >= bugs_list.visible.length) {
-        bugs_list.offset = 0;
-    }
-    html = "";
-    //for(var i = bugs_list.offset; i < bugs_list.list.length; i++) {
-    for (var i = bugs_list.offset; i < bugs_list.visible.length; i++) {
-        if (i > bugs_list.offset + bugs_list.offset_step - 1) {
-            break;
-        }
 
-    var template;
-    if(bugs_list.li_tmpl) {
-        template = bugs_list.li_tmpl
-    }
-    else {
-        template = $("#BugLiTmpl");
-    } 
-
-    html += parseTemplate(template.html(),
+    var html = '';
+    for (var i = 0; i < bugs_list.list.length; i++)
     {
-        bug: bugs_list.list[bugs_list.visible[i]],
-        counter: (bugs_list.visible[i] + 1),
-        show_columns: bugs_list.show_columns,
-    });
-
+        html += create_bug_elem(bugs_list, i);
     } // for
     if (html)
     {
         $("#" + bugs_list.ul_id).html(html);
     } else
     {
-        $("#" + bugs_list.ul_id).html('<tr><td colspan="6">&nbsp;</td></tr><tr class="ignoresortable"><td colspan="6" align="center">No Items</td></tr>');
+        $("#" + bugs_list.ul_id).html(get_noitems_html());
     }
-    $("#table"+bugs_list.ul_id).tablesorter();
+    //$("#table"+bugs_list.ul_id).tablesorter();
     //$("#table"+bugs_list.ul_id).tablesorter({locale: 'de', useUI: false});
-    $('#items_' + bugs_list.id).html(bugs_list.list.length);
+    //$('#items_' + bugs_list.id).html(bugs_list.list.length);
+}
+
+function get_noitems_html()
+{
+    return '<tr><td colspan="6">&nbsp;</td></tr><tr class="ignoresortable"><td colspan="6" align="center">No Items</td></tr>';
 }
 
 function list_filter(header, list, bugs_list) { // header is any element, list is an unordered list
@@ -333,7 +369,7 @@ function show_sprint(result)
     }
     data = result.data;
 
-    var sprint = new listObject("sortable", "headers", data.id, 'Sprint '+data.name, $("#TeamBugLiTmpl"));
+    var sprint = new listObject("sortable", "headers", data.id, 'Sprint '+data.name);
     sprint._status = data._status;
     sprint.description = data.description;
     sprint.start_date = data.start_date;
@@ -350,7 +386,9 @@ function show_sprint(result)
 
     $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
     update_lists(backlog, 0, backlog_bugs);
-    all_lists = [sprint, backlog];
+    all_lists = [];
+    all_lists.push(sprint);
+    all_lists.push(backlog);
     bind_sortable_lists(all_lists);
 }
 
@@ -442,8 +480,6 @@ function get_sprint()
 {
     if ($('#selected_sprint').val() == 'new_sprint')
     {
-
-
         $('#sprint_info').html('Create new sprint');
         $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: false, sprintid: 0 }));
         var options = { 

@@ -550,6 +550,45 @@ sub _fetch_bugs {
     return $sprint_bugs;
 }
 
+sub get_items {
+    my $self = shift;
+    my $dbh  = Bugzilla->dbh;
+    my ($sprint_bugs) = $dbh->selectall_arrayref(
+        'select
+        b.bug_id,
+        b.remaining_time,
+        b.bug_status,
+        p.realname,
+        left(b.short_desc, 40),
+        b.short_desc,
+        b.creation_ts,
+        b.bug_severity,
+        bo.team,
+        b.assigned_to,
+        sum(work_time) as work_done
+    from
+	scrums_sprint_bug_map sbm
+	inner join bugs b on sbm.bug_id = b.bug_id
+        inner join profiles p on p.userid = b.assigned_to
+        inner join longdescs l on l.bug_id = b.bug_id
+	left join scrums_bug_order bo on sbm.bug_id = bo.bug_id
+    where
+	sbm.sprint_id = ?
+    group by
+        b.bug_id,
+        b.remaining_time,
+        b.bug_status,
+        p.realname,
+        left(b.short_desc, 40),
+        b.short_desc,
+        bo.team,
+        b.assigned_to
+    order by
+	bo.team', undef, $self->id
+    );
+    return $sprint_bugs;
+}
+
 sub set_name               { $_[0]->set('name',               $_[1]); }
 sub set_status             { $_[0]->set('status',             $_[1]); }
 sub set_is_active          { $_[0]->set('is_active',          $_[1]); }

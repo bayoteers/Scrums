@@ -106,11 +106,12 @@
 
 <script type="text/javascript">
   var team_id = [% team.id %];
-  var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog', $("#TeamBugLiTmpl"));
+  var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog');
 
-  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', $("#TeamBugLiTmpl"));
+  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
 
   var all_lists = [];
+  var bug_positions = [];
 
   function save_all()
   {
@@ -122,10 +123,13 @@
  var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %]
  [% bugid = bug.0 %]
  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
- var backlog_bugs = [[% FOREACH bug IN backlog.bugs %]
- [% bugid = bug.0 %]
- [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
 
+  [% PROCESS 'global/lists_backlog.js.tmpl' %]
+
+// var backlog_bugs = [[% FOREACH bug IN backlog.bugs %]
+// [% bugid = bug.0 %]
+// [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
+//
 
  var sprint_bugs = [[% FOREACH bug IN active_sprint.get_bugs() %] [% bugid = bug.0 %]
  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
@@ -136,33 +140,6 @@
 
  $(document).ready(function() {
     var html = '';
-//    for (id in sprint_list_data)
-//    {
-//        // last argument is the name
-//        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0], $("#TeamBugLiTmpl"));
-//        // last argument is the bug list
-//        // extra stuff for sprint
-//        list._status = sprint_list_data[id][2]
-//        list.nominal_schedule = sprint_list_data[id][3]
-//        list.description = sprint_list_data[id][4]
-//
-//        html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: "" });
-//        $(html).appendTo($('#sprints'));
-//        update_lists(list, 0, sprint_list_data[id][1]);
-//
-//        // expand collapse
-//        //$("#"+list.ul_id).hide();
-//        //toggle the componenet with class msg_body
-//        var ul_id = list.ul_id;
-//        $("#" + list.h_id).click(function()
-//        {
-//            $(this).nextAll(".content:first").slideToggle(500);
-//        });
-//
-//        sprint_lists.push(list);
-//
-//    }
-    //$('#sprints').html(html);
 
     sprint._status = "[% active_sprint.sprint.status() %]";
     sprint.description = "[% active_sprint.sprint.description() | replace( '"', '\"' ) %]";
@@ -173,9 +150,6 @@
     $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
     update_lists(sprint, 0, sprint_bugs);
     all_lists.push(sprint);
-    //all_lists = $.extend(true, [], [sprint]);
-
-    //all_lists = $.extend(true, [], sprint_lists);
     all_lists.push(backlog);
     all_lists = [sprint, backlog];
     bind_sortable_lists(all_lists);
