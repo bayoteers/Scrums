@@ -321,7 +321,6 @@ sub get_team_current_sprint {
     where
 	team_id = ? and
 	item_type = 1 and
-	is_active = 1 and
 	not exists (select null from scrums_sprints s2
 	where s2.team_id = s1.team_id and item_type = 1 and s2.start_date > s1.start_date)', undef, $self->id
     );
@@ -364,16 +363,25 @@ sub unprioritised_bugs {
         b.bug_severity not in("change request", "feature", "task") and
 	sct.teamid = ? and
 	bs.is_open = 1 and
-        not exists (select null from scrums_sprint_bug_map sbm inner join scrums_sprints spr on sbm.sprint_id = spr.id where b.bug_id = sbm.bug_id and spr.is_active = 1 and spr.team_id = ?) 
+        not exists 
+    (select null from 
+        scrums_sprint_bug_map sbm 
+    inner join 
+        scrums_sprints spr on sbm.sprint_id = spr.id 
+    where 
+        b.bug_id = sbm.bug_id and 
+        (spr.item_type = 2 or spr.id = 
+        (select id from scrums_sprints spr2 where spr2.team_id = ? and spr2.item_type = 1 and not exists 
+        (select null from scrums_sprints spr3 where spr3.team_id = ? and spr3.item_type = 1 and spr3.start_date > spr2.start_date))))
     order by
-	bug_id', undef, $self->id, $self->id
+	bug_id', undef, $self->id, $self->id, $self->id
     );
 
     return $unscheduled_bugs;
 }
 
 #
-# Condition for item to be unscheduled is, that it is not in any active sprint and neither in team's product backlog (srums_sprints.item_type =2)
+# Condition for item to be unscheduled is, that it is not in active (recent) sprint and neither in team's product backlog (srums_sprints.item_type =2)
 # "Item" might be either task or bug. Task has severity "change request", "feature" or "task" and bug has some other reverity value.
 #
 sub unprioritised_items {
@@ -402,7 +410,16 @@ sub unprioritised_items {
     where 
 	sct.teamid = ? and
 	bs.is_open = 1 and
-        not exists (select null from scrums_sprint_bug_map sbm inner join scrums_sprints spr on sbm.sprint_id = spr.id where b.bug_id = sbm.bug_id and spr.is_active = 1 and spr.team_id = ?) 
+        not exists 
+    (select null from 
+        scrums_sprint_bug_map sbm 
+    inner join 
+        scrums_sprints spr on sbm.sprint_id = spr.id 
+    where 
+        b.bug_id = sbm.bug_id and 
+        (spr.item_type = 2 or spr.id = 
+        (select id from scrums_sprints spr2 where spr2.team_id = ? and spr2.item_type = 1 and not exists 
+        (select null from scrums_sprints spr3 where spr3.team_id = ? and spr3.item_type = 1 and spr3.start_date > spr2.start_date))))
     order by
 	bug_id', undef, $self->id, $self->id
     );
