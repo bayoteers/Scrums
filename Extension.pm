@@ -137,7 +137,7 @@ sub buglist_supptables {
 
     my $supptables = $args->{'supptables'};
     my $fields     = $args->{'fields'};
-
+    
     # Add this table to what can be referenced in MySQL when displaying search results.
 
     foreach my $field (@$fields) {
