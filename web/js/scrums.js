@@ -95,10 +95,6 @@ function update_positions(lists, index, init_sorter)
     {
         var table = $("#table"+lists[index].ul_id);
         table.trigger("update");
-//'        table.trigger("update")
-//              .trigger("sorton", table.get(0).config.sortList)
-//                .trigger("appendCache")
-//                  .trigger("applyWidgets");
     }
 
     //$("#table"+bugs_list.ul_id).tablesorter({locale: 'de', useUI: false});
@@ -124,9 +120,8 @@ function switch_lists(ui, lists) {
         }
     }
 
-    var recreate_elems = false;
     var skip_rows = 0;
-    //rewrite to list
+    var prev_bug_id = -1;
     $("#" + lists[to_i].ul_id).children('tr').each(function(position, elem)
     {
         if ($(elem).attr('id') == '')
@@ -138,18 +133,23 @@ function switch_lists(ui, lists) {
         position -= skip_rows;
         if ($(elem).attr('id') == bug_id)
         {
-//            alert('f '+old_position+' t '+position);
+            if (prev_bug_id > -1)
+            {
+                position = bug_positions[to_i][prev_bug_id] + 1;
+            }
             lists[to_i].list.splice(position, 0, lists[from_i].list.splice(old_position, 1)[0]);
-            recreate_elems = true;
 
             update_positions(lists, to_i);
             update_positions(lists, from_i);
 
         }
-        if (recreate_elems)
-        {
-            $(elem).replaceWith(create_bug_elem(lists[to_i], bug_positions[to_i][$(elem).attr('id')]));
-        }
+        prev_bug_id = $(elem).attr('id');
+    });
+
+    //rewrite to list
+    $("#" + lists[to_i].ul_id).children('tr').each(function(position, elem)
+    {
+        $(elem).replaceWith(create_bug_elem(lists[to_i], bug_positions[to_i][$(elem).attr('id')]));
     });
 
     //rewrite from list
@@ -240,9 +240,6 @@ function update_lists(bugs_list, move_pos, data)
     {
         $("#" + bugs_list.ul_id).html(get_noitems_html());
     }
-    //$("#table"+bugs_list.ul_id).tablesorter();
-    //$("#table"+bugs_list.ul_id).tablesorter({locale: 'de', useUI: false});
-    //$('#items_' + bugs_list.id).html(bugs_list.list.length);
 }
 
 function get_noitems_html()
@@ -262,12 +259,9 @@ function list_filter(header, list, bugs_list) { // header is any element, list i
         "style": "width: 70%;"
     });
         
-    //var html_obj = $(form).append(input)
     $(form).append('Filter: ').prependTo($(header).next());
     $(form).append(input).prependTo($(header).next());
 
-    //$(header).next().after(html_obj);
-    //html_obj.aft.appendTo(header);
     $(input).change(function() {
         var filter = $(this).val();
         if (filter) {
@@ -277,8 +271,6 @@ function list_filter(header, list, bugs_list) { // header is any element, list i
                 var rg = new RegExp(filter,'i');
                 // summary, assigned to and bug id
                 if (bugs_list.list[i][5].search(rg) >= 0 || bugs_list.list[i][3].search(rg) >= 0 || String(bugs_list.list[i][0]).match("^" + filter) == filter) {
-                //if (bugs_list.list[i][5].toLowerCase().match("^" + filter.toLowerCase()) == filter.toLowerCase() || String(bugs_list.list[i][0]).match("^" + filter) == filter) {
-                    //filtered_bugs.list.push(bugs_list.list[i]);
                     bugs_list.visible.push(i);
                 }
             }
