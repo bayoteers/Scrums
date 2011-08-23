@@ -101,13 +101,40 @@
     </form>
 </script>
 
+<script type="text/javascript">
+function demark_sprint_capacity(capacity, handled_list, following_list) {
 
+    var cum = 0;
+    var i = 0;
+    for(i = 0; i < handled_list.length; i++) {
+        cum = cum + handled_list[i][6];
+       if(cum > capacity) {
+           handled_list[i][7] = 0;
+       }
+       else {
+           handled_list[i][7] = 1;	   
+       }	
+    }
+
+    for(i = 0; i < following_list.length; i++) {
+        cum = cum + following_list[i][6];
+       if(cum > capacity) {
+           following_list[i][7] = 0;
+       }
+       else {
+           following_list[i][7] = 1;	   
+       }	
+    }
+}
+</script>
 
 <script type="text/javascript">
   var team_id = [% team.id %];
   var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog');
 
   var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
+
+  sprint_callback = demark_sprint_capacity;
 
   var all_lists = [];
   var bug_positions = [];
@@ -121,7 +148,7 @@
   // data from backend
  var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %]
  [% bugid = bug.0 %]
- [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", [% bug.9 %], 0],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
 
   [% PROCESS 'global/lists_backlog.js.tmpl' %]
 
@@ -131,7 +158,7 @@
 //
 
  var sprint_bugs = [[% FOREACH bug IN active_sprint.get_bugs() %] [% bugid = bug.0 %]
- [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", [% bug.9 %], 0],[% END %]];
 
  var foo = "[% active_sprint.name() %]";
 

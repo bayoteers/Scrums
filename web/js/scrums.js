@@ -51,6 +51,8 @@ function listObject(ul_id, h_id, id, name, li_tmpl) {
 
 var from_list_ul_id = '';
 
+var sprint_callback = null;
+
 function select_step(list_id)
 {
     var sel = document.getElementById(list_id);
@@ -145,6 +147,9 @@ function switch_lists(ui, lists) {
             update_positions(lists, to_i);
             update_positions(lists, from_i);
 
+	    if(sprint_callback) {
+                sprint_callback(lists[0].estimatedcapacity, lists[0].list, lists[1].list);
+	    }
         }
         if (recreate_elems)
         {
@@ -152,11 +157,19 @@ function switch_lists(ui, lists) {
         }
     });
 
-    //rewrite from list
+    //rewrite from-list
     $("#" + lists[from_i].ul_id).children('tr').each(function(position, elem)
     {
         $(elem).replaceWith(create_bug_elem(lists[from_i], bug_positions[from_i][$(elem).attr('id')]));
     });
+
+    // rewrite to-list
+    if(from_i != to_i) {
+        $("#" + lists[to_i].ul_id).children('tr').each(function(position, elem)
+        {
+            $(elem).replaceWith(create_bug_elem(lists[to_i], bug_positions[to_i][$(elem).attr('id')]));
+        });
+    }
 
     if (!lists[from_i].list.length)
     {
@@ -338,7 +351,7 @@ function saveResponse(response, status, xhr)
 }
 
 
-function save(lists, schema, obj_id, data_lists, call_back) {
+function save(lists, schema, obj_id, data_lists) {
     if (data_lists == undefined) {
         var data_lists = new Object();
     }
@@ -379,6 +392,10 @@ function show_sprint(result)
     sprint.personcapacity = data.personcapacity
     sprint.pred_estimate = data.prediction;
     sprint.history = data.history;
+
+    if(sprint_callback) {
+        sprint_callback(data.estimatedcapacity, data.bugs, backlog_bugs);
+    }
 
     $('#sprint_info').html(sprint.start_date+' - '+sprint.end_date+"<br /><input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
     $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
@@ -528,7 +545,7 @@ function create_sprint(result)
 
 
 
-function save_lists(ordered_lists, unordered_list, schema, obj_id, call_back)
+function save_lists(ordered_lists, unordered_list, schema, obj_id)
 {
     // need to use Object instead of Array when ajaxing an associative array
     var data_lists = new Object();
@@ -552,7 +569,7 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id, call_back)
             }
 
     }
-    save(ordered_lists, schema, obj_id, data_lists, call_back);
+    save(ordered_lists, schema, obj_id, data_lists);
     unordered_list.original_list = $.extend(true, [], unordered_list.list);
 }
 

@@ -303,9 +303,9 @@ sub db_schema_abstract_schema {
                                                                              DELETE => 'CASCADE'
                                                                            }
                                                            },
-                                                name             => { TYPE => 'varchar(255)', NOTNULL => 1 },
-                                                status           => { TYPE => 'varchar(20)',  NOTNULL => 1 },
-                                                description        => { TYPE => 'varchar(255)' },
+                                                name        => { TYPE => 'varchar(255)', NOTNULL => 1 },
+                                                status      => { TYPE => 'varchar(20)',  NOTNULL => 1 },
+                                                description => { TYPE => 'varchar(255)' },
                                                 item_type          => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' },
                                                 start_date         => { TYPE => 'DATE' },
                                                 end_date           => { TYPE => 'DATE' },

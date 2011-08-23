@@ -40,7 +40,11 @@
 </script>
 
 <script id="TeamBugTmpl" type="text/html">
+        <# if (bug[7]) { #>
+      <tr id="<#= bug[0][0] #>" class="scrums_limited_area" bug_order_nr='<#= counter #>'>
+        <# } else { #>
       <tr id="<#= bug[0][0] #>" bug_order_nr='<#= counter #>'>
+        <# } #>
         <# if ($.inArray('order', show_columns) > -1) { #>
         <td class="colF sortable"> <span class="number"><#= counter #></span></td>
         <# } #>
