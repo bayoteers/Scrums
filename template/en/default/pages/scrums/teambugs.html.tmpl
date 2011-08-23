@@ -107,24 +107,45 @@ function demark_sprint_capacity(capacity, handled_list, following_list) {
     var cum = 0;
     var i = 0;
     for(i = 0; i < handled_list.length; i++) {
-        cum = cum + handled_list[i][6];
+        cum = cum + handled_list[i][7];
        if(cum > capacity) {
-           handled_list[i][7] = 0;
+           handled_list[i][8] = 0;
        }
        else {
-           handled_list[i][7] = 1;	   
+           handled_list[i][8] = 1;	   
        }	
     }
 
     for(i = 0; i < following_list.length; i++) {
-        cum = cum + following_list[i][6];
+        cum = cum + following_list[i][7];
        if(cum > capacity) {
-           following_list[i][7] = 0;
+           following_list[i][8] = 0;
        }
        else {
-           following_list[i][7] = 1;	   
+           following_list[i][8] = 1;	   
        }	
     }
+
+    refresh_sprint_capacity(capacity, handled_list);
+}
+
+function refresh_sprint_capacity(estimatedcapacity, bug_list) {
+
+    var sprint_total_work = 0;
+    var sprint_done_work = 0;
+    var sprint_remaining_work = 0;
+    var i = 0;
+    for(i = 0; i < bug_list.length; i++) {
+	sprint_remaining_work += bug_list[i][1];
+	sprint_done_work += bug_list[i][6];
+	sprint_total_work += bug_list[i][7];
+    }
+
+    $('#capa').html(estimatedcapacity);
+    var free = estimatedcapacity - sprint_total_work;
+    $('#free').html(free);
+    $('#done').html(sprint_done_work);
+    $('#remaining').html(sprint_remaining_work);
 }
 </script>
 
@@ -148,7 +169,7 @@ function demark_sprint_capacity(capacity, handled_list, following_list) {
   // data from backend
  var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %]
  [% bugid = bug.0 %]
- [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", [% bug.9 %], 0],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", [% bug.8 %], [% bug.9 %], 0],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
 
   [% PROCESS 'global/lists_backlog.js.tmpl' %]
 
@@ -158,7 +179,7 @@ function demark_sprint_capacity(capacity, handled_list, following_list) {
 //
 
  var sprint_bugs = [[% FOREACH bug IN active_sprint.get_bugs() %] [% bugid = bug.0 %]
- [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", [% bug.9 %], 0],[% END %]];
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", [% bug.8 %], [% bug.9 %], 0],[% END %]];
 
  var foo = "[% active_sprint.name() %]";
 
@@ -356,10 +377,10 @@ Select sprint:
     <option value="new_sprint">&#060; new sprint &#062;</option>
 </select>
 </form>
-Sprint capacity estimate: [% capacity.sprint_capacity %]<br>
-Work done in sprint: [% capacity.work_done %]<br>
-Remaining work in sprint: [% capacity.remaining_work %]<br>
-Estimated free capacity: [% capacity.free_capacity %]<br>
+Sprint capacity estimate: <span id="capa">[% capacity.sprint_capacity %]</span><br>
+Work done in sprint: <span id="done">[% capacity.work_done %]</span><br>
+Remaining work in sprint: <span id="remaining">[% capacity.remaining_work %]</span><br>
+Estimated free capacity: <span id="free">[% capacity.free_capacity %]</span><br>
 
 <table>
   <tr>

@@ -390,6 +390,7 @@ function show_sprint(result)
     }
 
     $('#sprint_info').html(sprint.start_date+' - '+sprint.end_date+"<br /><input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
+
     $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
     update_lists(sprint, 0, data.bugs);
 
@@ -403,7 +404,6 @@ function show_sprint(result)
 
 function edit_sprint()
 {
-
     sprint = all_lists[0];
     $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: true, sprintid: sprint.id }));
     $("input[name=sprintname]").val(sprint.name.replace('Sprint ', ''));
