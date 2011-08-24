@@ -18,6 +18,7 @@
   # Contributor(s):
   #   Visa Korhonen <visa.korhonen@symbio.com>
   #%]
+[% PROCESS "header-additional_header.html.tmpl" %]
 { errors : [% IF errors %]true[% ELSE %]false[% END %],
   errormsg: "[% errors %]"
 }
