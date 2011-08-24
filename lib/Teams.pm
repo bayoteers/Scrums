@@ -107,8 +107,9 @@ sub _delete_team {
         if (scalar @{$components} > 0) {
             ThrowUserError('team_has_components', {});
         }
-        my $backlog_items = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 2 });
-        my $backlog = @$backlog_items[0];
+
+        # There is always a backlog
+        my $backlog = $team->get_team_backlog();
         $backlog->remove_from_db();
 
         $team->remove_from_db();
@@ -457,56 +458,31 @@ sub _show_team_bugs {
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
     $vars->{'team'}               = $team;
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
-    my @sprints;
 
-    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 1 });
-
-    my %sprint_bug_map;
     my @team_sprints_array;
-
     my $show_sprint;
-    my $show_sprint_id = 0;
-    if (defined($cgi->param('sprintid'))) {
-        $show_sprint_id = $cgi->param('sprintid');
-    }
-
     my $capacity;
+    my $sprint = $team->get_team_current_sprint();
 
-    my $sprint = pop(@{$sprints});
-
-    my $spr_bugs = $sprint->get_bugs();
     my %team_sprint;
-    $team_sprint{'sprint'} = $sprint;
-    $team_sprint{'bugs'}   = $spr_bugs;
-    push @team_sprints_array, \%team_sprint;
-    if ($show_sprint_id) {
-        if ($sprint->id() == $show_sprint_id) {
-            $show_sprint = $sprint;
-        }
-    }
-    else {
-        if ($sprint->is_current()) {
-            $show_sprint = $sprint;
-        }
+    if($sprint) {
+        $team_sprint{'sprint'} = $sprint;
+        my $spr_bugs = $sprint->get_bugs();
+        $team_sprint{'bugs'}   = $spr_bugs;
+        push @team_sprints_array, \%team_sprint;
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
-
-    if (!$show_sprint) {
-        $show_sprint = $sprint;
-    }
 
     $vars->{'active_sprint'} = $show_sprint;
     if ($show_sprint) {
         $vars->{'capacity'} = $show_sprint->get_capacity_summary();
     }
 
-    my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 2 });
     # There is always a backlog
+    my $team_backlog = $team->get_team_backlog();
     my @sprint_names;
-    for my $sprint (@{$backlogs}) {
-        push @sprint_names, $sprint->name();
-    }
-    my $team_backlog = @$backlogs[0];
+    push @sprint_names, $team_backlog->name();
+
     my %backlog_container;
     $backlog_container{'sprint'}       = $team_backlog;
     $backlog_container{'bugs'}         = $team_backlog->get_bugs();
@@ -541,8 +517,8 @@ sub show_backlog_and_items {
     $vars->{'team'}                = $team;
     $vars->{'unprioritised_items'} = $team->unprioritised_items();
 
-    my $backlogs = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 2 });
-    my $team_backlog = @$backlogs[0];
+    my $team_backlog = $team->get_team_backlog();
+
     my %backlog_container;
     $backlog_container{'sprint'} = $team_backlog;
     #$backlog_container{'bugs'}   = $team_backlog->get_bugs();

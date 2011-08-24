@@ -96,4 +96,9 @@ div.scrollTableContainer td:last-child {padding-right: 2px;}
     font-weight: bold; 
 }
 
+.scrums_limited_area td
+{
+    background-color: rgb(208, 208, 208); 
+}
+
 

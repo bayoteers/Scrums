@@ -332,6 +332,25 @@ sub get_team_current_sprint {
     }
 }
 
+sub get_team_backlog {
+    my $self = shift;
+    my $dbh  = Bugzilla->dbh;
+    my ($sprint_id) = $dbh->selectrow_array(
+        'select
+	id
+    from
+	scrums_sprints s1
+    where
+	team_id = ? and
+	item_type = 2 ', undef, $self->id);
+    if ($sprint_id) {
+        return Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    }
+    else {
+        return undef;
+    }
+}
+
 #
 # Condition for bug to be unscheduled is, that it is not in any active sprint and neither in team's product backlog (item_type =2)
 # Bug does not have severity "change request", "feature" or "task".

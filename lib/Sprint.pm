@@ -523,7 +523,8 @@ sub _fetch_bugs {
         b.short_desc,
         bo.team,
         b.assigned_to,
-        sum(work_time) as work_done
+        sum(work_time) as work_done,
+        sum(work_time)+b.remaining_time as total_work
     from
 	scrums_sprint_bug_map sbm
 	inner join bugs b on sbm.bug_id = b.bug_id
