@@ -51,7 +51,7 @@
       [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",
                                       [[% FOREACH bug IN team_sprint.bugs %]
                                        [% bugid = bug.0 %]
-                                       [% PROCESS 'global/lists_bug.js.tmpl' bug = bug bugid = bugid %],
+                                       [% PROCESS 'global/lists_bug.js.tmpl' bug = bug bugid = bugid %]
                                       [% END %]],
                                       "[% team_sprint.sprint.status() %]",
                                       "[% team_sprint.sprint.nominal_schedule() %]",
@@ -67,7 +67,6 @@
     {
       // last argument is the name
       var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0]);
-      alert(sprint_list_data[id][0]+' - '+id+' -b -' +sprint_list_data[id][1]);
       // last argument is the bug list
       // extra stuff for sprint
       list._status = sprint_list_data[id][2]
@@ -76,7 +75,6 @@
 
       html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: '' });
       $(html).appendTo($('#sprints'));
-      alert('length '+sprint_list_data[id][1].length);
       update_lists(list, 0, sprint_list_data[id][1]);
 
       // expand collapse

@@ -1,6 +1,5 @@
   var backlog_bugs = [[% FOREACH bug IN backlog.bugs %]
-  [% bugid = bug.0 %]
-  [% PROCESS 'global/lists_bug.js.tmpl' bug = bug bugid = bugid %]
+  [% PROCESS 'global/lists_bug.js.tmpl' bug = bug bugid = bug.0 %]
   [% END %]];
 
 

@@ -1,6 +1,5 @@
   var unordered_list_data = [[% FOREACH bug IN unprioritised_items %]
-  [% bugid = bug.0 %]
-  [% PROCESS 'global/lists_bug.js.tmpl' bug = bug bugid = bugid %]
+  [% PROCESS 'global/lists_bug.js.tmpl' bug = bug bugid = bug.0 %]
   [% END %]];
 
 
