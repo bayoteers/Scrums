@@ -521,6 +521,8 @@ sub _fetch_bugs {
         p.realname,
         left(b.short_desc, 40),
         b.short_desc,
+        b.creation_ts,
+        b.bug_severity,
         bo.team,
         b.assigned_to,
         sum(work_time) as work_done,
@@ -563,7 +565,8 @@ sub get_items {
         b.bug_severity,
         bo.team,
         b.assigned_to,
-        sum(work_time) as work_done
+        sum(work_time) as work_done,
+        0
     from
 	scrums_sprint_bug_map sbm
 	inner join bugs b on sbm.bug_id = b.bug_id
