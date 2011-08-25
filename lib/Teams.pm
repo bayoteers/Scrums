@@ -465,10 +465,10 @@ sub _show_team_bugs {
     my $sprint = $team->get_team_current_sprint();
 
     my %team_sprint;
-    if($sprint) {
+    if ($sprint) {
         $team_sprint{'sprint'} = $sprint;
         my $spr_bugs = $sprint->get_bugs();
-        $team_sprint{'bugs'}   = $spr_bugs;
+        $team_sprint{'bugs'} = $spr_bugs;
         push @team_sprints_array, \%team_sprint;
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;

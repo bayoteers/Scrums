@@ -342,7 +342,8 @@ sub get_team_backlog {
 	scrums_sprints s1
     where
 	team_id = ? and
-	item_type = 2 ', undef, $self->id);
+	item_type = 2 ', undef, $self->id
+                                           );
     if ($sprint_id) {
         return Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
     }
