@@ -460,7 +460,6 @@ sub _show_team_bugs {
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
 
     my @team_sprints_array;
-    my $show_sprint;
     my $capacity;
     my $sprint = $team->get_team_current_sprint();
 
@@ -472,10 +471,9 @@ sub _show_team_bugs {
         push @team_sprints_array, \%team_sprint;
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
-
-    $vars->{'active_sprint'} = $show_sprint;
-    if ($show_sprint) {
-        $vars->{'capacity'} = $show_sprint->get_capacity_summary();
+    $vars->{'active_sprint'}      = $sprint;
+    if ($sprint) {
+        $vars->{'capacity'} = $sprint->get_capacity_summary();
     }
 
     # There is always a backlog
