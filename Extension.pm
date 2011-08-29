@@ -494,7 +494,20 @@ sub page_before_template {
         load_test_data($vars);
     }
     if ($page eq 'scrums/testing_utility.html') {
-        debug_function($vars);
+        my $cgi    = Bugzilla->cgi;
+        my $action = $cgi->param('action');
+        if($action eq "add") {
+            debug_function1($vars);
+        }
+        elsif($action eq "remove") {
+            debug_function2($vars);
+        }
+        elsif($action eq "add_n_move") {
+            debug_function3($vars);
+        }
+        elsif($action eq "move2") {
+            debug_function4($vars);
+        }
     }
 
     # Teams

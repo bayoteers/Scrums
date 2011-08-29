@@ -39,26 +39,136 @@ use Bugzilla::Extension::Scrums::Sprint;
 use base qw(Exporter);
 
 our @EXPORT = qw(
-  debug_function
+  debug_function1
+  debug_function2
+  debug_function3
+  debug_function4
   );
 
-use constant TEAMCOUNT        => 1;
-use constant TEAMSIZE         => 5;
-use constant SPRINTCOUNT      => 8;
-use constant SPRINTLENGTH     => 28;
-use constant MAX_STORY_LENGTH => 16;
-
-use vars qw(%data);
-
-sub debug_function($) {
+sub debug_function1($) {
     my ($vars) = @_;
 
-    $vars->{'output'} .= "<p><strong>debug_function</strong><br />";
+    $vars->{'output'} .= "<p><strong>debug_function1</strong><br />";
 
     my $sprint_id = 13;
     my $sprint    = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
-    $sprint->add_bug_into_sprint(111222, 131174);
+
+    $vars->{'output'} .= "<br />";
+    $vars->{'output'} .= "Tested sprint: " . $sprint->name() . "<br />";
+    my $sprint_bug_list = $sprint->get_items();
+    for my $bug_row (@{$sprint_bug_list}) {
+        $vars->{'output'} .= "bug no:" . @$bug_row[8] . " id:" . @$bug_row[0] . "<br />";
+    }
+
+    $vars->{'output'} .= "\$added_bug_id: " . "111222" . " \$insert_after_bug_id: " . "131174" . "<br />";
+    $sprint->add_bug_into_sprint(111222, 131174, $vars);
     $vars->{'output'} .= "<p>Bug added to sprint><br />";
+
+    $vars->{'output'} .= "<br />";
+    $vars->{'output'} .= "Tested sprint: " . $sprint->name() . "<br />";
+    $sprint_bug_list = $sprint->get_items();
+    for my $bug_row (@{$sprint_bug_list}) {
+        $vars->{'output'} .= "bug no:" . @$bug_row[8] . " id:" . @$bug_row[0] . "<br />";
+    }
+
+    return;
+}
+
+sub debug_function2($) {
+    my ($vars) = @_;
+
+    $vars->{'output'} .= "<p><strong>debug_function2</strong><br />";
+
+    my $sprint_id = 13;
+    my $sprint    = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+
+    $vars->{'output'} .= "<br />";
+    $vars->{'output'} .= "Tested sprint: " . $sprint->name() . "<br />";
+    my $sprint_bug_list = $sprint->get_items();
+    for my $bug_row (@{$sprint_bug_list}) {
+        $vars->{'output'} .= "bug no:" . @$bug_row[8] . " id:" . @$bug_row[0] . "<br />";
+    }
+
+    $vars->{'output'} .= "\$removed_bug_id: " . "111222" . "<br />";
+    $sprint->remove_bug_from_sprint(111222, $vars);
+    $vars->{'output'} .= "<p>Bug removed from sprint><br />";
+
+    $vars->{'output'} .= "<br />";
+    $vars->{'output'} .= "Tested sprint: " . $sprint->name() . "<br />";
+    $sprint_bug_list = $sprint->get_items();
+    for my $bug_row (@{$sprint_bug_list}) {
+        $vars->{'output'} .= "bug no:" . @$bug_row[8] . " id:" . @$bug_row[0] . "<br />";
+    }
+
+    return;
+}
+
+sub debug_function3($) {
+    my ($vars) = @_;
+
+    $vars->{'output'} .= "<p><strong>debug_function3</strong><br />";
+
+    my $sprint_id = 13;
+    my $sprint    = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+
+    $vars->{'output'} .= "<br />";
+    $vars->{'output'} .= "Tested sprint: " . $sprint->name() . "<br />";
+    my $sprint_bug_list = $sprint->get_items();
+    for my $bug_row (@{$sprint_bug_list}) {
+        $vars->{'output'} .= "bug no:" . @$bug_row[8] . " id:" . @$bug_row[0] . "<br />";
+    }
+
+    $vars->{'output'} .= "\$added_bug_id: " . "111222" . " \$insert_after_bug_id: " . "131174" . "<br />";
+    $sprint->add_bug_into_sprint(111222, 131174, $vars);
+    $vars->{'output'} .= "<p>Bug added to sprint><br />";
+
+    $vars->{'output'} .= "<br />";
+    $vars->{'output'} .= "Tested sprint: " . $sprint->name() . "<br />";
+    $sprint_bug_list = $sprint->get_items();
+    for my $bug_row (@{$sprint_bug_list}) {
+        $vars->{'output'} .= "bug no:" . @$bug_row[8] . " id:" . @$bug_row[0] . "<br />";
+    }
+
+    $vars->{'output'} .= "\$added_bug_id: " . "111222" . " \$insert_after_bug_id: " . "214952" . "<br />";
+    $sprint->add_bug_into_sprint(111222, 214952, $vars);
+    $vars->{'output'} .= "<p>Bug added to sprint><br />";
+
+    $vars->{'output'} .= "<br />";
+    $vars->{'output'} .= "Tested sprint: " . $sprint->name() . "<br />";
+    $sprint_bug_list = $sprint->get_items();
+    for my $bug_row (@{$sprint_bug_list}) {
+        $vars->{'output'} .= "bug no:" . @$bug_row[8] . " id:" . @$bug_row[0] . "<br />";
+    }
+
+    return;
+}
+
+sub debug_function4($) {
+    my ($vars) = @_;
+
+    $vars->{'output'} .= "<p><strong>debug_function4</strong><br />";
+
+    my $sprint_id = 13;
+    my $sprint    = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+
+    $vars->{'output'} .= "<br />";
+    $vars->{'output'} .= "Tested sprint: " . $sprint->name() . "<br />";
+    my $sprint_bug_list = $sprint->get_items();
+    for my $bug_row (@{$sprint_bug_list}) {
+        $vars->{'output'} .= "bug no:" . @$bug_row[8] . " id:" . @$bug_row[0] . "<br />";
+    }
+
+    $vars->{'output'} .= "\$added_bug_id: " . "111222" . " \$insert_after_bug_id: " . "135537" . "<br />";
+    $sprint->add_bug_into_sprint(111222, 135537, $vars);
+    $vars->{'output'} .= "<p>Bug added to sprint><br />";
+
+    $vars->{'output'} .= "<br />";
+    $vars->{'output'} .= "Tested sprint: " . $sprint->name() . "<br />";
+    $sprint_bug_list = $sprint->get_items();
+    for my $bug_row (@{$sprint_bug_list}) {
+        $vars->{'output'} .= "bug no:" . @$bug_row[8] . " id:" . @$bug_row[0] . "<br />";
+    }
+
     return;
 }
 
