@@ -496,16 +496,16 @@ sub page_before_template {
     if ($page eq 'scrums/testing_utility.html') {
         my $cgi    = Bugzilla->cgi;
         my $action = $cgi->param('action');
-        if($action eq "add") {
+        if ($action eq "add") {
             debug_function1($vars);
         }
-        elsif($action eq "remove") {
+        elsif ($action eq "remove") {
             debug_function2($vars);
         }
-        elsif($action eq "add_n_move") {
+        elsif ($action eq "add_n_move") {
             debug_function3($vars);
         }
-        elsif($action eq "move2") {
+        elsif ($action eq "move2") {
             debug_function4($vars);
         }
     }

@@ -448,6 +448,44 @@ sub unprioritised_items {
 
 }
 
+sub _get_active_sprints_bug_ids {
+    my $self = shift;
+
+    my @item_array;
+    my $current = $self->get_team_current_sprint();
+    if ($current) {
+        push(@item_array, @{ $current->get_item_array() });
+    }
+    my $backlog = $self->get_team_backlog();
+    push(@item_array, @{ $backlog->get_item_array() });
+    return \@item_array;
+}
+
+sub get_active_sprints_bug_orders {
+    my $self = shift;
+
+    my $item_array = $self->_get_active_sprints_bug_ids();
+    my $items      = Bugzilla::Extension::Scrums::Bugorder->new_from_list($item_array);
+    @{$items} = sort { lc($a->team_order) cmp lc($b->team_order) } @{$items};
+    return $items;
+}
+
+sub _is_bug_in_active_sprint {
+    my $self = shift;
+    my ($ref_bug_id, $vars) = @_;
+    if ($vars) { $vars->{'output'} .= "is_bug_in_active_sprint - ref_bug_id:" . $ref_bug_id . "<br />"; }
+
+    my $current = $self->get_team_current_sprint();
+    if ($current->is_item_in_sprint($ref_bug_id)) {
+        return $current->id();
+    }
+    my $backlog = $self->get_team_backlog();
+    if ($backlog->is_item_in_sprint($ref_bug_id)) {
+        return $backlog->id();
+    }
+    return undef;
+}
+
 sub mysort {
     lc($a->owner_user->name) cmp lc($b->owner_user->name);
 }

@@ -590,6 +590,33 @@ sub get_items {
     return $sprint_bugs;
 }
 
+sub get_item_array {
+    my $self = shift;
+    my $dbh  = Bugzilla->dbh;
+    my ($sprint_items) = $dbh->selectall_arrayref(
+        'select
+        bug_id
+    from
+	scrums_sprint_bug_map
+    where
+	sprint_id = ?', undef, $self->id
+    );
+    my @array;
+    for my $row (@{$sprint_items}) {
+        push(@array, @{$row}[0]);
+    }
+    return \@array;
+}
+
+sub is_item_in_sprint {
+    my $self = shift;
+    my ($bug_id) = @_;
+
+    my $item_array = $self->get_item_array();
+    my @matches = grep { $_ eq $bug_id } @{$item_array};
+    return ((scalar @matches) > 0);
+}
+
 sub set_name               { $_[0]->set('name',               $_[1]); }
 sub set_status             { $_[0]->set('status',             $_[1]); }
 sub set_description        { $_[0]->set('description',        $_[1]); }
@@ -614,19 +641,12 @@ sub add_bug_into_sprint {
 
     my $insert_after_bug_team_order_number = undef;
     if ($insert_after_bug_id) {
-        my $sth1 = $dbh->prepare(
-            'select 
-            team 
-        from
-            scrums_bug_order
-        where
-            bug_id = ?'
-                                );
-        $sth1->execute($insert_after_bug_id);
-        ($insert_after_bug_team_order_number) = $sth1->fetchrow_array;
+        my $item_order = Bugzilla::Extension::Scrums::Bugorder->new($insert_after_bug_id);
+        $insert_after_bug_team_order_number = $item_order->team_order();
     }
 
-    my $previous_sprint_id_for_bug = $self->_is_bug_in_active_sprint($added_bug_id, $vars);
+    my $team = $self->get_team();
+    my $previous_sprint_id_for_bug = $team->_is_bug_in_active_sprint($added_bug_id, $vars);
     if ($previous_sprint_id_for_bug) {
         $self->_update_sprint_map($added_bug_id, $previous_sprint_id_for_bug, $vars);
         my $previous_team_order_for_bug = $self->_is_bug_in_team_order($added_bug_id, $vars);
@@ -654,54 +674,15 @@ sub remove_bug_from_sprint {
     if ($vars) { $vars->{'output'} .= "remove_bug_from_sprint - removed_bug_id:" . $removed_bug_id . "<br />"; }
 
     my $dbh = Bugzilla->dbh;
-
     $dbh->bz_start_transaction();
 
     $self->_remove_sprint_map($removed_bug_id);
-
-    my $sth = $dbh->prepare(
-        'select 
-            team 
-        from
-            scrums_bug_order
-        where
-            bug_id = ?'
-                           );
-    $sth->execute($removed_bug_id);
-    my ($removed_bug_team_order_number) = $sth->fetchrow_array;
-
+    my $item_order                    = Bugzilla::Extension::Scrums::Bugorder->new($removed_bug_id);
+    my $removed_bug_team_order_number = $item_order->team_order();
     $self->_remove_bug_team_order($removed_bug_id, $vars);
     $self->_update_tail_team_order($removed_bug_team_order_number + 1, -1, $vars);    # increment is -1 => subtraction
 
     $dbh->bz_commit_transaction();
-}
-
-sub _is_bug_in_active_sprint {
-    my $self = shift;
-    my ($ref_bug_id, $vars) = @_;
-
-    my $dbh = Bugzilla->dbh;
-    my $sth = $dbh->prepare(
-        'select 
-        sprint_id 
-    from
-        scrums_sprint_bug_map sbm
-    inner join
-        scrums_sprints s
-    on
-        s.id = sbm.sprint_id and
-        s.team_id = ? and
-        (s.id = ? or
-        s.item_type = 2)
-    where
-        bug_id = ?'
-                           );
-    $sth->execute($self->{'team_id'}, $self->{'id'}, $ref_bug_id);
-
-    my $previous_sprint_id = undef;
-    ($previous_sprint_id) = $sth->fetchrow_array;
-    if ($vars) { $vars->{'output'} .= "_is_bug_in_active_sprint - result" . $previous_sprint_id . "<br />"; }
-    return $previous_sprint_id;
 }
 
 sub _update_sprint_map {
@@ -787,26 +768,17 @@ sub _is_bug_in_team_order {
     my $self = shift;
     my ($ref_bug_id, $vars) = @_;
 
-    my $dbh = Bugzilla->dbh;
-    my $sth = $dbh->prepare(
-        'select 
-        bug_id,
-        team
-    from
-        scrums_bug_order
-    where
-        bug_id = ?'
-                           );
-    $sth->execute($ref_bug_id);
-    my $bug_id = undef;
-    my $team   = undef;
-    ($bug_id, $team) = $sth->fetchrow_array;
-    if (!$team && $bug_id) {
-        return -1;    # There is a row in scrums_bug_order for ref bug, but there is no team priority
+    my $team_order = undef;
+    my $item_order = Bugzilla::Extension::Scrums::Bugorder->new($ref_bug_id);
+    if ($item_order) {
+        $team_order = $item_order->team_order();
+        if (!$team_order && $item_order) {
+            $team_order = -1;    # There is order definition for ref bug, but it does not contain team priority
+        }
     }
 
-    if ($vars) { $vars->{'output'} .= "_is_bug_in_team_order - ref_bug_id:" . $ref_bug_id . " result:" . $team . "<br />"; }
-    return $team;
+    if ($vars) { $vars->{'output'} .= "_is_bug_in_team_order - ref_bug_id:" . $ref_bug_id . " result:" . $team_order . "<br />"; }
+    return $team_order;
 }
 
 sub _update_tail_team_order {
@@ -815,58 +787,32 @@ sub _update_tail_team_order {
     if ($vars) { $vars->{'output'} .= "_update_tail_team_order - divider_team_order:" . $divider_team_order . "<br />"; }
 
     # Divider item is item which has smallest team order among items, that are moved.
-    my $dbh = Bugzilla->dbh;
-    $dbh->do(
-        'update
-        scrums_bug_order bo
-    set
-        team = team + ?
-    where 
-        team >= ? and
-        exists
-    (select null from
-        scrums_sprint_bug_map sbm
-    inner join
-        scrums_sprints s
-    on
-        s.id = sbm.sprint_id
-    where
-        sbm.bug_id = bo.bug_id and
-        s.team_id = ? and
-        (s.id = ? or
-        s.item_type = 2)
-        )', undef, $increment, $divider_team_order, $self->{'team_id'}, $self->{'id'}
-    );
+
+    my $team   = $self->get_team();
+    my $orders = $team->get_active_sprints_bug_orders();
+    for my $item_order (@{$orders}) {
+        if ($divider_team_order <= $item_order->team_order()) {
+            $item_order->set_team_order($item_order->team_order() + $increment);
+            $item_order->update();
+        }
+    }
 }
 
 sub _update_span_team_order {
     my $self = shift;
-    my ($span_bigger_of_equal, $span_smaller_than, $increment, $vars) = @_;
+    my ($span_bigger_or_equal, $span_smaller_than, $increment, $vars) = @_;
     if ($vars) {
-        $vars->{'output'} .= "_update_span_team_order - span_bigger_of_equal:" . $span_bigger_of_equal . " span_smaller_than:" . $span_smaller_than . "<br />";
+        $vars->{'output'} .= "_update_span_team_order - span_bigger_or_equal:" . $span_bigger_or_equal . " span_smaller_than:" . $span_smaller_than . "<br />";
     }
 
-    my $dbh = Bugzilla->dbh;
-    $dbh->do(
-        'update
-        scrums_bug_order bo
-    set
-        team = team + ?
-    where exists
-    (select null from
-        scrums_sprint_bug_map sbm
-    inner join
-        scrums_sprints s
-    on
-        s.id = sbm.sprint_id and
-        s.team_id = ? and
-        (s.id = ? or
-        s.item_type = 2)
-    where
-        sbm.bug_id = bo.bug_id and
-        team >= ? and
-        team < ?)', undef, $increment, $self->{'team_id'}, $self->{'id'}, $span_bigger_of_equal, $span_smaller_than
-    );
+    my $team   = $self->get_team();
+    my $orders = $team->get_active_sprints_bug_orders();
+    for my $item_order (@{$orders}) {
+        if ($span_bigger_or_equal <= $item_order->team_order() && $span_smaller_than > $item_order->team_order()) {
+            $item_order->set_team_order($item_order->team_order() + $increment);
+            $item_order->update();
+        }
+    }
 }
 
 sub _update_bug_team_order {
@@ -876,15 +822,9 @@ sub _update_bug_team_order {
         $vars->{'output'} .= "_update_bug_team_order - added_bug_id:" . $added_bug_id . " new_team_order_number:" . $new_team_order_number . "<br />";
     }
 
-    my $dbh = Bugzilla->dbh;
-    $dbh->do(
-        'update
-        scrums_bug_order
-    set
-        team = ?
-    where
-        bug_id = ?', undef, $new_team_order_number, $added_bug_id
-    );
+    my $item_order = Bugzilla::Extension::Scrums::Bugorder->new($added_bug_id);
+    $item_order->set_team_order($new_team_order_number);
+    $item_order->update();
 }
 
 sub _insert_bug_team_order {
@@ -893,14 +833,7 @@ sub _insert_bug_team_order {
     if ($vars) {
         $vars->{'output'} .= "_insert_bug_team_order - added_bug_id:" . $added_bug_id . " new_bug_team_order_number:" . $new_bug_team_order_number . "<br />";
     }
-
-    my $dbh = Bugzilla->dbh;
-    $dbh->do(
-        'insert into
-        scrums_bug_order (bug_id, team)
-        values(?, ?)', undef, $added_bug_id, $new_bug_team_order_number
-    );
-
+    my $item_order = Bugzilla::Extension::Scrums::Bugorder->create({ bug_id => $added_bug_id, team => $new_bug_team_order_number });
 }
 
 sub _remove_bug_team_order {
@@ -908,15 +841,9 @@ sub _remove_bug_team_order {
     my ($removed_bug_id, $vars) = @_;
     if ($vars) { $vars->{'output'} .= "_remove_bug_team_order - removed_bug_id:" . $removed_bug_id . "<br />"; }
 
-    my $dbh = Bugzilla->dbh;
-    $dbh->do(
-        'update
-        scrums_bug_order
-    set
-        team = NULL
-    where
-        bug_id = ?', undef, $removed_bug_id
-    );
+    my $item_order = Bugzilla::Extension::Scrums::Bugorder->new($removed_bug_id);
+    $item_order->set_team_order(undef);
+    $item_order->update();
 }
 
 ###############################
@@ -928,6 +855,12 @@ sub status             { return $_[0]->{'status'}; }
 sub description        { return $_[0]->{'description'}; }
 sub team_id            { return $_[0]->{'team_id'}; }
 sub estimated_capacity { return $_[0]->{'estimated_capacity'}; }
+
+sub get_team {
+    my $self = shift;
+    my $team = Bugzilla::Extension::Scrums::Team->new($self->team_id());
+    return $team;
+}
 
 sub start_date {
     my $self = shift;
