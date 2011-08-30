@@ -51,16 +51,7 @@
   [% PROCESS 'global/lists_unordered.js.tmpl' %]
   // data from backend
 
-//  var unordered_list_data = [[% FOREACH bug IN unprioritised_items %]
-//  [% bugid = bug.0 %]
-//  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]","[% bug.6 %]","[% bug.7 %]"],
-//  [% END %]];
-
   [% PROCESS 'global/lists_backlog.js.tmpl' %]
-//  var backlog_bugs = [[% FOREACH bug IN backlog.bugs %]
-//  [% bugid = bug.0 %]
-//  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]","[% bug.7 %]"],
-//  [% END %]];
   var sprint_lists = [];
 
   $(document).ready(function() {

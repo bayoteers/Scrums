@@ -42,9 +42,6 @@
 
   [% PROCESS 'global/lists_unordered.js.tmpl' unprioritised_items = unprioritised_bugs %]
   // data from backend
-//  var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %]
-//  [% bugid = bug.0 %]
-//  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"], [% END %]];
   var sprint_list_data = 
   {[% FOREACH team_sprint IN team_sprints_array %]
   

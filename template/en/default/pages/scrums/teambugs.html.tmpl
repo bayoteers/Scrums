@@ -26,10 +26,6 @@
 %]
 
 [% PROCESS global/lists.html.tmpl %]
-<!--
-      <input type="hidden" name="teamid" value="<#= teamid #>" />
-      <input type="hidden" name="sprintid" value="[% sprintid %]" />
--->
 
 <script id="NewSprintTmpl" type="text/html">
     <form id='new_sprint_form' action='page.cgi' method="post">
@@ -171,11 +167,6 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", "", "", [% bug.10 %], [% bug.11 %], 0],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
 
   [% PROCESS 'global/lists_backlog.js.tmpl' %]
-
-// var backlog_bugs = [[% FOREACH bug IN backlog.bugs %]
-// [% bugid = bug.0 %]
-// [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]"],[% END %]];
-//
 
  var sprint_bugs = [[% FOREACH bug IN active_sprint.get_bugs() %] [% bugid = bug.0 %]
  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", "", "", [% bug.10 %], [% bug.11 %], 0],[% END %]];
