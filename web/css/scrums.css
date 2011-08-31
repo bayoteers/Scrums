@@ -39,6 +39,7 @@ div.scrollTableContainer {
     height: 445px;  
     overflow: auto;
     margin: 15px 0 0 0;
+    min-width: 480px;
     width: 90%;
     border: 1px solid #ddd;
 }
@@ -56,6 +57,7 @@ is easier to change the width if both numbers are in the same place. */
 /* All browsers accept this, but we are targeting IE with this rule */
 div.scrollTableContainer table {
   width: 100%;  /*100% of container produces horiz. scroll in Mozilla*/
+  min-width: 480px;
   border: none;
   border-spacing: 0px;
   background-color: transparent;
