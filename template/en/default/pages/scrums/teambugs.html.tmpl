@@ -48,19 +48,19 @@
           </td>
         </tr>
         <tr>
-          <th>Person capacity:</th>
+          <th>Person Capacity:</th>
           <td colspan=3" id="personcapacity">
             &nbsp;
           </td>
         </tr>
         <tr>
-          <th>Estimated cap.:</th>
+          <th>Estimated Capacity:</th>
           <td colspan=3" id="estimatedcapacity">
             <input type="text" name="estimatedcapacity" value="[% estimatedcapacity %]">
           </td>
         </tr>
         <tr>
-          <th>Predictive est.:</th>
+          <th>Predictive Estimate:</th>
           <td colspan=3" id="estimate">
             &nbsp;
           </td>
@@ -349,42 +349,77 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
     }
 </script>
 
-
 <div class="bz_title_container">
   [% team.name %] Sprint
 </div>
 
 <form action=''>
-<input type='hidden' value='scrums/teambugs.html' name='id' />
-<input type='hidden' value='[% team.id %]' name='teamid' />
-Select sprint:
-<select name='sprintid' onchange='get_sprint();' id='selected_sprint'>
+  <input type='hidden' value='scrums/teambugs.html' name='id' />
+  <input type='hidden' value='[% team.id %]' name='teamid' />
+
+  Select sprint:
+  <select name='sprintid' onchange='get_sprint();' id='selected_sprint'>
     [% FOREACH name IN team_sprints_array %]
-    <option value="[% name.sprint.id() %]"[% IF name.sprint.id() == sprint.id() %] selected='selected'[% END %]>
-    [% IF name.sprint.is_current() %]*[% END %][% name.sprint.name %]</option>[% END %]
+      <option value="[% name.sprint.id() %]"[% IF name.sprint.id() == sprint.id() %] selected='selected'[% END %]>
+      [% IF name.sprint.is_current() %]*[% END %][% name.sprint.name %]</option>
+    [% END %]
     <option value="new_sprint">&#060; new sprint &#062;</option>
-</select>
+  </select>
 </form>
-Sprint capacity estimate: <span id="capa">[% capacity.sprint_capacity %]</span><br>
-Work done in sprint: <span id="done">[% capacity.work_done %]</span><br>
-Remaining work in sprint: <span id="remaining">[% capacity.remaining_work %]</span><br>
-Estimated free capacity: <span id="free">[% capacity.free_capacity %]</span><br>
 
 <table>
   <tr>
-     <td colspan='2' id='sprint_info'>
-     </td>
+    <td>
+      Sprint capacity estimate:
+    </td>
+    <td align="right">
+      <span id="capa">[% capacity.sprint_capacity %]</span>
+    </td>
   </tr>
+
   <tr>
-    <td valign='top' id='sprint'>
-    </td>
-    <td valign='top' id='unordered'>
+    <td>Work done in sprint:</td>
+    <td align="right">
+      <span id="done">[% capacity.work_done %]</span>
     </td>
   </tr>
+
+  <tr>
+    <td>
+      Remaining work in sprint:
+    </td>
+    <td align="right">
+      <span id="remaining">[% capacity.remaining_work %]</span>
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      Estimated free capacity:
+    </td>
+    <td align="right">
+      <span id="free">[% capacity.free_capacity %]</span>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <td id="sprint_info">
+  </td>
+</table>
+
+<table>
+  <tr>
+    <td valign="top" id="sprint" width="50%">
+    </td>
+    <td valign="top" id="unordered" width="50%">
+    </td>
+  </tr>
+
   <tr>
     <td colspan="2" align="right">
-      <input type='button' class='toggle_scroll' value='Toggle Scroll Bars' onClick="toggle_scroll();" />
-      <input type='button' value='Save' OnClick='save_all();'/> 
+      <input type="button" class="toggle_scroll" value="Toggle Scroll Bars" onClick="toggle_scroll();" />
+      <input type="button" value="Save" OnClick="save_all();"/> 
     </td>
   </tr>
 </table>
@@ -394,14 +429,14 @@ Estimated free capacity: <span id="free">[% capacity.free_capacity %]</span><br>
 <table>
   <tr>
     <th>
-      Team member
+      Team Member
     </th>
     <th>
-      Capacity estimate
+      Capacity Estimate
+    </th>
     <th>
-    <th>
-      Work in sprint
-    <th>
+      Work In Sprint
+    </th>
   </tr>
   [% FOREACH user IN members %]
     <tr>
@@ -452,7 +487,7 @@ Estimated free capacity: <span id="free">[% capacity.free_capacity %]</span><br>
           </tr>
         </table>
       </td>
-      <td>
+      <td align="right">
         [% active_sprint.get_member_workload(user.userid) %]
       </td>
     </tr>

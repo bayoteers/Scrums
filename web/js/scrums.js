@@ -479,7 +479,7 @@ function get_sprint()
 {
     if ($('#selected_sprint').val() == 'new_sprint')
     {
-        $('#sprint_info').html('Create new sprint');
+        $('#sprint_info').html('<h2>Create New Sprint</h2>');
         $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: false, sprintid: 0 }));
         var options = { 
             success:   create_sprint,

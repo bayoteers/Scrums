@@ -37,9 +37,9 @@ table.dataTable td {
 
 div.scrollTableContainer {
     height: 445px;  
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     margin: 15px 0 0 0;
-    width: 90%;
     border: 1px solid #ddd;
 }
 
