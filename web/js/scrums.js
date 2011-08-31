@@ -389,7 +389,8 @@ function show_sprint(result)
         sprint_callback(data.estimatedcapacity, data.bugs, backlog_bugs);
     }
 
-    $('#sprint_info').html(sprint.start_date+' - '+sprint.end_date+"<br /><input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
+    $('#sprint_info').html(sprint.start_date+' &mdash; '+sprint.end_date);
+    $('#sprint_button').html("<input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
 
     $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
     update_lists(sprint, 0, data.bugs);
@@ -406,6 +407,7 @@ function edit_sprint()
 {
     sprint = all_lists[0];
     $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: true, sprintid: sprint.id }));
+    $('#sprint_action').html('<h3>Edit Sprint</h3>');
     $("input[name=sprintname]").val(sprint.name.replace('Sprint ', ''));
     $("input[name=description]").val(sprint.description);
     $("input[name=start_date]").val(sprint.start_date);
@@ -431,7 +433,7 @@ function edit_sprint()
 
         function cancel()
         {
-        window.location = "page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]";  
+          window.location = "page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]";  
         }
 
         function checkvalues()
@@ -479,8 +481,9 @@ function get_sprint()
 {
     if ($('#selected_sprint').val() == 'new_sprint')
     {
-        $('#sprint_info').html('<h2>Create New Sprint</h2>');
         $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: false, sprintid: 0 }));
+        $('#sprint_action').html('<h3>Create Sprint</h3>');
+        
         var options = { 
             success:   create_sprint,
             dataType: 'json'
@@ -495,11 +498,11 @@ function get_sprint()
         $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
     } else
     {
-        $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
+            $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
             teamid: team_id,
             sprintid: $('#selected_sprint').val(),
         }, show_sprint, 'json');
-    }
+   }
 }
 
 function create_sprint(result)
