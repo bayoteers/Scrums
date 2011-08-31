@@ -266,7 +266,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
         var retObj = eval("(" + response + ")");
 
         if (retObj.errors) {
-            alert("There are errors: " + retObj.errormsg);
+            alert(retObj.errormsg);
         } 
         else {
             //alert("Success");

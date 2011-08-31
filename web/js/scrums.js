@@ -334,7 +334,7 @@ function saveResponse(response, status, xhr)
 	var retObj = eval("("+ response+")");
 	if(retObj.errors)
 	{
-		alert("There are errors: "+retObj.errormsg);
+		alert(retObj.errormsg);
 	}
 	else
 	{
