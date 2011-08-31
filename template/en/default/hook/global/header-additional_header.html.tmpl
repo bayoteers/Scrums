@@ -1,3 +1,6 @@
+[% USE String %]
+[% here = String.new(template.name); here = here.lower() %]
+[% IF here.search('scrums') %]
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-1.5.1.min.js"></script>
 <script type="text/JavaScript" src="extensions/Scrums/web/js/jquery/js/jquery-ui-1.8.14.custom.min.js"></script>
 
@@ -11,3 +14,4 @@
 <link rel="stylesheet" href="extensions/Scrums/web/js/jquery/css/ui-lightness/jquery-ui-1.8.10.custom.css">
 
 <link rel="stylesheet" href="extensions/Scrums/web/css/scrums.css">
+[% END %]
