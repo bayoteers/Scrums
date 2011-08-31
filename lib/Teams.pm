@@ -128,8 +128,8 @@ sub show_create_team {
             $team_id = $1;    # $data now untainted
             my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
             if ($cgi->param('removedcomponent') ne "") {
-                if (not Bugzilla->user->in_group('editteams')) {
-                    ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+                if (not Bugzilla->user->in_group('scrums_editteams')) {
+                    ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
                 }
                 my $component_id = $cgi->param('removedcomponent');
                 if ($component_id =~ /^([0-9]+)$/) {
@@ -139,8 +139,8 @@ sub show_create_team {
                 }
             }
             if ($cgi->param('component') ne "") {
-                if (not Bugzilla->user->in_group('editteams')) {
-                    ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+                if (not Bugzilla->user->in_group('scrums_editteams')) {
+                    ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
                 }
                 my $component_id = $cgi->param('component');
                 if ($component_id =~ /^([0-9]+)$/) {
@@ -152,8 +152,8 @@ sub show_create_team {
                 }
             }
             if ($cgi->param('editteam') ne "") {
-                if (not Bugzilla->user->in_group('editteams')) {
-                    ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+                if (not Bugzilla->user->in_group('scrums_editteams')) {
+                    ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
                 }
                 my $team_name    = $cgi->param('name');
                 my $team_owner   = $cgi->param('userid');
@@ -176,8 +176,8 @@ sub show_create_team {
         }
     }
     else {
-        if (not Bugzilla->user->in_group('editteams')) {
-            ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+        if (not Bugzilla->user->in_group('scrums_editteams')) {
+            ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
         }
         _new_team($vars);
     }
@@ -191,8 +191,8 @@ sub _show_existing_team {
     my $user_id = $cgi->param('userid');
 
     if ($user_id ne "") {
-        if (not Bugzilla->user->in_group('editteams')) {
-            ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+        if (not Bugzilla->user->in_group('scrums_editteams')) {
+            ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
         }
         if ($user_id =~ /^([0-9]+)$/) {
             $user_id = $1;    # $data now untainted
@@ -388,8 +388,8 @@ sub edit_team {
         }
     }
     else {
-        if (not Bugzilla->user->in_group('editteams')) {
-            ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+        if (not Bugzilla->user->in_group('scrums_editteams')) {
+            ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
         }
     }
     $vars->{'editteam'}             = $editteam;
@@ -532,8 +532,8 @@ sub edit_sprint {
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
     # User access is same for creating a new sprint and for editing existing sprint
     # Editing bug lists is separate case
-    if ((not $team->is_team_super_user(Bugzilla->user)) && (not Bugzilla->user->in_group('editteams'))) {
-        ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+    if ((not $team->is_team_super_user(Bugzilla->user)) && (not Bugzilla->user->in_group('scrums_editteams'))) {
+        ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
     }
 
     $vars->{'teamid'} = $team_id;
@@ -610,13 +610,13 @@ sub update_team_bugs {
     my $error = "";
 
     if ($list_is_backlog) {
-        if (($team->owner() != $user->id()) && (not Bugzilla->user->in_group('editteams'))) {
+        if (($team->owner() != $user->id()) && (not Bugzilla->user->in_group('scrums_editteams'))) {
             # User error can not be used, because this is ajax-call
             $error = 'Sorry, you are not the owner of the team. You are not allowed to edit backlog';
         }
     }
     else {
-        if ((not $team->is_user_team_member($user)) && (not Bugzilla->user->in_group('editteams'))) {
+        if ((not $team->is_user_team_member($user)) && (not Bugzilla->user->in_group('scrums_editteams'))) {
             # User error can not be used, because this is ajax-call
             $error = 'Sorry, you are not member of the team. You are not allowed to edit sprint';
         }

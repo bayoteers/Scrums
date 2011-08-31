@@ -122,7 +122,7 @@
       <tr>
         <th>Product</th>
         <th>Component</th>
-        [% IF user.in_group('editteams') %]
+        [% IF user.in_group('scrums_editteams') %]
           <th>Action</th>
         [% END %]
       </tr>
@@ -131,7 +131,7 @@
         <tr>
           <td>[% subcomponent.product().name() %]</td>
           <td>[% subcomponent.name() %]</td>
-          [% IF user.in_group('editteams') %]
+          [% IF user.in_group('scrums_editteams') %]
             <td>
               <a href="page.cgi?id=scrums/createteam.html&teamid=[% team.id() %]&removedcomponent=[% subcomponent.id %]" onclick="return removal('[% subcomponent.name() %]', '[% subcomponent.product().name() %]', '[% team.name() %]');">Remove</a>
             </td>
@@ -153,7 +153,7 @@
     <table>
       <tr>
         <th>Username</th>
-        [% IF user.in_group('editteams') %]
+        [% IF user.in_group('scrums_editteams') %]
           <th>Action</th>
         [% END %]
       </tr>
@@ -163,7 +163,7 @@
           <td>
             [% member.name() %]
           </td>
-          [% IF user.in_group('editteams') %]
+          [% IF user.in_group('scrums_editteams') %]
             <td>
               <a href="page.cgi?id=scrums/createteam.html&userid=[% member.id() %]&teamid=[% team.id() %]&username=[% member.name() %]&userlogin=[% member.login() %]"
                   onclick="return member_removal('[% member.name() %]', '[% team.name() %]');">Remove</a>
@@ -189,7 +189,7 @@
 
   <hr />
 
-  [% IF user.in_group('editteams') %]
+  [% IF user.in_group('scrums_editteams') %]
     <p>
         <a href="page.cgi?id=scrums/newteam.html&editteam='true'&teamid=[% team.id %]&teamname=[% team.name() %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&ownerid=[% owner.id() %]&scrummasterrealname=[% scrum_master.name() %]&scrummasterloginname=[% scrum_master.login() %]&scrummasterid=[% scrum_master.id() %]">Edit Team</a>
       | <a href="page.cgi?id=scrums/choose-classification.html&teamid=[% team.id %]">Add Responsibility</a>
