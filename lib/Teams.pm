@@ -612,13 +612,13 @@ sub update_team_bugs {
     if ($list_is_backlog) {
         if (($team->owner() != $user->id()) && (not Bugzilla->user->in_group('scrums_editteams'))) {
             # User error can not be used, because this is ajax-call
-            $error = 'Sorry, you are not the owner of the team. You are not allowed to edit backlog';
+            $error = 'You must be the owner of the team to edit the backlog.';
         }
     }
     else {
         if ((not $team->is_user_team_member($user)) && (not Bugzilla->user->in_group('scrums_editteams'))) {
             # User error can not be used, because this is ajax-call
-            $error = 'Sorry, you are not member of the team. You are not allowed to edit sprint';
+            $error = 'You must be a member of the team to edit the sprint.';
         }
     }
 

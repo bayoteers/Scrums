@@ -453,7 +453,7 @@ sub get_predictive_estimate {
     my @previous_sprints;
 
     my (@sprint_hist1, @sprint_hist2, @sprint_hist3);
-    push @sprint_hist1,     'Sprint current-1';
+    push @sprint_hist1,     $self->name();
     push @sprint_hist1,     $total_work_1;
     push @sprint_hist1,     $tot_persons_1;
     push @previous_sprints, \@sprint_hist1;
@@ -466,7 +466,7 @@ sub get_predictive_estimate {
         $remaining_work = $sprint_m2->calculate_remaining();
         $total_work_2   = $work_done + $remaining_work;
         $tot_persons_2  = $sprint_m2->get_person_capacity();
-        push @sprint_hist2,     'Sprint current-2';
+        push @sprint_hist2,     $sprint_m2->name();
         push @sprint_hist2,     $total_work_2;
         push @sprint_hist2,     $tot_persons_2;
         push @previous_sprints, \@sprint_hist2;
@@ -480,7 +480,7 @@ sub get_predictive_estimate {
             $remaining_work = $sprint_m3->calculate_remaining();
             $total_work_3   = $work_done + $remaining_work;
             $tot_persons_3  = $sprint_m3->get_person_capacity();
-            push @sprint_hist3,     'Sprint current-3';
+            push @sprint_hist3,     $sprint_m3->name();
             push @sprint_hist3,     $total_work_3;
             push @sprint_hist3,     $tot_persons_3;
             push @previous_sprints, \@sprint_hist3;
