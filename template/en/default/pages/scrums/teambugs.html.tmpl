@@ -456,20 +456,20 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
       Work In Sprint
     </th>
   </tr>
-  [% FOREACH user IN members %]
+  [% FOREACH teammember IN members %]
     <tr>
       <td>
-        [% user.name() %]
+        [% teammember.name() %]
       </td>
       <td>
         <table>
-          <tr id="[% user.userid %]_static">
-            <td ondblclick="makeeditable('[% user.userid %]');">
-              <span title='[% active_sprint.get_member_capacity(user.userid) %]'> 
+          <tr id="[% teammember.userid %]_static">
+            <td ondblclick="makeeditable('[% teammember.userid %]');">
+              <span title='[% active_sprint.get_member_capacity(teammember.userid) %]'> 
                 <table>
                   <tr>
                     <td>
-                      [% active_sprint.get_member_capacity(user.userid) %]
+                      [% active_sprint.get_member_capacity(teammember.userid) %]
                     </td>
                     <td>
                       <span class="ui-icon ui-icon-triangle-1-s" title="edit">
@@ -480,7 +480,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
               </span>
             </td>
           </tr>
-          <tr id="[% user.userid %]_editable" style="visibility: collapse;">
+          <tr id="[% teammember.userid %]_editable" style="visibility: collapse;">
             <td>
               <table>
                 <tr>
@@ -506,7 +506,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
         </table>
       </td>
       <td align="right">
-        [% active_sprint.get_member_workload(user.userid) %]
+        [% active_sprint.get_member_workload(teammember.userid) %]
       </td>
     </tr>
   [% END %]
