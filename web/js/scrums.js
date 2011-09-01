@@ -496,6 +496,7 @@ function get_sprint()
         var today = new Date();
         $("#datepicker_min").datepicker({ maxDate: today, dateFormat: 'yy-mm-dd' });
         $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
+        $('#history').html(sprint.history);
     } else
     {
             $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {

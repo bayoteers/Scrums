@@ -178,6 +178,9 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
     sprint._status = "[% active_sprint.sprint.status() %]";
     sprint.description = "[% active_sprint.sprint.description() | replace( '"', '\"' ) %]";
 
+    var historyStr = "[% IF history %]<table>[% FOREACH sprint IN history %]<tr><th>[% sprint.0 %]</th><td style='min-width: 110px;'>Total Work: [% sprint.1 %]</td><td>Total Persons: [% sprint.2 %]</td></tr>[% END %]</table>[% END %]";
+    sprint.history = historyStr;
+
     $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
     update_lists(backlog, 0, backlog_bugs);
 

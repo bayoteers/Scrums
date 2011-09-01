@@ -474,6 +474,10 @@ sub _show_team_bugs {
     $vars->{'active_sprint'}      = $sprint;
     if ($sprint) {
         $vars->{'capacity'} = $sprint->get_capacity_summary();
+
+        # History information for *new* sprint
+        my $pred_estimate = $sprint->get_predictive_estimate();
+        $vars->{'history'} = $pred_estimate->{'history'};
     }
 
     # There is always a backlog
