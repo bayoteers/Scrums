@@ -214,7 +214,7 @@ function bind_sortable_lists(lists) {
     }).disableSelection();
 }
 
-function create_bug_elem(list, position)
+function create_bug_elem(list, position, counter)
 {
     var template;
     if (list.li_tmpl) {
@@ -227,7 +227,7 @@ function create_bug_elem(list, position)
     return parseTemplate(template.html(),
     {
         bug: list.list[position],
-        counter: (position + 1),
+	counter: counter,
         show_columns: list.show_columns,
     });
 }
@@ -241,11 +241,21 @@ function update_lists(bugs_list, move_pos, data)
         bugs_list.visible = -1;
     }
 
+    if (bugs_list.visible == -1) {
+        // show all
+        bugs_list.visible = [];
+        for (var i = 0; i < bugs_list.list.length; i++) {
+            bugs_list.visible.push(i);
+        }
+    }
+
     var html = '';
-    for (var i = 0; i < bugs_list.list.length; i++)
-    {
-        html += create_bug_elem(bugs_list, i);
+    // TODO This needs to fixed in order to paging to function
+    for (var i = 0; i < bugs_list.visible.length; i++) {
+        var position = bugs_list.visible[i];
+        html += create_bug_elem(bugs_list, position, position+1 /* Counter (?) */);
     } // for
+
     if (html)
     {
         $("#" + bugs_list.ul_id).html(html);
