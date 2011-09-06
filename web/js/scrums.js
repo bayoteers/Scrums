@@ -139,7 +139,16 @@ function switch_lists(ui, lists) {
             {
                 position = bug_positions[to_i][prev_bug_id] + 1;
             }
-            lists[to_i].list.splice(position, 0, lists[from_i].list.splice(old_position, 1)[0]);
+            //lists[to_i].list.splice(position, 0, lists[from_i].list.splice(old_position, 1)[0]);
+            var temp = lists[from_i].list.splice(old_position, 1);
+	    if(to_i == from_i && old_position < position) 
+            {
+            	lists[to_i].list.splice(position-1, 0, temp[0]);
+	    }
+	    else
+	    {
+            	lists[to_i].list.splice(position, 0, temp[0]);
+	    }
 
             update_positions(lists, to_i);
             update_positions(lists, from_i);
@@ -214,7 +223,7 @@ function bind_sortable_lists(lists) {
     }).disableSelection();
 }
 
-function create_bug_elem(list, position, counter)
+function create_bug_elem(list, position)
 {
     var template;
     if (list.li_tmpl) {
@@ -227,7 +236,7 @@ function create_bug_elem(list, position, counter)
     return parseTemplate(template.html(),
     {
         bug: list.list[position],
-	counter: counter,
+	counter: position+1,
         show_columns: list.show_columns,
     });
 }
@@ -253,7 +262,7 @@ function update_lists(bugs_list, move_pos, data)
     // TODO This needs to fixed in order to paging to function
     for (var i = 0; i < bugs_list.visible.length; i++) {
         var position = bugs_list.visible[i];
-        html += create_bug_elem(bugs_list, position, position+1 /* Counter (?) */);
+        html += create_bug_elem(bugs_list, position);
     } // for
 
     if (html)
