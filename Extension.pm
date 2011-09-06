@@ -538,8 +538,8 @@ sub page_before_template {
         show_create_team($vars);
     }
     elsif ($page eq 'scrums/addintoteam.html') {
-        if (not Bugzilla->user->in_group('editteams')) {
-            ThrowUserError('auth_failure', { group => "editteams", action => "edit", object => "team" });
+        if (not Bugzilla->user->in_group('scrums_editteams')) {
+            ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
         }
 
         add_into_team($vars);
