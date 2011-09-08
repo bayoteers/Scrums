@@ -29,8 +29,11 @@
   var ordered_bugs = new listObject("sortable1", "headers", '0', 'Item Order', $("#ReleaseBugLiTmpl"));
   var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', $("#ReleaseBugLiTmpl"));
 
-  var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]", [% bug.6 %], [% bug.7 %]], [% END %]];
-  var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %][[% bug.0 %],"[% bug.1 %]","[% bug.2 %]","[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]", [% bug.6 %], [% bug.7 %]], [% END %]];
+var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %] [% bugid = bug.0 %]
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], "[% bug.1 %]", "[% bug.2 %]", "[% bug.3 | replace( '"', '\'' ) %]", "[% bug.4 %]", "[% bug.5 %]", "", "", 0, 0, 0],[% END %]];
+
+var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %] [% bugid = bug.0 %]
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], "[% bug.1 %]", "[% bug.2 %]", "[% bug.3 | replace( '"', '\"' ) %]", "[% bug.4 %]", "[% bug.5 %]", "", "", 0, 0, 0],[% END %]];
 
   function save_all()
   {
@@ -39,6 +42,7 @@
   }
 
   var all_lists = [];
+  var bug_positions = [];
 
   $(document).ready(function() {
     $('#left').html(html = parseTemplate($('#ReleaseListTmpl').html(), { list: ordered_bugs, extra_middle: '' }));

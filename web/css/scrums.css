@@ -22,6 +22,8 @@
 table.dataTable {
     margin: 0;
     padding: 0;
+    border-collapse:separate;
+    border-spacing:0px 0px;
 }
 
 

@@ -21,17 +21,17 @@
 
 <script id="ReleaseBugLiTmpl" type="text/html">
       <tr id="<#= bug[0][0] #>" bug_order_nr='<#= counter #>'>
-        <# if (show_priority) { #>
+        <# if ($.inArray('order', show_columns) > -1) { #>
         <td class="colF"><span class="number"><#= counter #></span></td>
         <# } #>
-        <# if (show_creation_date) { #>
+        <# if ($.inArray('creation_date', show_columns) > -1) { #>
             <td class='sortable'><#= bug[6] #></td>
         <# } #>
         <td class="colD"><#= bug[0][1] #></td>
         <td class="colC"> <#= bug[1] #></td>
         <td class="colD"> <#= bug[2] #></td>
         <td class="colA"> <#= bug[3] #></td> 
-        <# if (show_severity) { #>
+        <# if ($.inArray('severity', show_columns) > -1) { #>
             <td class="colA sortable"> <#= bug[7] #></td>
         <# } #>
         <td class="colB"> <a href="page.cgi?id=scrums/createteam.html&teamid=<#= bug[6] #>"><#= bug[4] #></a></td>
@@ -81,7 +81,7 @@
 
   <div class='content' >
     <div class='scrollTableContainer' id='container'>
-      <table class="dataTable" cellspacing="0" id="table<#= list.ul_id #>">
+      <table class="dataTable" id="table<#= list.ul_id #>">
         <thead id="mythead">
           <tr>
             <# if ($.inArray('order', list.show_columns) > -1) { #>
@@ -149,7 +149,7 @@ function parseHashTemplate(id, attrs)
       (<span id='items_<#= list.id #>'></span>)
     </p>
 
-    <table>
+    <table class="dataTable">
       <thead>
         <tr><th class='sortable'>Priority</th><th class='sortable' class="colF">[% field_descs.bug_id %]</th><th class='sortable' class="colF">[% field_descs.bug_status %]</th><th class='sortable' class="colF">[% field_descs.bug_severity %]</th><th class='sortable' class="colF">[% field_descs.short_desc %]</th><th class='sortable' class="colF">Team</th><th class='sortable' class="colF">Sprint</th></tr>
       </thead>
