@@ -143,7 +143,12 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
 <script type="text/javascript">
   var team_id = [% team.id %];
-  var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog');
+
+  [% IF team.is_using_backlog() %]
+    var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog');
+  [% ELSE %]
+    var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog (informative)');
+  [% END %]
 
   var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
 

@@ -189,7 +189,7 @@
 
   [% IF user.in_group('scrums_editteams') %]
     <p>
-        <a href="page.cgi?id=scrums/newteam.html&editteam='true'&teamid=[% team.id %]&teamname=[% team.name() %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&ownerid=[% owner.id() %]&scrummasterrealname=[% scrum_master.name() %]&scrummasterloginname=[% scrum_master.login() %]&scrummasterid=[% scrum_master.id() %]">Edit Team</a>
+        <a href="page.cgi?id=scrums/newteam.html&editteam='true'&teamid=[% team.id %]&realname=[% owner.name() %]&loginname=[% owner.login() %]&scrummasterrealname=[% scrum_master.name() %]&scrummasterloginname=[% scrum_master.login() %]">Edit Team</a>
       | <a href="page.cgi?id=scrums/choose-classification.html&teamid=[% team.id %]">Add Responsibility</a>
       | <a href="" onclick="return searchperson();">Add Team Member</a>
     </p>

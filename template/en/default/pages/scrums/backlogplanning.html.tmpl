@@ -30,7 +30,11 @@
   unordered_bugs.show_columns.push('creation_date')
   unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
 
-  var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog');
+  [% IF team.is_using_backlog() %]
+    var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog');
+  [% ELSE %]
+    var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog (informative)');
+  [% END %]
   backlog.show_columns.push('creation_date')
 
   var all_lists = [];

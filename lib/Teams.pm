@@ -155,12 +155,13 @@ sub show_create_team {
                 if (not Bugzilla->user->in_group('scrums_editteams')) {
                     ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
                 }
-                my $team_name    = $cgi->param('name');
-                my $team_owner   = $cgi->param('userid');
-                my $scrum_master = $cgi->param('scrummasterid');
+                my $team_name        = $cgi->param('name');
+                my $team_owner       = $cgi->param('userid');
+                my $scrum_master     = $cgi->param('scrummasterid');
+                my $is_using_backlog = $cgi->param('usesbacklog');
                 if ($team_owner =~ /^([0-9]+)$/) {
-                    $team_owner = $1;                                                       # $data now untainted
-                    $error = _update_team($team, $team_name, $team_owner, $scrum_master);
+                    $team_owner = $1;                                                                          # $data now untainted
+                    $error = _update_team($team, $team_name, $team_owner, $scrum_master, $is_using_backlog);
                     if ($error ne "") {
                         ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });
                     }
@@ -392,13 +393,15 @@ sub edit_team {
             ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
         }
     }
-    $vars->{'editteam'}             = $editteam;
-    $vars->{'teamid'}               = $cgi->param('teamid');
-    $vars->{'teamname'}             = $cgi->param('teamname');
+    $vars->{'editteam'} = $editteam;
+    my $team_id = $cgi->param('teamid');
+    $vars->{'teamid'} = $team_id;
+    if ($editteam ne "") {
+        my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+        $vars->{'team'} = $team;
+    }
     $vars->{'realname'}             = $cgi->param('realname');
     $vars->{'loginname'}            = $cgi->param('loginname');
-    $vars->{'ownerid'}              = $cgi->param('ownerid');
-    $vars->{'scrummasterid'}        = $cgi->param('scrummasterid');
     $vars->{'scrummasterrealname'}  = $cgi->param('scrummasterrealname');
     $vars->{'scrummasterloginname'} = $cgi->param('scrummasterloginname');
 }
@@ -453,11 +456,14 @@ sub ajax_sprint_bugs {
 sub _show_team_bugs {
     my ($vars) = @_;
 
+    # TODO This can be divided into two distinct functions
     my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('teamid');
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
     $vars->{'team'}               = $team;
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
+
+    $vars->{'all_items_not_in_sprint'} = $team->all_items_not_in_sprint();
 
     my @team_sprints_array;
     my $capacity;
@@ -523,9 +529,8 @@ sub show_backlog_and_items {
 
     my %backlog_container;
     $backlog_container{'sprint'} = $team_backlog;
-    #$backlog_container{'bugs'}   = $team_backlog->get_bugs();
-    $backlog_container{'bugs'} = $team_backlog->get_items();
-    $vars->{'backlog'} = \%backlog_container;
+    $backlog_container{'bugs'}   = $team_backlog->get_items();
+    $vars->{'backlog'}           = \%backlog_container;
 }
 
 sub edit_sprint {
@@ -775,7 +780,7 @@ sub _sanitise_sprint_data {
 }
 
 sub _update_team {
-    my ($team, $name, $owner, $scrum_master) = @_;
+    my ($team, $name, $owner, $scrum_master, $is_using_backlog) = @_;
 
     my $error = "";
     if ($name =~ /^([-\ \w]+)$/) {
@@ -801,10 +806,15 @@ sub _update_team {
         $scrum_master = "";
     }
 
+    if ($is_using_backlog =~ /^([0-9])$/) {
+        $is_using_backlog = $1;    # $data now untainted
+    }
+
     if ($error eq "") {
         $team->set_name($name);
         $team->set_owner($owner);
         $team->set_scrum_master($scrum_master);
+        $team->set_is_using_backlog($is_using_backlog);
         $team->update();
     }
 
