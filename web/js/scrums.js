@@ -107,6 +107,8 @@ function switch_lists(ui, lists) {
 
     var bug_id = ui.item.attr('id');
 
+    var move_from_order = capture_team_order_for_item(bug_id);
+
     var to_i;
     var from_i;
     var old_position = parseInt(ui.item.attr('bug_order_nr') - 1);
@@ -152,6 +154,9 @@ function switch_lists(ui, lists) {
 
             update_positions(lists, to_i);
             update_positions(lists, from_i);
+
+            var move_to_order = capture_team_order_for_item(bug_id);
+    	    save_item_move(bug_id, lists[from_i].id, lists[to_i].id, move_from_order, move_to_order);
 
 	    if(sprint_callback) {
                 sprint_callback(lists[0].estimatedcapacity, lists[0].list, lists[1].list);
@@ -213,7 +218,7 @@ function bind_sortable_lists(lists) {
             from_list_ul_id = ui.item.parent().attr('id');
         },
         stop: function(event, ui) {
-            switch_lists(ui, lists);;
+            switch_lists(ui, lists);
         },
         items: 'tr:not(.ignoresortable)',
         helper: function(event , item)
@@ -587,6 +592,84 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id)
     save(ordered_lists, schema, obj_id, data_lists);
     unordered_list.original_list = $.extend(true, [], unordered_list.list);
 }
+
+function capture_team_order_for_item(bug_id)
+{
+    var counter = 1; // Counting starts from 1.
+    for (var i = 0; i < all_lists.length; i++) {
+        var list = all_lists[i];
+	if(list.id != -1)
+	{
+            for (var k = 0; k < list.list.length; k++) {
+	        if(list.list[k][0][0] == bug_id)
+	        {
+	            return counter;
+	        }
+	        counter++;
+	    }
+        }
+    }
+    return
+}
+
+function save_item_move(bug_id, from_sprint_id, to_sprint_id, from_team_order, to_team_order)
+{
+    var str = "{bug_id: " + bug_id + ", " +
+	"from_sprint_id: " + from_sprint_id + ", " +
+	"to_sprint_id: " + to_sprint_id + ", " +
+	"from_team_order: " + from_team_order + ", " +
+	"to_team_order: " + to_team_order + "}";
+
+    $.post('page.cgi?id=scrums/ajax.html', {
+        schema: 'bugmove',
+        action: 'set',
+        obj_id: bug_id,
+        data: str
+    }, saveResponse        , 'text');
+}
+
+/*
+function save_item_move(bug_id, from_list_index, from_sprint, from_position, to_list_index, to_sprint, to_position)
+{
+    var str = "Moving bug: " + bug_id +
+	" from sprint: " + from_sprint.id +
+	" position " + from_position +
+	" to sprint " + to_sprint.id +
+	" position " + to_position;
+    alert(str);
+
+    var from_list_previous_bug = null;
+    if(from_position > 0) 
+    {
+	if(to_list_index == from_list_index && from_position > to_position) 
+        {
+            from_list_previous_bug = from_sprint.list[from_position][0][0];
+	}
+	else
+	{
+            from_list_previous_bug = from_sprint.list[from_position-1][0][0];
+	}
+    }
+//    alert("Previous bug in from list: " + from_list_previous_bug);
+
+    var to_list_previous_bug = null;
+    if(to_position > 0) 
+    {
+	if(to_list_index == from_list_index && from_position < to_position) 
+        {
+	    // List is one off, because items in between are relocated into minus one index and
+	    // event is triggered before items have their new places
+	    // If items is moved from smaller index into bigger, index is at least 2. 
+            to_list_previous_bug = to_sprint.list[to_position-2][0][0];
+	}
+	else
+	{
+            to_list_previous_bug = to_sprint.list[to_position-1][0][0];
+	}
+    }
+    alert("Previous bug in from list: " + from_list_previous_bug + "\n" + "Previous bug in to list: " + to_list_previous_bug);
+}
+*/
 
 // le template engine
 var _tmplCache = {}

@@ -602,8 +602,11 @@ sub page_before_template {
         elsif ($schema eq "backlog") {
             update_team_bugs($vars, 1);
         }
+        elsif ($schema eq "bugmove") {
+            $vars->{'errors'} = "bugmove";
+        }
         else {
-            update_team_bugs($vars, 1);
+            $vars->{'errors'} = "Unknown schema";
         }
     }
     elsif ($page eq 'scrums/newsprint.html') {
