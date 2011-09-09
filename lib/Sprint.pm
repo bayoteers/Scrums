@@ -595,33 +595,42 @@ sub add_bug_into_sprint {
     my ($added_bug_id, $insert_after_bug_id, $vars) = @_;
     if ($vars) { $vars->{'output'} .= "add_bug_into_sprint - added_bug_id:" . $added_bug_id . " insert_after_bug_id:" . $insert_after_bug_id . "<br />"; }
 
+    # Possible values of 'insert_after_bug_team_order_number' are between -1 and team order of last item
+    # If value is -1, 'new_bug_team_order_number' will become 0, which means, that added item will become first in list.
+    my $new_bug_team_order_number = 1;
+    if ($insert_after_bug_id) {
+        my $item_order = Bugzilla::Extension::Scrums::Bugorder->new($insert_after_bug_id);
+        $new_bug_team_order_number = $item_order->team_order() + 1;
+    }
+
+    $self->add_bug_into_team_order($added_bug_id, $new_bug_team_order_number, $vars);
+}
+
+sub add_bug_into_team_order {
+    my $self = shift;
+    my ($added_bug_id, $new_bug_team_order_number, $vars) = @_;
+
     my $dbh = Bugzilla->dbh;
 
     $dbh->bz_start_transaction();
-
-    my $insert_after_bug_team_order_number = undef;
-    if ($insert_after_bug_id) {
-        my $item_order = Bugzilla::Extension::Scrums::Bugorder->new($insert_after_bug_id);
-        $insert_after_bug_team_order_number = $item_order->team_order();
-    }
 
     my $team = $self->get_team();
     my $previous_sprint_id_for_bug = $team->_is_bug_in_active_sprint($added_bug_id, $vars);
     if ($previous_sprint_id_for_bug) {
         $self->_update_sprint_map($added_bug_id, $previous_sprint_id_for_bug, $vars);
         my $previous_team_order_for_bug = $self->_is_bug_in_team_order($added_bug_id, $vars);
-        $self->_save_team_order($added_bug_id, $insert_after_bug_team_order_number, $previous_team_order_for_bug, $vars);
+        $self->_save_team_order($added_bug_id, $new_bug_team_order_number, $previous_team_order_for_bug, $vars);
     }
     else {
         $dbh->do('INSERT INTO scrums_sprint_bug_map (bug_id, sprint_id) values (?, ?)', undef, $added_bug_id, $self->{'id'});
         my $previous_team_order_for_bug = $self->_is_bug_in_team_order($added_bug_id, $vars);
         if ($previous_team_order_for_bug) {
             # When bug is not in active sprint (backlog), it's team order is ignored even if it had team order
-            $self->_save_team_order($added_bug_id, $insert_after_bug_team_order_number, -1, $vars);
+            $self->_save_team_order($added_bug_id, $new_bug_team_order_number, -1, $vars);
         }
         else {
             # When bug does not have team order, it needs to be inserted.
-            $self->_save_team_order($added_bug_id, $insert_after_bug_team_order_number, undef, $vars);
+            $self->_save_team_order($added_bug_id, $new_bug_team_order_number, undef, $vars);
         }
     }
 
@@ -682,22 +691,20 @@ sub _remove_sprint_map {
 
 sub _save_team_order {
     my $self = shift;
-    my ($added_bug_id, $insert_after_bug_team_order_number, $previous_team_order_for_bug, $vars) = @_;
+    my ($added_bug_id, $new_bug_team_order_number, $previous_team_order_for_bug, $vars) = @_;
     if ($vars) {
         $vars->{'output'} .=
             "_save_team_order - added_bug_id:"
           . $added_bug_id
-          . " insert_after_bug_team_order_number:"
-          . $insert_after_bug_team_order_number
+          . " new_bug_team_order_number:"
+          . $new_bug_team_order_number
           . " previous_team_order_for_bug:"
           . $previous_team_order_for_bug
           . "<br />";
     }
 
-    my $new_bug_team_order_number = 0;
-    if ($insert_after_bug_team_order_number) {
-        $new_bug_team_order_number = $insert_after_bug_team_order_number + 1;
-    }
+    # Possible values of 'new_bug_team_order_number' are between 1 and team order of last item plus one
+    # If 'new_bug_team_order_number' is 1, added item will become first in list. Team orders start from 1.
 
     if (!$previous_team_order_for_bug) {
         $self->_update_tail_team_order($new_bug_team_order_number, 1, $vars);    # increment is 1 => addition
@@ -709,7 +716,7 @@ sub _save_team_order {
     }
     elsif ($previous_team_order_for_bug > $new_bug_team_order_number) {
         # Moving bug to smaller index (bigger priority) in team order list # increment is 1 => addition
-        $self->_update_span_team_order($insert_after_bug_team_order_number + 1, $previous_team_order_for_bug, 1, $vars);
+        $self->_update_span_team_order($new_bug_team_order_number, $previous_team_order_for_bug, 1, $vars);
         $self->_update_bug_team_order($added_bug_id, $new_bug_team_order_number, $vars);
     }
     elsif ($previous_team_order_for_bug < $new_bug_team_order_number) {
