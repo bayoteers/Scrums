@@ -585,6 +585,20 @@ sub set_start_date         { $_[0]->set('start_date',         $_[1]); }
 sub set_end_date           { $_[0]->set('end_date',           $_[1]); }
 sub set_estimated_capacity { $_[0]->set('estimated_capacity', $_[1]); }
 
+sub add_item_list_history {
+    my $self = shift;
+    my ($dbh, $added_bug_id, $to_team_order, $to_sprint_id, $from_team_order, $from_sprint_id, $user_id) = @_;
+
+    my ($localtime_sec, $localtime_min, $localtime_hour, $localtime_day, $localtime_month, $localtime_year) = localtime();
+    my $now =
+      sprintf("%04d-%02d-%02d %02d:%02d:%02d", 1900 + $localtime_year, 1 + $localtime_month, $localtime_day, $localtime_hour, $localtime_min, $localtime_sec);
+
+    $dbh->do(
+'INSERT INTO scrums_item_list_history (bug_id, from_sprint_id, to_sprint_id, from_team_order, to_team_order, user_id, update_ts) values (?, ?, ?, ?, ?, ?, ?)',
+        undef, $added_bug_id, $from_sprint_id, $to_sprint_id, $from_team_order, $to_team_order, $user_id, $now
+    );
+}
+
 ###############################
 ### Testing utility methods ###
 ###############################
@@ -604,16 +618,17 @@ sub add_bug_into_sprint {
         $new_bug_team_order_number = $item_order->team_order() + 1;
     }
 
+    my $dbh = Bugzilla->dbh;
+    $dbh->bz_start_transaction();
+
     $self->add_bug_into_team_order($added_bug_id, $new_bug_team_order_number, $vars);
+
+    $dbh->bz_commit_transaction();
 }
 
 sub add_bug_into_team_order {
     my $self = shift;
-    my ($added_bug_id, $new_bug_team_order_number, $vars) = @_;
-
-    my $dbh = Bugzilla->dbh;
-
-    $dbh->bz_start_transaction();
+    my ($dbh, $added_bug_id, $new_bug_team_order_number, $vars) = @_;
 
     my $team = $self->get_team();
     my $previous_sprint_id_for_bug = $team->_is_bug_in_active_sprint($added_bug_id, $vars);
@@ -634,8 +649,6 @@ sub add_bug_into_team_order {
             $self->_save_team_order($added_bug_id, $new_bug_team_order_number, undef, $vars);
         }
     }
-
-    $dbh->bz_commit_transaction();
 }
 
 sub remove_bug_from_sprint {

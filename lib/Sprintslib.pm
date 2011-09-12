@@ -42,6 +42,7 @@ use base qw(Exporter);
 # @EXPORT.)
 our @EXPORT = qw(
   update_bug_order_from_json
+  move_bug_in_list_from_json
   sprint_summary
   handle_person_capacity
   );
@@ -62,6 +63,31 @@ sub update_bug_order_from_json {
     my $content = $json->allow_nonref->utf8->relaxed->decode($data);
 
     team_bug_order($team_id, $content);
+}
+
+sub move_bug_in_list_from_json {
+    my ($team_id, $user_id, $data) = @_;
+
+    my $json = new JSON::XS;
+    if ($data =~ /(.*)/) {
+        $data = $1;    # $data now untainted
+    }
+    # TODO tutkittava, onko sprint priorisoimattomat
+    my $content         = $json->allow_nonref->utf8->relaxed->decode($data);
+    my $bug_id          = $content->{bug_id};
+    my $to_team_order   = $content->{to_team_order};
+    my $to_sprint_id    = $content->{to_sprint_id};
+    my $from_team_order = $content->{from_team_order};
+    my $from_sprint_id  = $content->{from_sprint_id};
+    my $sprint          = Bugzilla::Extension::Scrums::Sprint->new($to_sprint_id);
+
+    my $dbh = Bugzilla->dbh;
+    $dbh->bz_start_transaction();
+
+    $sprint->add_bug_into_team_order($dbh, $bug_id, $to_team_order);
+    $sprint->add_item_list_history($dbh, $bug_id, $to_team_order, $to_sprint_id, $from_team_order, $from_sprint_id, $user_id);
+
+    $dbh->bz_commit_transaction();
 }
 
 sub handle_person_capacity {

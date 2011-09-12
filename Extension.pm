@@ -428,6 +428,50 @@ sub db_schema_abstract_schema {
                                                                                               },
                                                        ],
                                           };
+
+    $schema->{'scrums_item_list_history'} = {
+                                              FIELDS => [
+                                                          bug_id => {
+                                                                      TYPE       => 'INT3',
+                                                                      NOTNULL    => 1,
+                                                                      REFERENCES => {
+                                                                                      TABLE  => 'bugs',
+                                                                                      COLUMN => 'bug_id',
+                                                                                      DELETE => 'CASCADE'
+                                                                                    }
+                                                                    },
+                                                          from_sprint_id => {
+                                                                              TYPE       => 'INT2',
+                                                                              NOTNULL    => 1,
+                                                                              REFERENCES => {
+                                                                                              TABLE  => 'scrums_sprints',
+                                                                                              COLUMN => 'id',
+                                                                                              DELETE => 'CASCADE'
+                                                                                            }
+                                                                            },
+                                                          to_sprint_id => {
+                                                                            TYPE       => 'INT2',
+                                                                            NOTNULL    => 1,
+                                                                            REFERENCES => {
+                                                                                            TABLE  => 'scrums_sprints',
+                                                                                            COLUMN => 'id',
+                                                                                            DELETE => 'CASCADE'
+                                                                                          }
+                                                                          },
+                                                          from_team_order => { TYPE => 'INT3' },
+                                                          to_team_order   => { TYPE => 'INT3' },
+                                                          userid          => {
+                                                                      TYPE       => 'INT3',
+                                                                      NOTNULL    => 1,
+                                                                      REFERENCES => {
+                                                                                      TABLE  => 'profiles',
+                                                                                      COLUMN => 'userid',
+                                                                                      DELETE => 'CASCADE'
+                                                                                    }
+                                                                    },
+                                                          update_ts => { TYPE => 'DATETIME', NOTNULL => 1 },
+                                                        ]
+                                            };
 }
 
 sub install_update_db {
@@ -600,10 +644,13 @@ sub page_before_template {
             handle_release_bug_data($vars);
         }
         elsif ($schema eq "backlog") {
-            update_team_bugs($vars, 1);
+            update_team_bugs($vars, 1);    # backlog => must by owner to edit
+        }
+        elsif ($schema eq "team") {
+            update_team_bugs($vars, 0);    # team => must be member to edit
         }
         elsif ($schema eq "bugmove") {
-            $vars->{'errors'} = "bugmove";
+            move_bug_in_sprint($vars);
         }
         else {
             $vars->{'errors'} = "Unknown schema";

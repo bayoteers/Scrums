@@ -614,16 +614,16 @@ function capture_team_order_for_item(bug_id)
 
 function save_item_move(bug_id, from_sprint_id, to_sprint_id, from_team_order, to_team_order)
 {
-    var str = "{bug_id: " + bug_id + ", " +
-	"from_sprint_id: " + from_sprint_id + ", " +
-	"to_sprint_id: " + to_sprint_id + ", " +
-	"from_team_order: " + from_team_order + ", " +
-	"to_team_order: " + to_team_order + "}";
+    var str = '{"bug_id": "' + bug_id + '", ' +
+	'"from_sprint_id": "' + from_sprint_id + '", ' +
+	'"to_sprint_id": "' + to_sprint_id + '", ' +
+	'"from_team_order": "' + from_team_order + '", ' +
+	'"to_team_order": "' + to_team_order + '"}';
 
     $.post('page.cgi?id=scrums/ajax.html', {
         schema: 'bugmove',
         action: 'set',
-        obj_id: bug_id,
+        obj_id: team_id,
         data: str
     }, saveResponse        , 'text');
 }
