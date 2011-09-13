@@ -50,7 +50,7 @@ function listObject(ul_id, h_id, id, name, li_tmpl) {
 }
 
 var from_list_ul_id = '';
-
+var page_loading_time = null;
 var sprint_callback = null;
 
 function select_step(list_id)
@@ -612,6 +612,12 @@ function capture_team_order_for_item(bug_id)
     return
 }
 
+function init_undo_function()
+{
+    var d = new Date();
+    page_loading_time = d.getTime();
+}
+
 function save_item_move(bug_id, from_sprint_id, to_sprint_id, from_team_order, to_team_order)
 {
     var str = '{"bug_id": "' + bug_id + '", ' +
@@ -628,17 +634,15 @@ function save_item_move(bug_id, from_sprint_id, to_sprint_id, from_team_order, t
     }, saveResponse        , 'text');
 }
 
-/*
 function undo_item_move()
 {
     $.post('page.cgi?id=scrums/ajax.html', {
         schema: 'bugmove',
         action: 'undo',
         obj_id: team_id,
-        data: ''
+        data: page_loading_time
     }, saveResponse        , 'text');
 }
-*/
 
 // le template engine
 var _tmplCache = {}

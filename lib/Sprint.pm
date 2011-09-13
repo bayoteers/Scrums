@@ -599,6 +599,38 @@ sub add_item_list_history {
     );
 }
 
+sub get_item_list_history {
+    my $self = shift;
+    my ($user_id, $pldt) = @_;
+
+    my $dbh  = Bugzilla->dbh;
+    my $sth = $dbh->prepare(
+        "select
+                bug_id,
+                from_sprint_id,
+                from_team_order,
+                to_sprint_id,
+                to_team_order
+        from
+	        scrums_item_list_history h1
+        where
+	        userid = ? and
+                update_ts > ? and
+                not exists 
+        (select 
+                null 
+        from 
+	        scrums_item_list_history h2
+        where
+                h2.userid = h1.userid and
+                h2.update_ts > h1.update_ts)");
+    $sth->execute($user_id, $pldt);
+    my ($bug_id, $from_sprint_id, $from_team_order, $to_sprint_id, $to_team_order);
+    ($bug_id, $from_sprint_id, $from_team_order, $to_sprint_id, $to_team_order) = $sth->fetchrow_array();
+
+    return ($bug_id, $from_sprint_id, $from_team_order, $to_sprint_id, $to_team_order);
+}
+
 ###############################
 ### Testing utility methods ###
 ###############################
@@ -618,6 +650,7 @@ sub add_bug_into_sprint {
         $new_bug_team_order_number = $item_order->team_order() + 1;
     }
 
+# TODO REFACTOR! CREATE NEW METHOD IS_BUG_MOVING_INTO_BIGGER_ORDER
     my $previous_team_order_for_bug = $self->_is_bug_in_team_order($added_bug_id, $vars);
     # Preceding bug 'insert_after_bug' moved one position. That is why added bug can be put into it's old position.
     # Index of insert_after_bug was searched by bug id after all.

@@ -646,10 +646,12 @@ sub move_bug_in_sprint {
     my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('obj_id');
     my $data    = $cgi->param('data');
+    my $action  = $cgi->param('action');
 
     my $user  = Bugzilla->user();
     my $team  = Bugzilla::Extension::Scrums::Team->new($team_id);
     my $error = "";
+
 
     if ($list_is_backlog) {
         if (($team->owner() != $user->id()) && (not Bugzilla->user->in_group('scrums_editteams'))) {
@@ -668,7 +670,20 @@ sub move_bug_in_sprint {
         $vars->{'errors'} = $error;
     }
     else {
-        move_bug_in_list_from_json($team_id, $user->id(), $data);
+        trick_taint($data);
+        if($action eq "set") {
+            move_bug_in_list_from_json($team_id, $user->id(), $data);
+        }
+        elsif($action eq "undo") {
+            my $ret = undo_bug_move_in_list($team_id, $user->id(), $data);
+        $vars->{'errors'} .= $ret;
+#    my $page_load_ts = $data / 1000;
+#    my $dt1 = DateTime->now( time_zone => 'local', epoch => $page_load_ts )->set_time_zone('floating');
+#    my $pldt = $dt1->ymd() . ' ' . $dt1->hms();    
+#            $vars->{'errors'} = "UNDO " . $pldt;
+#$vars->{'errors'} = "UNDO " . $page_load_ts;
+#$vars->{'errors'} = "UNDO ";
+        }
     }
 }
 
