@@ -84,7 +84,7 @@ sub move_bug_in_list_from_json {
     my $dbh = Bugzilla->dbh;
     $dbh->bz_start_transaction();
 
-    $sprint->add_bug_into_team_order($dbh, $bug_id, $to_team_order);
+    $sprint->add_bug_into_team_order($dbh, $bug_id, $to_team_order, $from_team_order);
     $sprint->add_item_list_history($dbh, $bug_id, $to_team_order, $to_sprint_id, $from_team_order, $from_sprint_id, $user_id);
 
     $dbh->bz_commit_transaction();
