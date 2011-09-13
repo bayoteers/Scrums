@@ -629,45 +629,14 @@ function save_item_move(bug_id, from_sprint_id, to_sprint_id, from_team_order, t
 }
 
 /*
-function save_item_move(bug_id, from_list_index, from_sprint, from_position, to_list_index, to_sprint, to_position)
+function undo_item_move()
 {
-    var str = "Moving bug: " + bug_id +
-	" from sprint: " + from_sprint.id +
-	" position " + from_position +
-	" to sprint " + to_sprint.id +
-	" position " + to_position;
-    alert(str);
-
-    var from_list_previous_bug = null;
-    if(from_position > 0) 
-    {
-	if(to_list_index == from_list_index && from_position > to_position) 
-        {
-            from_list_previous_bug = from_sprint.list[from_position][0][0];
-	}
-	else
-	{
-            from_list_previous_bug = from_sprint.list[from_position-1][0][0];
-	}
-    }
-//    alert("Previous bug in from list: " + from_list_previous_bug);
-
-    var to_list_previous_bug = null;
-    if(to_position > 0) 
-    {
-	if(to_list_index == from_list_index && from_position < to_position) 
-        {
-	    // List is one off, because items in between are relocated into minus one index and
-	    // event is triggered before items have their new places
-	    // If items is moved from smaller index into bigger, index is at least 2. 
-            to_list_previous_bug = to_sprint.list[to_position-2][0][0];
-	}
-	else
-	{
-            to_list_previous_bug = to_sprint.list[to_position-1][0][0];
-	}
-    }
-    alert("Previous bug in from list: " + from_list_previous_bug + "\n" + "Previous bug in to list: " + to_list_previous_bug);
+    $.post('page.cgi?id=scrums/ajax.html', {
+        schema: 'bugmove',
+        action: 'undo',
+        obj_id: team_id,
+        data: ''
+    }, saveResponse        , 'text');
 }
 */
 

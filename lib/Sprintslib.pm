@@ -72,20 +72,41 @@ sub move_bug_in_list_from_json {
     if ($data =~ /(.*)/) {
         $data = $1;    # $data now untainted
     }
-    # TODO tutkittava, onko sprint priorisoimattomat
+
     my $content         = $json->allow_nonref->utf8->relaxed->decode($data);
     my $bug_id          = $content->{bug_id};
     my $to_team_order   = $content->{to_team_order};
     my $to_sprint_id    = $content->{to_sprint_id};
     my $from_team_order = $content->{from_team_order};
     my $from_sprint_id  = $content->{from_sprint_id};
-    my $sprint          = Bugzilla::Extension::Scrums::Sprint->new($to_sprint_id);
 
     my $dbh = Bugzilla->dbh;
     $dbh->bz_start_transaction();
 
-    $sprint->add_bug_into_team_order($dbh, $bug_id, $to_team_order, $from_team_order);
-    $sprint->add_item_list_history($dbh, $bug_id, $to_team_order, $to_sprint_id, $from_team_order, $from_sprint_id, $user_id);
+    if($to_sprint_id == -1) {
+        if($from_sprint_id != -1) {
+            my $old_sprint          = Bugzilla::Extension::Scrums::Sprint->new($from_sprint_id);
+            $old_sprint->remove_bug_from_sprint($bug_id);
+            $to_sprint_id  = undef;
+            $to_team_order = undef;
+            $old_sprint->add_item_list_history($dbh, $bug_id, $to_team_order, $to_sprint_id, $from_team_order, $from_sprint_id, $user_id);
+        }
+        # else do nothing
+    }
+    else {
+        my $sprint          = Bugzilla::Extension::Scrums::Sprint->new($to_sprint_id);
+        if($from_sprint_id == -1) {
+            # This is needed in case there is previous record in scrums_bug_order-table
+            $from_team_order = $sprint->_is_bug_in_team_order($bug_id); 
+        }
+        $sprint->add_bug_into_team_order($dbh, $bug_id, $to_team_order, $from_team_order);
+        if($from_sprint_id == -1) {
+            $from_sprint_id  = undef;
+            # We don't want value '-1' into history table
+            $from_team_order = undef; 
+        }
+        $sprint->add_item_list_history($dbh, $bug_id, $to_team_order, $to_sprint_id, $from_team_order, $from_sprint_id, $user_id);
+    }
 
     $dbh->bz_commit_transaction();
 }

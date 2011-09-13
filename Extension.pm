@@ -442,7 +442,6 @@ sub db_schema_abstract_schema {
                                                                     },
                                                           from_sprint_id => {
                                                                               TYPE       => 'INT2',
-                                                                              NOTNULL    => 1,
                                                                               REFERENCES => {
                                                                                               TABLE  => 'scrums_sprints',
                                                                                               COLUMN => 'id',
@@ -451,7 +450,6 @@ sub db_schema_abstract_schema {
                                                                             },
                                                           to_sprint_id => {
                                                                             TYPE       => 'INT2',
-                                                                            NOTNULL    => 1,
                                                                             REFERENCES => {
                                                                                             TABLE  => 'scrums_sprints',
                                                                                             COLUMN => 'id',

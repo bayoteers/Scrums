@@ -619,12 +619,11 @@ sub add_bug_into_sprint {
     }
 
     my $previous_team_order_for_bug = $self->_is_bug_in_team_order($added_bug_id, $vars);
-        # Preceding bug 'insert_after_bug' moved one position. That is why added bug can be put into it's old position.
-        # Index of insert_after_bug was searched by bug id after all.
-    if($previous_team_order_for_bug != -1 && $previous_team_order_for_bug < $new_bug_team_order_number) {
+    # Preceding bug 'insert_after_bug' moved one position. That is why added bug can be put into it's old position.
+    # Index of insert_after_bug was searched by bug id after all.
+    if ($previous_team_order_for_bug != -1 && $previous_team_order_for_bug < $new_bug_team_order_number) {
         $new_bug_team_order_number = $new_bug_team_order_number - 1;
     }
-    
 
     my $dbh = Bugzilla->dbh;
     $dbh->bz_start_transaction();
