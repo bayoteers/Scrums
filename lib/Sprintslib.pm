@@ -115,7 +115,7 @@ sub move_bug_in_list_from_json {
 sub undo_bug_move_in_list {
     my ($team_id, $user_id, $data, $vars) = @_;
 
-    my $dbh = Bugzilla->dbh;
+    my $dbh          = Bugzilla->dbh;
     my $page_load_ts = $data / 1000;
     my $dt1          = DateTime->now(time_zone => 'local', epoch => $page_load_ts)->set_time_zone('floating');
     my $pldt         = $dt1->ymd() . ' ' . $dt1->hms();
