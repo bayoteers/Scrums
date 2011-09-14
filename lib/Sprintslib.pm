@@ -113,36 +113,36 @@ sub move_bug_in_list_from_json {
 }
 
 sub undo_bug_move_in_list {
-    my ($team_id, $user_id, $data) = @_;
+    my ($team_id, $user_id, $data, $vars) = @_;
 
+    my $dbh = Bugzilla->dbh;
     my $page_load_ts = $data / 1000;
-    my $dt1 = DateTime->now( time_zone => 'local', epoch => $page_load_ts )->set_time_zone('floating');
-    my $pldt = $dt1->ymd() . ' ' . $dt1->hms();    
-    my ($bug_id, $from_sprint_id, $from_team_order, $to_sprint_id, $to_team_order) = 
-        Bugzilla::Extension::Scrums::Sprint->get_item_list_history($user_id, $pldt);
-#    return "Parametrit: " . $user_id . " " . $pldt;
-    if(!$bug_id) {
+    my $dt1          = DateTime->now(time_zone => 'local', epoch => $page_load_ts)->set_time_zone('floating');
+    my $pldt         = $dt1->ymd() . ' ' . $dt1->hms();
+    my ($bug_id, $from_sprint_id, $from_team_order, $to_sprint_id, $to_team_order) =
+      Bugzilla::Extension::Scrums::Sprint->get_item_list_history($user_id, $pldt);
+    #    return "Parametrit: " . $user_id . " " . $pldt;
+    if (!$bug_id) {
         return "Could not undo";
     }
     else {
-#        return "Bug: " . $bug_id;
-        if($from_sprint_id) {
-            my $from_sprint    = Bugzilla::Extension::Scrums::Sprint->new($from_sprint_id);
-            if($from_sprint->team_id() != $team_id) {
+        #        return "Bug: " . $bug_id;
+        if ($from_sprint_id) {
+            my $from_sprint = Bugzilla::Extension::Scrums::Sprint->new($from_sprint_id);
+            if ($from_sprint->team_id() != $team_id) {
                 # This should not happen
                 return "wrong team (DEBUG)";
             }
-            if($to_sprint_id) {
-                my $to_sprint    = Bugzilla::Extension::Scrums::Sprint->new($to_sprint_id);
-                if(!$to_sprint->is_item_in_sprint($bug_id)) {
+            if ($to_sprint_id) {
+                my $to_sprint = Bugzilla::Extension::Scrums::Sprint->new($to_sprint_id);
+                if (!$to_sprint->is_item_in_sprint($bug_id)) {
                     return "not in sprint (DEBUG)";
                 }
                 my $current_team_order = $to_sprint->_is_bug_in_team_order();
-                if($current_team_order != $to_team_order) {
+                if ($current_team_order != $to_team_order) {
                     return "item not in place (DEBUG)";
                 }
 
-                my $dbh = Bugzilla->dbh;
                 $dbh->bz_start_transaction();
                 # From and to team orders are reversed
                 $from_sprint->add_bug_into_team_order($dbh, $bug_id, $from_team_order, $to_team_order);
@@ -154,21 +154,21 @@ sub undo_bug_move_in_list {
                 #
                 # TODO Method is_bug_in_team_order returns -1 if there is record in scrums_bug_order table, but team-column is empty
                 # TODO THIS MUST BE REFACTORED
-                my $current_team_order_for_bug = Bugzilla::Extension::Scrums::Sprint->_is_bug_in_team_order($added_bug_id, $vars);
+                my $current_team_order_for_bug = Bugzilla::Extension::Scrums::Sprint->_is_bug_in_team_order($bug_id, $vars);
                 $from_sprint->add_bug_into_team_order($dbh, $bug_id, $from_team_order, $to_team_order);
             }
         }
         else {
-            my $to_sprint    = Bugzilla::Extension::Scrums::Sprint->new($to_sprint_id);
-            if($to_sprint->team_id() != $team_id) {
+            my $to_sprint = Bugzilla::Extension::Scrums::Sprint->new($to_sprint_id);
+            if ($to_sprint->team_id() != $team_id) {
                 # This should not happen
                 return "wrong team (DEBUG)";
             }
-            if(!$to_sprint->is_item_in_sprint($bug_id)) {
+            if (!$to_sprint->is_item_in_sprint($bug_id)) {
                 return "not in sprint (DEBUG)";
             }
             my $current_team_order = $to_sprint->_is_bug_in_team_order();
-            if($current_team_order != $to_team_order) {
+            if ($current_team_order != $to_team_order) {
                 return "item not in place (DEBUG)";
             }
             $to_sprint->remove_bug_from_sprint($bug_id);
