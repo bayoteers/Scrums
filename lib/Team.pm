@@ -471,7 +471,11 @@ sub all_items_not_in_sprint {
         left(b.short_desc, 40),
         b.short_desc,
         b.creation_ts,
-        b.bug_severity
+        b.bug_severity,
+        0,
+        0,
+        sum(work_time) as work_done,
+        sum(work_time)+b.remaining_time as total_work
     from 
 	scrums_componentteam sct
     inner join
@@ -480,6 +484,8 @@ sub all_items_not_in_sprint {
         profiles p on p.userid = b.assigned_to
     inner join
 	bug_status bs on b.bug_status = bs.value
+    inner join 
+        longdescs l on l.bug_id = b.bug_id
     where 
 	sct.teamid = ? and
 	bs.is_open = 1 and
@@ -493,6 +499,15 @@ sub all_items_not_in_sprint {
         spr.id = 
         (select id from scrums_sprints spr2 where spr2.team_id = ? and spr2.item_type = 1 and not exists 
         (select null from scrums_sprints spr3 where spr3.team_id = ? and spr3.item_type = 1 and spr3.start_date > spr2.start_date)))
+    group by
+        b.bug_id,
+        b.remaining_time,
+        b.bug_status,
+        p.realname,
+        left(b.short_desc, 40),
+        b.short_desc,
+        b.creation_ts,
+        b.bug_severity
     order by
 	bug_id', undef, $self->id, $self->id, $self->id
     );

@@ -30,11 +30,7 @@
   unordered_bugs.show_columns.push('creation_date')
   unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
 
-  [% IF team.is_using_backlog() %]
-    var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog');
-  [% ELSE %]
-    var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog (informative)');
-  [% END %]
+  var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog');
   backlog.show_columns.push('creation_date')
 
   var all_lists = [];
@@ -42,12 +38,7 @@
 
   function save_all()
   {
-    //$("#save").attr('disabled', 'disabled');
-    function call_back()
-    {
-    //    $("#save").removeAttr('disabled');
-    }
-    save_lists([backlog], unordered_bugs, 'backlog', [% team.id %], call_back);
+    save_lists([backlog], unordered_bugs, 'backlog', [% team.id %]);
   }
 
   [% PROCESS 'global/lists_unordered.js.tmpl' %]

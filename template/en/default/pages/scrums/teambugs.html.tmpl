@@ -147,7 +147,9 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
   [% IF team.is_using_backlog() %]
     var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog');
   [% ELSE %]
-    var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog (informative)');
+    // When all items are shown as 'backlog' to user, backlog must have sprint id of unprioritised items.
+    // This is important because all its items are saved as actual backlog otherwise.
+    var backlog = new listObject("sortable2", "headers2", '-1', 'Backlog (all items)');
   [% END %]
 
   var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
@@ -160,7 +162,12 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
   function save_all()
   {
      //save_lists(sprint_lists, backlog, 'team', [% team.id %]);
-     save(all_lists, 'team', [% team.id %]);
+     [% IF team.is_using_backlog() %]
+         save(all_lists, 'team', [% team.id %]);
+     [% ELSE %]
+	 // What we see as backlog is handled as unprioritised list. That means, that it is not saved as such. Only increment is saved.
+         save_lists([sprint], backlog, 'team', [% team.id %]);
+     [% END %]
   }
 
   // data from backend

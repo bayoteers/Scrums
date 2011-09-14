@@ -27,12 +27,8 @@
 
 <script type="text/javascript">
   var unordered_bugs = null;
-  [% IF team.is_using_backlog() %]
-    unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs');
-  [% ELSE %]
-    unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Items not in sprint');
-  [% END %]
 
+  unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs');
   unordered_bugs.show_columns.push('creation_date')
   unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
 
@@ -44,11 +40,7 @@
     save_lists(sprint_lists, unordered_bugs, 'team', [% team.id %]);
   }
 
-  [% IF team.is_using_backlog() %]
-    [% PROCESS 'global/lists_unordered.js.tmpl' unprioritised_items = unprioritised_bugs %]
-  [% ELSE %]
-    [% PROCESS 'global/lists_unordered.js.tmpl' unprioritised_items = all_items_not_in_sprint %]
-  [% END %]
+  [% PROCESS 'global/lists_unordered.js.tmpl' unprioritised_items = unprioritised_bugs %]
   // data from backend
   var sprint_list_data = 
   {[% FOREACH team_sprint IN team_sprints_array %]

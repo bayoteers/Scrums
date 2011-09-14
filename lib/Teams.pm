@@ -463,8 +463,6 @@ sub _show_team_bugs {
     $vars->{'team'}               = $team;
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
 
-    $vars->{'all_items_not_in_sprint'} = $team->all_items_not_in_sprint();
-
     my @team_sprints_array;
     my $capacity;
     my $sprint = $team->get_team_current_sprint();
@@ -493,7 +491,12 @@ sub _show_team_bugs {
 
     my %backlog_container;
     $backlog_container{'sprint'}       = $team_backlog;
-    $backlog_container{'bugs'}         = $team_backlog->get_bugs();
+    if($team->is_using_backlog()) {
+        $backlog_container{'bugs'}         = $team_backlog->get_bugs();
+    }
+    else {
+        $backlog_container{'bugs'}         = $team->all_items_not_in_sprint();
+    }
     $backlog_container{'sprint_names'} = \@sprint_names;
     $vars->{'backlog'}                 = \%backlog_container;
 }
