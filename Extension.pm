@@ -464,6 +464,9 @@ sub install_update_db {
     Bugzilla->dbh->bz_drop_column("scrums_sprints", "nominal_schedule");
     Bugzilla->dbh->bz_drop_column("scrums_sprints", "is_active");
 
+    use constant USAGE_FLAG_DEFINITION => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' };
+    Bugzilla->dbh->bz_add_column("scrums_team", "is_using_backlog", USAGE_FLAG_DEFINITION, undef);
+
     return;
 }
 
