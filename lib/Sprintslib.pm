@@ -88,18 +88,21 @@ sub team_bug_order {
     my %sprints_hash;
 
     _get_sprints_hash(\%sprints_hash, $team_id);
-
+    my @active_sprints;
+    my $unprioritised_in_bugs;
     my @sprint_id_array = keys %{$all_team_sprints_and_unprioritised_in};
     for my $sprint_id (@sprint_id_array) {
         my $bugs = $all_team_sprints_and_unprioritised_in->{$sprint_id};
 
         if ($sprint_id == -1) {
-            process_unprioritised_in($bugs);
+            $unprioritised_in_bugs = $bugs;
         }
         else {
             process_sprint($sprint_id, $bugs, \%sprints_hash);
+            push @active_sprints, $sprint_id;
         }
     }
+    process_unprioritised_in($unprioritised_in_bugs, \@active_sprints);
 
     process_team_orders($all_team_sprints_and_unprioritised_in);
 }
@@ -118,16 +121,19 @@ sub process_sprint() {
             Bugzilla->dbh->do('INSERT INTO scrums_sprint_bug_map (bug_id, sprint_id) values (?, ?)', undef, $bug, $sprint_id);
         }
         else {
-            Bugzilla->dbh->do('UPDATE scrums_sprint_bug_map set sprint_id=? where bug_id=?', undef, $sprint_id, $bug);
+            Bugzilla->dbh->do('UPDATE scrums_sprint_bug_map set sprint_id=? where bug_id=? and sprint_id=?', undef, $sprint_id, $bug, $old_sprint);
         }
     }
 }
 
 sub process_unprioritised_in() {
-    my ($unprioritised_in) = @_;
+    my ($unprioritised_in, $active_sprints) = @_;
 
     foreach my $bug (@{$unprioritised_in}) {
-        Bugzilla->dbh->do('DELETE from scrums_sprint_bug_map where bug_id=?',         undef, $bug);
+        Bugzilla->dbh->do('DELETE from scrums_sprint_bug_map where bug_id=? and (sprint_id = ? or sprint_id = ?)',
+                          undef, $bug,
+                          @{$active_sprints}[0],
+                          @{$active_sprints}[1]);
         Bugzilla->dbh->do('UPDATE scrums_bug_order set team = NULL where bug_id = ?', undef, $bug);
     }
 }
