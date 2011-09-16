@@ -213,7 +213,8 @@ function bind_sortable_lists(lists) {
             from_list_ul_id = ui.item.parent().attr('id');
         },
         stop: function(event, ui) {
-            switch_lists(ui, lists);;
+            switch_lists(ui, lists);
+///////	    do_save();
         },
         items: 'tr:not(.ignoresortable)',
         helper: function(event , item)
@@ -241,15 +242,17 @@ function create_bug_elem(list, position)
     });
 }
 
-function update_lists(bugs_list, move_pos, data)
-{
-    if (data != undefined) {
-        bugs_list.list = data;
-        //deep copy
-        bugs_list.original_list = $.extend(true, [], data);
-        bugs_list.visible = -1;
-    }
 
+function bind_items_to_list(bugs_list, item_rows)
+{
+    bugs_list.list = item_rows;
+    //deep copy
+    bugs_list.original_list = $.extend(true, [], item_rows);
+    bugs_list.visible = -1;
+}
+
+function update_lists(bugs_list, move_pos)
+{
     if (bugs_list.visible == -1) {
         // show all
         bugs_list.visible = [];
@@ -412,10 +415,12 @@ function show_sprint(result)
     $('#sprint_button').html("<input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
 
     $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
-    update_lists(sprint, 0, data.bugs);
+    bind_items_to_list(sprint, data.bugs);
+    update_lists(sprint, 0);
 
     $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
-    update_lists(backlog, 0, backlog_bugs);
+    bind_items_to_list(backlog, backlog_bugs);
+    update_lists(backlog, 0);
     all_lists = [];
     all_lists.push(sprint);
     all_lists.push(backlog);
@@ -558,7 +563,23 @@ function create_sprint(result)
     }
 }
 
-
+function do_save()
+{
+    var unordered_list = null;
+    var ordered_lists = new Array();
+    for (var i = 0; i < all_lists.length; i++)
+    {
+	if(all_lists[i].id == -1)
+        {
+	    unordered_list = all_lists[i];
+	}
+	else
+	{
+	    ordered_lists.push(all_lists[i]);
+	}
+    }
+    save_lists(ordered_lists, unordered_list, schema, object_id);
+}
 
 function save_lists(ordered_lists, unordered_list, schema, obj_id)
 {

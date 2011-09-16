@@ -490,15 +490,15 @@ sub _show_team_bugs {
     push @sprint_names, $team_backlog->name();
 
     my %backlog_container;
-    $backlog_container{'sprint'}       = $team_backlog;
-    if($team->is_using_backlog()) {
-        $backlog_container{'bugs'}         = $team_backlog->get_bugs();
+    $backlog_container{'sprint'} = $team_backlog;
+    if ($team->is_using_backlog()) {
+        $backlog_container{'bugs'} = $team_backlog->get_bugs();
     }
     else {
-        $backlog_container{'bugs'}         = $team->all_items_not_in_sprint();
+        $backlog_container{'bugs'} = $team->all_items_not_in_sprint();
     }
     $backlog_container{'sprint_names'} = \@sprint_names;
-    $vars->{'backlog'}                 = \%backlog_container;
+    $vars->{'backlog'} = \%backlog_container;
 }
 
 sub show_archived_sprints {
@@ -528,12 +528,7 @@ sub show_backlog_and_items {
     $vars->{'team'}                = $team;
     $vars->{'unprioritised_items'} = $team->unprioritised_items();
 
-    my $team_backlog = $team->get_team_backlog();
-
-    my %backlog_container;
-    $backlog_container{'sprint'} = $team_backlog;
-    $backlog_container{'bugs'}   = $team_backlog->get_items();
-    $vars->{'backlog'}           = \%backlog_container;
+    _show_team_bugs($vars);
 }
 
 sub edit_sprint {

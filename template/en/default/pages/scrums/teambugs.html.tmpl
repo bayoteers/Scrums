@@ -154,7 +154,10 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
   var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
 
+  // *** Global variables ***
   sprint_callback = demark_sprint_capacity;
+  schema = 'team';
+  object_id = [% team.id %];
 
   var all_lists = [];
   var bug_positions = [];
@@ -194,10 +197,12 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
     sprint.history = historyStr;
 
     $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
-    update_lists(backlog, 0, backlog_bugs);
+    bind_items_to_list(backlog, backlog_bugs);
+    update_lists(backlog, 0);
 
     $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
-    update_lists(sprint, 0, sprint_bugs);
+    bind_items_to_list(sprint, sprint_bugs);
+    update_lists(sprint, 0);
     all_lists.push(sprint);
     all_lists.push(backlog);
     all_lists = [sprint, backlog];

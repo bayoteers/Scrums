@@ -33,32 +33,46 @@
   var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog');
   backlog.show_columns.push('creation_date')
 
+  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
+
+  // *** Global variables ***
+  schema = 'team';
+  object_id = [% team.id %];
+
   var all_lists = [];
+  var saved_lists = []; // TODO: future use
   var bug_positions = [];
 
   function save_all()
   {
-    save_lists([backlog], unordered_bugs, 'backlog', [% team.id %]);
+    save_lists([sprint, backlog], unordered_bugs, 'backlog', [% team.id %]);
   }
 
   [% PROCESS 'global/lists_unordered.js.tmpl' %]
   // data from backend
 
   [% PROCESS 'global/lists_backlog.js.tmpl' %]
-  var sprint_lists = [];
+
+ var sprint_bugs = [[% FOREACH bug IN active_sprint.get_bugs() %] [% bugid = bug.0 %]
+ [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", "", "", [% bug.10 %], [% bug.11 %], 0],[% END %]];
 
   $(document).ready(function() {
     var html = '';
 
+    bind_items_to_list(sprint, sprint_bugs);
+    saved_lists.push(sprint);
+
     $('#sprints').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
-    update_lists(backlog, 0, backlog_bugs);
-    //all_lists = $.extend(true, [], sprint_lists);
+    bind_items_to_list(backlog, backlog_bugs);
+    update_lists(backlog, 0);
     all_lists.push(backlog);
+    saved_lists.push(backlog); // TODO: future use
 
     $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
-    update_lists(unordered_bugs, 0, unordered_list_data);
-    //all_lists = $.extend(true, [], sprint_lists);
+    bind_items_to_list(unordered_bugs, unordered_list_data);
+    update_lists(unordered_bugs, 0);
     all_lists.push(unordered_bugs);
+    saved_lists.push(unordered_bugs); // TODO: future use
 
     bind_sortable_lists(all_lists);
   });

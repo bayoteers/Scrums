@@ -32,6 +32,8 @@
   unordered_bugs.show_columns.push('creation_date')
   unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
 
+  var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog');
+
   var all_lists = [];
   var bug_positions = [];
 
@@ -42,6 +44,9 @@
 
   [% PROCESS 'global/lists_unordered.js.tmpl' unprioritised_items = unprioritised_bugs %]
   // data from backend
+
+  [% PROCESS 'global/lists_backlog.js.tmpl' %]
+
   var sprint_list_data = 
   {[% FOREACH team_sprint IN team_sprints_array %]
   
@@ -72,7 +77,8 @@
 
       html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: '' });
       $(html).appendTo($('#sprints'));
-      update_lists(list, 0, sprint_list_data[id][1]);
+      bind_items_to_list(list, sprint_list_data[id][1]);
+      update_lists(list, 0);
 
       // expand collapse
       //$("#"+list.ul_id).hide();
@@ -88,10 +94,17 @@
 
     //$('#sprints').html(html);
     $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
-    update_lists(unordered_bugs, 0, unordered_list_data);
+    bind_items_to_list(unordered_bugs, unordered_list_data);
+    update_lists(unordered_bugs, 0);
     all_lists = $.extend(true, [], sprint_lists);
     all_lists.push(unordered_bugs);
     bind_sortable_lists(all_lists);
+
+    bind_items_to_list(backlog, backlog_bugs);
+    // Only *after* everything else has been done backlog is pushed to 'sprint_lists'
+    // Because backlog is in 'sprint_lists', it is saved (it is never changed)
+    // Nothing else is done with backlog item.
+    sprint_lists.push(backlog);
   });
 </script>
 
