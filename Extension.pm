@@ -142,8 +142,11 @@ sub bug_end_of_update {
                     "bug_id = ?)) and userid = ?", undef, $bug->bug_id, $user->id);
                 if ($res)
                 { 
-                    $dbh->do("INSERT INTO scrums_sprint_bug_map set sprint_id = ?, " .
-                          "bug_id = ?", undef, $scrums_action, $bug->bug_id);
+                    $dbh->do("INSERT INTO scrums_sprint_bug_map (sprint_id, bug_id) " .
+                        "SELECT ?, ? FROM dual WHERE NOT EXISTS " .
+                        "(SELECT 1 FROM scrums_sprint_bug_map where " .
+                        "(sprint_id, bug_id) = (?, ?))", undef, \
+                        $scrums_action, $bug->bug_id, $scrums_action, $bug->bug_id);
                 }
         }
     }
