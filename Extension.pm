@@ -136,14 +136,14 @@ sub bug_end_of_update {
         {
             my $user = Bugzilla->login(LOGIN_REQUIRED);
                 my $res = $dbh->selectrow_array("select teamid from scrums_teammember " .
-                    "where teamid = " .
-                    "(select team_id from scrums_sprints where id = " .
+                    "where teamid in " .
+                    "(select team_id from scrums_sprints where id in " .
                     "(select sprint_id from scrums_sprint_bug_map where " .
                     "bug_id = ?)) and userid = ?", undef, $bug->bug_id, $user->id);
                 if ($res)
                 { 
-                    $dbh->do("UPDATE scrums_bug_order set team = ? where " .
-                          "bug_id = ?", undef, $res, $bug->bug_id);
+                    $dbh->do("INSERT INTO scrums_sprint_bug_map set sprint_id = ?, " .
+                          "bug_id = ?", undef, $scrums_action, $bug->bug_id);
                 }
         }
     }
@@ -721,10 +721,6 @@ sub template_before_process {
         "(select * from scrums_sprints where " .
         "team_id in (select teamid from scrums_teammember where userid = ?) " .
         "order by start_date desc) as s group by team_id", undef, ($user->id));
-        my $sprints = $dbh->selectall_arrayref("select id, name from " .
-        "(select * from scrums_sprints where " .
-        "team_id in (select teamid from scrums_teammember) " .
-        "order by start_date desc) as s group by team_id");
         $vars->{sprints} = $sprints;
         $vars->{valami} = "vala";
     }
