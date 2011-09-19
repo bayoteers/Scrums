@@ -142,11 +142,10 @@ sub bug_end_of_update {
                     "bug_id = ?)) and userid = ?", undef, $bug->bug_id, $user->id);
                 if ($res)
                 { 
-                    $dbh->do("INSERT INTO scrums_sprint_bug_map (sprint_id, bug_id) " .
-                        "SELECT ?, ? FROM dual WHERE NOT EXISTS " .
-                        "(SELECT 1 FROM scrums_sprint_bug_map where " .
-                        "(sprint_id, bug_id) = (?, ?))", undef, \
-                        $scrums_action, $bug->bug_id, $scrums_action, $bug->bug_id);
+                    my $sprnt = Bugzilla::Extension::Scrums::Sprint->new($scrums_action);
+                    my $new_bug_team_order_number = $dbh->selectrow_array("SELECT max(TEAM) + 1 as nb from scrums_bug_order where bug_id in " .
+                        "(select bug_id from scrums_sprint_bug_map where sprint_id = ?", undef, $scrums_action);
+                    $sprnt->add_bug_into_team_order($bug->bug_id, $new_bug_team_order_number);
                 }
         }
     }
