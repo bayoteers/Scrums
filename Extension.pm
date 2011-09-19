@@ -144,7 +144,7 @@ sub bug_end_of_update {
                 { 
                     my $sprnt = Bugzilla::Extension::Scrums::Sprint->new($scrums_action);
                     my $new_bug_team_order_number = $dbh->selectrow_array("SELECT max(TEAM) + 1 as nb from scrums_bug_order where bug_id in " .
-                        "(select bug_id from scrums_sprint_bug_map where sprint_id = ?", undef, $scrums_action);
+                        "(select bug_id from scrums_sprint_bug_map where sprint_id = ?)", undef, $scrums_action);
                     $sprnt->add_bug_into_team_order($bug->bug_id, $new_bug_team_order_number);
                 }
         }
