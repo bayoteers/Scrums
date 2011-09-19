@@ -556,17 +556,33 @@ sub get_item_array {
     my $dbh  = Bugzilla->dbh;
     my ($sprint_items) = $dbh->selectall_arrayref(
         'select
-        bug_id
+        sbm.bug_id
     from
-	scrums_sprint_bug_map
+	scrums_sprint_bug_map sbm
+    inner join
+        scrums_bug_order bo
+    on
+        bo.bug_id = sbm.bug_id
     where
-	sprint_id = ?', undef, $self->id
+	sprint_id = ?
+    order by
+        team asc', undef, $self->id
     );
     my @array;
     for my $row (@{$sprint_items}) {
         push(@array, @{$row}[0]);
     }
     return \@array;
+}
+
+sub get_biggest_team_order {
+    my $self = shift;
+
+    my $item_array = $self->get_item_array();
+    my $li = (scalar @{$item_array}) - 1;
+    my $last = @{$item_array}[$li];
+    my $biggest_order_item = Bugzilla::Extension::Scrums::Bugorder->new($last);
+    return $biggest_order_item->team_order();
 }
 
 sub is_item_in_sprint {
@@ -599,32 +615,43 @@ sub add_bug_into_sprint {
     # Possible values of 'insert_after_bug_team_order_number' are between -1 and team order of last item
     # If value is -1, 'new_bug_team_order_number' will become 0, which means, that added item will become first in list.
     my $new_bug_team_order_number = 1;
-    if ($insert_after_bug_id) {
+    if ($insert_after_bug_id && $self->is_item_in_sprint($insert_after_bug_id)) {
         my $item_order = Bugzilla::Extension::Scrums::Bugorder->new($insert_after_bug_id);
         $new_bug_team_order_number = $item_order->team_order() + 1;
     }
+    else {
+        $new_bug_team_order_number = $self->get_biggest_team_order() + 1;
+    }
 
-    $self->add_bug_into_team_order($added_bug_id, $new_bug_team_order_number, $vars);
+    # TODO REFACTOR! CREATE NEW METHOD IS_BUG_MOVING_INTO_BIGGER_ORDER
+    my $previous_team_order_for_bug = $self->_is_bug_in_team_order($added_bug_id, $vars);
+    # Preceding bug 'insert_after_bug' moved one position. That is why added bug can be put into it's old position.
+    # Index of insert_after_bug was searched by bug id after all.
+    if ($previous_team_order_for_bug != -1 && $previous_team_order_for_bug < $new_bug_team_order_number) {
+        $new_bug_team_order_number = $new_bug_team_order_number - 1;
+    }
+
+    my $dbh = Bugzilla->dbh;
+    $dbh->bz_start_transaction();
+
+    $self->add_bug_into_team_order($dbh, $added_bug_id, $new_bug_team_order_number, $previous_team_order_for_bug, $vars);
+
+    $dbh->bz_commit_transaction();
 }
 
 sub add_bug_into_team_order {
     my $self = shift;
-    my ($added_bug_id, $new_bug_team_order_number, $vars) = @_;
-
-    my $dbh = Bugzilla->dbh;
-
-    $dbh->bz_start_transaction();
+    my ($dbh, $added_bug_id, $new_bug_team_order_number, $previous_team_order_for_bug, $vars) = @_;
 
     my $team = $self->get_team();
     my $previous_sprint_id_for_bug = $team->_is_bug_in_active_sprint($added_bug_id, $vars);
     if ($previous_sprint_id_for_bug) {
         $self->_update_sprint_map($added_bug_id, $previous_sprint_id_for_bug, $vars);
-        my $previous_team_order_for_bug = $self->_is_bug_in_team_order($added_bug_id, $vars);
         $self->_save_team_order($added_bug_id, $new_bug_team_order_number, $previous_team_order_for_bug, $vars);
     }
     else {
         $dbh->do('INSERT INTO scrums_sprint_bug_map (bug_id, sprint_id) values (?, ?)', undef, $added_bug_id, $self->{'id'});
-        my $previous_team_order_for_bug = $self->_is_bug_in_team_order($added_bug_id, $vars);
+
         if ($previous_team_order_for_bug) {
             # When bug is not in active sprint (backlog), it's team order is ignored even if it had team order
             $self->_save_team_order($added_bug_id, $new_bug_team_order_number, -1, $vars);
@@ -634,8 +661,6 @@ sub add_bug_into_team_order {
             $self->_save_team_order($added_bug_id, $new_bug_team_order_number, undef, $vars);
         }
     }
-
-    $dbh->bz_commit_transaction();
 }
 
 sub remove_bug_from_sprint {
@@ -708,11 +733,11 @@ sub _save_team_order {
     # If 'new_bug_team_order_number' is 1, added item will become first in list. Team orders start from 1.
 
     if (!$previous_team_order_for_bug) {
-        $self->_update_tail_team_order($new_bug_team_order_number, 1, $vars);    # increment is 1 => addition
+        $self->_update_tail_team_order($new_bug_team_order_number, 1, $vars); # increment is 1 => addition
         $self->_insert_bug_team_order($added_bug_id, $new_bug_team_order_number, $vars);
     }
     elsif ($previous_team_order_for_bug eq -1) {
-        $self->_update_tail_team_order($new_bug_team_order_number, 1, $vars);    # increment is 1 => addition
+        $self->_update_tail_team_order($new_bug_team_order_number, 1, $vars); # increment is 1 => addition
         $self->_update_bug_team_order($added_bug_id, $new_bug_team_order_number, $vars);
     }
     elsif ($previous_team_order_for_bug > $new_bug_team_order_number) {
@@ -722,10 +747,8 @@ sub _save_team_order {
     }
     elsif ($previous_team_order_for_bug < $new_bug_team_order_number) {
         # Moving bug to bigger index (smaller priority) in team order list # increment is 1 => addition
-        $self->_update_span_team_order($previous_team_order_for_bug + 1, $new_bug_team_order_number, -1, $vars);
-        # Preceding bug 'insert_after_bug' moved one position. That is why added bug can be put into it's old position.
-        # Index of insert_after_bug was searched by bug id after all.
-        $self->_update_bug_team_order($added_bug_id, $new_bug_team_order_number - 1, $vars);
+        $self->_update_span_team_order($previous_team_order_for_bug + 1, $new_bug_team_order_number + 1, -1, $vars);
+        $self->_update_bug_team_order($added_bug_id, $new_bug_team_order_number, $vars);
     }
     else {
         # New position = Old position => Do nothing
