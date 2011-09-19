@@ -34,12 +34,20 @@
 
   var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog');
 
+  // *** Global variables ***
+  schema = 'team';
+  object_id = [% team.id %];
+
   var all_lists = [];
   var bug_positions = [];
 
   function save_all()
   {
-    save_lists(sprint_lists, unordered_bugs, 'team', [% team.id %]);
+      var saved_lists = [];
+      saved_lists.push(all_lists[0]);
+      saved_lists.push(backlog);	// Idle list
+      saved_lists.push(all_lists[1]);
+      do_save(saved_lists);
   }
 
   [% PROCESS 'global/lists_unordered.js.tmpl' unprioritised_items = unprioritised_bugs %]
@@ -104,7 +112,6 @@
     // Only *after* everything else has been done backlog is pushed to 'sprint_lists'
     // Because backlog is in 'sprint_lists', it is saved (it is never changed)
     // Nothing else is done with backlog item.
-    sprint_lists.push(backlog);
   });
 </script>
 

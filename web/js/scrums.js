@@ -214,7 +214,7 @@ function bind_sortable_lists(lists) {
         },
         stop: function(event, ui) {
             switch_lists(ui, lists);
-///////	    do_save();
+/////	    do_save();
         },
         items: 'tr:not(.ignoresortable)',
         helper: function(event , item)
@@ -563,19 +563,19 @@ function create_sprint(result)
     }
 }
 
-function do_save()
+function do_save(saved_lists)
 {
     var unordered_list = null;
     var ordered_lists = new Array();
-    for (var i = 0; i < all_lists.length; i++)
+    for (var i = 0; i < saved_lists.length; i++)
     {
-	if(all_lists[i].id == -1)
+	if(saved_lists[i].id == -1)
         {
-	    unordered_list = all_lists[i];
+	    unordered_list = saved_lists[i];
 	}
 	else
 	{
-	    ordered_lists.push(all_lists[i]);
+	    ordered_lists.push(saved_lists[i]);
 	}
     }
     save_lists(ordered_lists, unordered_list, schema, object_id);
@@ -585,28 +585,31 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id)
 {
     // need to use Object instead of Array when ajaxing an associative array
     var data_lists = new Object();
-    var list_id = String(-1);
-    data_lists[list_id] = [];
-    for (var i = 0; i < unordered_list.list.length; i++)
+
+    if(unordered_list)
     {
-        var found = false;
-        for (var k = 0; k < unordered_list.original_list.length; k++)
+        var list_id = String(-1);
+        data_lists[list_id] = [];
+        for (var i = 0; i < unordered_list.list.length; i++)
         {
-            if (unordered_list.original_list[k][0][0] == unordered_list.list[i][0][0])
+            var found = false;
+            for (var k = 0; k < unordered_list.original_list.length; k++)
             {
-                found = true;
-                break;
+                if (unordered_list.original_list[k][0][0] == unordered_list.list[i][0][0])
+                {
+                    found = true;
+                    break;
+                }
             }
-        }
             if (found != true)
             {
                 // this bug is new in unordered list
                 data_lists[list_id].push(unordered_list.list[i][0][0])
             }
-
+	}
+        unordered_list.original_list = $.extend(true, [], unordered_list.list);
     }
     save(ordered_lists, schema, obj_id, data_lists);
-    unordered_list.original_list = $.extend(true, [], unordered_list.list);
 }
 
 // le template engine
