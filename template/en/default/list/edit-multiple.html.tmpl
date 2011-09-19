@@ -273,7 +273,7 @@
      <select name="scrums_action">
       <option value="-1">--do_not_move--</option>
       [% FOREACH s = sprints %]
-       <option value="[% s.0 %]">[% s.1 %]</option>
+       <option value="[% s.0 %]">[% s.1 %] (Team: [% s.2 %])</option>
       [% END %]
      </select>
     </td>
