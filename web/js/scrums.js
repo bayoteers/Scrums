@@ -214,7 +214,7 @@ function bind_sortable_lists(lists) {
         },
         stop: function(event, ui) {
             switch_lists(ui, lists);
-/////	    do_save();
+	    save_all();
         },
         items: 'tr:not(.ignoresortable)',
         helper: function(event , item)
