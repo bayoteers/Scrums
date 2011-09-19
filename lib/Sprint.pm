@@ -578,9 +578,9 @@ sub get_item_array {
 sub get_biggest_team_order {
     my $self = shift;
 
-    my $item_array = $self->get_item_array();
-    my $li = (scalar @{$item_array}) - 1;
-    my $last = @{$item_array}[$li];
+    my $item_array         = $self->get_item_array();
+    my $li                 = (scalar @{$item_array}) - 1;
+    my $last               = @{$item_array}[$li];
     my $biggest_order_item = Bugzilla::Extension::Scrums::Bugorder->new($last);
     return $biggest_order_item->team_order();
 }
@@ -733,11 +733,11 @@ sub _save_team_order {
     # If 'new_bug_team_order_number' is 1, added item will become first in list. Team orders start from 1.
 
     if (!$previous_team_order_for_bug) {
-        $self->_update_tail_team_order($new_bug_team_order_number, 1, $vars); # increment is 1 => addition
+        $self->_update_tail_team_order($new_bug_team_order_number, 1, $vars);    # increment is 1 => addition
         $self->_insert_bug_team_order($added_bug_id, $new_bug_team_order_number, $vars);
     }
     elsif ($previous_team_order_for_bug eq -1) {
-        $self->_update_tail_team_order($new_bug_team_order_number, 1, $vars); # increment is 1 => addition
+        $self->_update_tail_team_order($new_bug_team_order_number, 1, $vars);    # increment is 1 => addition
         $self->_update_bug_team_order($added_bug_id, $new_bug_team_order_number, $vars);
     }
     elsif ($previous_team_order_for_bug > $new_bug_team_order_number) {

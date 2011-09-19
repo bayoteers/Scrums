@@ -128,25 +128,29 @@ sub bug_end_of_update {
             }
         }
     }
-    
+
     my $scrums_action = $cgi->param('scrums_action');
     if ($scrums_action =~ /^(\d+)$/) {
         $scrums_action = $1;
-        if ($scrums_action > -1)
-        {
+        if ($scrums_action > -1) {
             my $user = Bugzilla->login(LOGIN_REQUIRED);
-                my $res = $dbh->selectrow_array("select teamid from scrums_teammember " .
-                    "where teamid in " .
-                    "(select team_id from scrums_sprints where id in " .
-                    "(select sprint_id from scrums_sprint_bug_map where " .
-                    "bug_id = ?)) and userid = ?", undef, $bug->bug_id, $user->id);
-                if ($res)
-                { 
-                    my $sprnt = Bugzilla::Extension::Scrums::Sprint->new($scrums_action);
-                    my $new_bug_team_order_number = $dbh->selectrow_array("SELECT max(TEAM) + 1 as nb from scrums_bug_order where bug_id in " .
-                        "(select bug_id from scrums_sprint_bug_map where sprint_id = ?)", undef, $scrums_action);
-                    $sprnt->add_bug_into_team_order($bug->bug_id, $new_bug_team_order_number);
-                }
+            my $res = $dbh->selectrow_array(
+                                            "select teamid from scrums_teammember "
+                                              . "where teamid in "
+                                              . "(select team_id from scrums_sprints where id in "
+                                              . "(select sprint_id from scrums_sprint_bug_map where "
+                                              . "bug_id = ?)) and userid = ?",
+                                            undef,
+                                            $bug->bug_id,
+                                            $user->id
+                                           );
+            if ($res) {
+                my $sprnt = Bugzilla::Extension::Scrums::Sprint->new($scrums_action);
+                my $new_bug_team_order_number = $dbh->selectrow_array(
+                         "SELECT max(TEAM) + 1 as nb from scrums_bug_order where bug_id in " . "(select bug_id from scrums_sprint_bug_map where sprint_id = ?)",
+                         undef, $scrums_action);
+                $sprnt->add_bug_into_team_order($bug->bug_id, $new_bug_team_order_number);
+            }
         }
     }
 
@@ -710,21 +714,24 @@ sub config_add_panels {
 
 sub template_before_process {
     my ($self, $args) = @_;
-    
-    
+
     my $file = $args->{file};
     if ($file eq "list/edit-multiple.html.tmpl") {
         my $vars = $args->{vars};
-        my $dbh = Bugzilla->dbh;
+        my $dbh  = Bugzilla->dbh;
         use Data::Dumper;
-#        my $user_id = $vars->{'cgi'}->{'.cookies'}->{Bugzilla_login}->{value}[0];
+        #        my $user_id = $vars->{'cgi'}->{'.cookies'}->{Bugzilla_login}->{value}[0];
         my $user = Bugzilla->login(LOGIN_REQUIRED);
-        my $sprints = $dbh->selectall_arrayref("select id, name from " .
-        "(select * from scrums_sprints where " .
-        "team_id in (select teamid from scrums_teammember where userid = ?) " .
-        "order by start_date desc) as s group by team_id", undef, ($user->id));
+        my $sprints = $dbh->selectall_arrayref(
+                                               "select id, name from "
+                                                 . "(select * from scrums_sprints where "
+                                                 . "team_id in (select teamid from scrums_teammember where userid = ?) "
+                                                 . "order by start_date desc) as s group by team_id",
+                                               undef,
+                                               ($user->id)
+                                              );
         $vars->{sprints} = $sprints;
-        $vars->{valami} = "vala";
+        $vars->{valami}  = "vala";
     }
 }
 
