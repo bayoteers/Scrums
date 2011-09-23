@@ -543,7 +543,7 @@ sub is_team_responsible_for_component_id {
 
     my $dbh = Bugzilla->dbh;
     my $component_ids = $dbh->selectcol_arrayref('SELECT component_id FROM scrums_componentteam WHERE teamid = ?', undef, $self->id);
-    if(grep { $_ eq $ref_id } @{$component_ids}) {
+    if (grep { $_ eq $ref_id } @{$component_ids}) {
         return 1;
     }
     else {

@@ -138,11 +138,11 @@ sub bug_end_of_update {
             }
 
             my $sprnt = Bugzilla::Extension::Scrums::Sprint->new($scrums_action);
-            my $team = $sprnt->get_team();
-            if(!$team->is_team_responsible_for_component_id($bug->{component_id})) {
+            my $team  = $sprnt->get_team();
+            if (!$team->is_team_responsible_for_component_id($bug->{component_id})) {
                 my $responsible = $team->team_of_component($bug->{component_id});
-                my $resp_name = "[none]";
-                if($responsible) {
+                my $resp_name   = "[none]";
+                if ($responsible) {
                     $resp_name = $responsible->name();
                 }
                 my $comp_name = $bug->component();
