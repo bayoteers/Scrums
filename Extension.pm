@@ -129,17 +129,18 @@ sub bug_end_of_update {
         }
     }
 
-
-
     my $scrums_action = $cgi->param('scrums_action');
     if ($scrums_action =~ /^(\d+)$/) {
         $scrums_action = $1;
         if ($scrums_action > -1) {
             my $user = Bugzilla->login(LOGIN_REQUIRED);
             my $res = $dbh->selectrow_array(
-                                            "select distinct(user_id) from user_group_map, groups where " .
-                                              "user_id = ? and name in ('admin', 'scrums_editteams') and " .
-                                              "group_id = groups.id", undef, $user->id);
+                                            "select distinct(user_id) from user_group_map, groups where "
+                                              . "user_id = ? and name in ('admin', 'scrums_editteams') and "
+                                              . "group_id = groups.id",
+                                            undef,
+                                            $user->id
+                                           );
             if ($res) {
                 my $sprnt = Bugzilla::Extension::Scrums::Sprint->new($scrums_action);
                 $sprnt->add_bug_into_sprint($bug->bug_id);
@@ -715,12 +716,12 @@ sub template_before_process {
         use Data::Dumper;
         #        my $user_id = $vars->{'cgi'}->{'.cookies'}->{Bugzilla_login}->{value}[0];
         my $user = Bugzilla->login(LOGIN_REQUIRED);
-        my $sprints = $dbh->selectall_arrayref(
-                                               "select s.id, s.name, scrums_team.name from "
-                                                 . "(select * from scrums_sprints where "
-                                                 . "team_id in (select teamid from scrums_teammember) and item_type <> 2 "
-                                                 . "order by start_date desc) as s, scrums_team where s.team_id = scrums_team.id "
-                                                 . "group by team_id");
+        my $sprints =
+          $dbh->selectall_arrayref(  "select s.id, s.name, scrums_team.name from "
+                                   . "(select * from scrums_sprints where "
+                                   . "team_id in (select teamid from scrums_teammember) and item_type <> 2 "
+                                   . "order by start_date desc) as s, scrums_team where s.team_id = scrums_team.id "
+                                   . "group by team_id");
         $vars->{sprints} = $sprints;
     }
 }
