@@ -505,27 +505,27 @@ sub _show_team_bugs {
     my @class_names;
     for my $comp (@{$components}) {
         my $co_name = $comp->name();
-        if(!(grep { $_ eq $co_name } @comp_names)) {
+        if (!(grep { $_ eq $co_name } @comp_names)) {
             push @comp_names, $co_name;
         }
-        my $prod = $comp->product();
+        my $prod   = $comp->product();
         my $p_name = $prod->name();
-        if(!(grep { $_ eq $p_name } @prod_names)) {
+        if (!(grep { $_ eq $p_name } @prod_names)) {
             push @prod_names, $p_name;
         }
-        my $c_id = $prod->classification_id();
-        my $class = new Bugzilla::Classification($c_id);
+        my $c_id       = $prod->classification_id();
+        my $class      = new Bugzilla::Classification($c_id);
         my $class_name = $class->name();
-        if(!(grep { $_ eq $class_name } @class_names)) {
+        if (!(grep { $_ eq $class_name } @class_names)) {
             push @class_names, $class_name;
         }
     }
     my @bug_status_open = Bugzilla::Status::BUG_STATE_OPEN();
-    $vars->{'bug_status_open'}  = \@bug_status_open;
+    $vars->{'bug_status_open'} = \@bug_status_open;
 
-    $vars->{'components'}       = \@comp_names;
-    $vars->{'products'}         = \@prod_names;
-    $vars->{'classifications'}  = \@class_names;
+    $vars->{'components'}      = \@comp_names;
+    $vars->{'products'}        = \@prod_names;
+    $vars->{'classifications'} = \@class_names;
 }
 
 sub show_archived_sprints {
