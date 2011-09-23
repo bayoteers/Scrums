@@ -1,0 +1,16 @@
+   <tr>
+    <th>
+     <label for="scrums">
+      Move to this sprint:
+     </label>
+    </th>
+    <td colspan="3">
+     <select name="scrums_action">
+      <option value="-1">--do_not_move--</option>
+      [% FOREACH s = sprints %]
+       <option value="[% s.0 %]">[% s.1 %] (Team: [% s.2 %])</option>
+      [% END %]
+     </select>
+    </td>
+   </tr>
+
