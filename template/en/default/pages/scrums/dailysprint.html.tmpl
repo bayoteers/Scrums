@@ -28,7 +28,16 @@
 <script type="text/javascript">
   var unordered_bugs = null;
 
-  unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs');
+  var unordered_bugs_search_url = "buglist.cgi?query_format=advanced&";
+  unordered_bugs_search_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2C";
+  unordered_bugs_search_url += "actual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
+  unordered_bugs_search_url += "bug_severity=blocker&bug_severity=critical&bug_severity=major&bug_severity=normal&bug_severity=minor&bug_severity=risk&";
+  unordered_bugs_search_url += "[% FOREACH status IN bug_status_open %]bug_status=[% status %]&[% END %]";
+  unordered_bugs_search_url += "[% FOREACH class IN classifications %]classification=[% class %]&[% END %]";
+  unordered_bugs_search_url += "[% FOREACH product IN products %]product=[% product %]&[% END %]";
+  unordered_bugs_search_url += "[% FOREACH component IN components %]component=[% component %]&[% END %]";
+
+  unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs', null, unordered_bugs_search_url);
   unordered_bugs.show_columns.push('creation_date');
   unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
 
@@ -75,8 +84,8 @@
 
     for (id in sprint_list_data)
     {
-      // last argument is the name
-      var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0]);
+      var sprint_search_url = search_link_sprint_items(id);
+      var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0] /* name */, null, sprint_search_url);
       // last argument is the bug list
       // extra stuff for sprint
       list._status = sprint_list_data[id][2]
@@ -87,16 +96,6 @@
       $(html).appendTo($('#sprints'));
       bind_items_to_list(list, sprint_list_data[id][1]);
       update_lists(list, 0);
-
-      // expand collapse
-      //$("#"+list.ul_id).hide();
-      //toggle the componenet with class msg_body
-      var ul_id = list.ul_id;
-      $("#" + list.h_id).click(function()
-      {
-          $(this).nextAll(".content:first").slideToggle(500);
-      });
-
       sprint_lists.push(list);
     }
 
@@ -118,6 +117,8 @@
 <div class="bz_title_container">
   '[% team.name %]' New Bugs
 </div>
+
+[% PROCESS pages/scrums/navi.html.tmpl %]
 
 <table>
   <tr>

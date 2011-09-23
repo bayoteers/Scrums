@@ -145,14 +145,18 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
   var team_id = [% team.id %];
 
   [% IF team.is_using_backlog() %]
-    var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog');
+    var backlog_search_url = search_link_sprint_items([% backlog.sprint.id() %]);
+    var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog', null, backlog_search_url);
   [% ELSE %]
     // When all items are shown as 'backlog' to user, backlog must have sprint id of unprioritised items.
     // This is important because all its items are saved as actual backlog otherwise.
+// TODO !!!!!!!!!!!!!!!!!!!!!!!!!1
     var backlog = new listObject("sortable2", "headers2", '-1', 'Backlog (all items)');
   [% END %]
 
-  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
+  var sprint_search_url = search_link_sprint_items([% active_sprint.id() %]);
+
+  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', null, sprint_search_url);
 
   // *** Global variables ***
   sprint_callback = demark_sprint_capacity;
@@ -368,6 +372,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
   [% team.name %] Sprint
 </div>
 
+[% PROCESS pages/scrums/navi.html.tmpl %]
 
 <table>
   <tr>

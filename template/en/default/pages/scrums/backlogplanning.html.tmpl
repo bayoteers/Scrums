@@ -26,11 +26,19 @@
 [% PROCESS global/lists.html.tmpl %]
 
 <script type="text/javascript">
-  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized');
+  var unordered_items_search_url = "buglist.cgi?query_format=advanced&";
+  unordered_items_search_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
+  unordered_items_search_url += "[% FOREACH status IN bug_status_open %]bug_status=[% status %]&[% END %]";
+  unordered_items_search_url += "[% FOREACH class IN classifications %]classification=[% class %]&[% END %]";
+  unordered_items_search_url += "[% FOREACH product IN products %]product=[% product %]&[% END %]";
+  unordered_items_search_url += "[% FOREACH component IN components %]component=[% component %]&[% END %]";
+
+  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', null, unordered_items_search_url);
   unordered_bugs.show_columns.push('creation_date')
   unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
 
-  var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog');
+  var backlog_search_url = search_link_sprint_items([% backlog.sprint.id() %]);
+  var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog', null, backlog_search_url);
   backlog.show_columns.push('creation_date')
 
   var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
@@ -82,6 +90,8 @@
 <div class="bz_title_container">
   [% team.name %] Product Backlog
 </div>
+
+[% PROCESS pages/scrums/navi.html.tmpl %]
 
 <table>
   <tr>

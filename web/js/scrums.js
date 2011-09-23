@@ -27,10 +27,11 @@ function toggle_scroll()
     });
 }
 
-function listObject(ul_id, h_id, id, name, li_tmpl) {
+function listObject(ul_id, h_id, id, name, li_tmpl, link_url) {
     this.ul_id = ul_id;
     this.id = id;
     this.h_id = h_id;
+    this.link_url = link_url;
     this.list = [];
     this.orginal_list = [];
     this.visible = -1;
@@ -52,6 +53,15 @@ function listObject(ul_id, h_id, id, name, li_tmpl) {
 var from_list_ul_id = '';
 
 var sprint_callback = null;
+
+function search_link_sprint_items(sprint_id)
+{
+    var link_url = "buglist.cgi?query_format=advanced&";
+    link_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
+    link_url += "order=scrums_team_order&";
+    link_url += "field0-0-0=scrums_sprint_bug_map.sprint_id&type0-0-0=equals&value0-0-0=" + sprint_id;
+    return link_url;
+}
 
 function select_step(list_id)
 {
@@ -396,7 +406,7 @@ function show_sprint(result)
     }
     data = result.data;
 
-    var sprint = new listObject("sortable", "headers", data.id, 'Sprint '+data.name);
+    var sprint = all_lists[0];
     sprint._status = data._status;
     sprint.description = data.description;
     sprint.start_date = data.start_date;
