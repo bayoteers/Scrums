@@ -75,4 +75,7 @@
 [% ELSIF error == "scrums_overlapping_sprint" %]
     [% title = "Sprint is overlapping another sprint" %]
     Sprint is overlapping another sprint '[% name %]', start: [% start %], end: [% end %]
+[% ELSIF error == "scrums_not_responsible_team" %]
+    [% title = "Not responsible team" %]
+    Bug [% bug_id %] must be assigned to sprint of responsible team '[% responsible_team_name %]' of component: '[% comp_name %]'
 [% END %]

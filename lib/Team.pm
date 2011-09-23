@@ -537,6 +537,20 @@ sub get_active_sprints_bug_orders {
     return $items;
 }
 
+sub is_team_responsible_for_component_id {
+    my $self = shift;
+    my ($ref_id) = @_;
+
+    my $dbh = Bugzilla->dbh;
+    my $component_ids = $dbh->selectcol_arrayref('SELECT component_id FROM scrums_componentteam WHERE teamid = ?', undef, $self->id);
+    if(grep { $_ eq $ref_id } @{$component_ids}) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
 sub _is_bug_in_active_sprint {
     my $self = shift;
     my ($ref_bug_id, $vars) = @_;

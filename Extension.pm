@@ -133,18 +133,22 @@ sub bug_end_of_update {
     if ($scrums_action =~ /^(\d+)$/) {
         $scrums_action = $1;
         if ($scrums_action > -1) {
-            my $user = Bugzilla->login(LOGIN_REQUIRED);
-            my $res = $dbh->selectrow_array(
-                                            "select distinct(user_id) from user_group_map, groups where "
-                                              . "user_id = ? and name in ('admin', 'scrums_editteams') and "
-                                              . "group_id = groups.id",
-                                            undef,
-                                            $user->id
-                                           );
-            if ($res) {
-                my $sprnt = Bugzilla::Extension::Scrums::Sprint->new($scrums_action);
-                $sprnt->add_bug_into_sprint($bug->bug_id);
+            if (not Bugzilla->user->in_group('scrums_editteams')) {
+                ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "sprint" });
             }
+
+            my $sprnt = Bugzilla::Extension::Scrums::Sprint->new($scrums_action);
+            my $team = $sprnt->get_team();
+            if(!$team->is_team_responsible_for_component_id($bug->{component_id})) {
+                my $responsible = $team->team_of_component($bug->{component_id});
+                my $resp_name = "[none]";
+                if($responsible) {
+                    $resp_name = $responsible->name();
+                }
+                my $comp_name = $bug->component();
+                ThrowUserError("scrums_not_responsible_team", { bug_id => $bug->bug_id, responsible_team_name => $resp_name, comp_name => $comp_name });
+            }
+            $sprnt->add_bug_into_sprint($bug->bug_id);
         }
     }
 
@@ -719,7 +723,7 @@ sub template_before_process {
         my $sprints =
           $dbh->selectall_arrayref(  "select s.id, s.name, scrums_team.name from "
                                    . "(select * from scrums_sprints where "
-                                   . "team_id in (select teamid from scrums_teammember) and item_type <> 2 "
+                                   . "item_type <> 2 "
                                    . "order by start_date desc) as s, scrums_team where s.team_id = scrums_team.id "
                                    . "group by team_id");
         $vars->{sprints} = $sprints;
