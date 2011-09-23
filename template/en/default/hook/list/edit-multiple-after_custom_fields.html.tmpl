@@ -1,4 +1,5 @@
-   <tr>
+[% IF user.in_group('scrums_editteams') %]
+  <tr>
     <th>
      <label for="scrums">
       Move to this sprint:
@@ -12,5 +13,6 @@
       [% END %]
      </select>
     </td>
-   </tr>
+  </tr>
+[% END %]
 
