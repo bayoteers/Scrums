@@ -722,7 +722,7 @@ sub template_before_process {
         my $sprints = $dbh->selectall_arrayref(
                                                "select s.id, s.name, scrums_team.name from "
                                                  . "(select * from scrums_sprints where "
-                                                 . "team_id in (select teamid from scrums_teammember where userid = ?) "
+                                                 . "team_id in (select teamid from scrums_teammember where userid = ?) and item_type <> 2 "
                                                  . "order by start_date desc) as s, scrums_team where s.team_id = scrums_team.id "
                                                  . "group by team_id",
                                                undef,
