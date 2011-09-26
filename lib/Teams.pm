@@ -408,23 +408,20 @@ sub edit_team {
 sub ajax_sprint_bugs {
     my ($vars) = @_;
     my $cgi = Bugzilla->cgi;
-    # security checks?
     my @sprints;
 
     my $teamid;
     my $sprintid;
     if ($cgi->param('teamid') =~ /(\d+)/) {
         $teamid = $1;
-        #$teamid = $cgi->param('teamid');
-        #$teamid =~ /(\d+)/;
     }
 
+    my $sprints = undef;
     if ($cgi->param('sprintid') =~ /(\d+)/) {
         $sprintid = $1;
-        #$sprintid = $cgi->param('sprintid');
-        #$sprintid =~ /(\d+)/;
+        $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, item_type => 1 });
     }
-    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, item_type => 1 });
+
     $vars->{'json_text'} = '';
     if ($sprints) {
         use JSON;

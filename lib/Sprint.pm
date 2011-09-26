@@ -240,8 +240,8 @@ sub _check_span {
                         scrums_sprints 
                 where 
                         item_type = 1 and 
-                        (start_date > ? or start_date is null) and 
-                        (end_date < ? or end_date is null) and 
+                        (start_date >= ? or start_date is null) and 
+                        (end_date <= ? or end_date is null) and 
                         team_id = ?"
                                );
         $sth->execute($ref_start_date, $ref_end_date, $team_id);
