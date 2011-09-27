@@ -579,10 +579,16 @@ sub get_biggest_team_order {
     my $self = shift;
 
     my $item_array         = $self->get_item_array();
-    my $li                 = (scalar @{$item_array}) - 1;
-    my $last               = @{$item_array}[$li];
-    my $biggest_order_item = Bugzilla::Extension::Scrums::Bugorder->new($last);
-    return $biggest_order_item->team_order();
+    my $number_of_items    = (scalar @{$item_array});
+    if($number_of_items > 0) {
+        my $li                 =  - 1;
+        my $last               = @{$item_array}[$li];
+        my $biggest_order_item = Bugzilla::Extension::Scrums::Bugorder->new($last);
+        return $biggest_order_item->team_order();
+    }
+    else {
+        return 0; # No items in sprint
+    }
 }
 
 sub is_item_in_sprint {
@@ -627,7 +633,7 @@ sub add_bug_into_sprint {
     my $previous_team_order_for_bug = $self->_is_bug_in_team_order($added_bug_id, $vars);
     # Preceding bug 'insert_after_bug' moved one position. That is why added bug can be put into it's old position.
     # Index of insert_after_bug was searched by bug id after all.
-    if ($previous_team_order_for_bug != -1 && $previous_team_order_for_bug < $new_bug_team_order_number) {
+    if ($previous_team_order_for_bug && $previous_team_order_for_bug != -1 && $previous_team_order_for_bug < $new_bug_team_order_number) {
         $new_bug_team_order_number = $new_bug_team_order_number - 1;
     }
 

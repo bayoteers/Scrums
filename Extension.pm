@@ -542,6 +542,10 @@ sub page_before_template {
         elsif ($action eq "move2") {
             debug_function4($vars);
         }
+
+        if ($action eq "set2func1") {
+            debug_set2_func1($vars);
+        }
     }
 
     # Teams

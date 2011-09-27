@@ -557,11 +557,11 @@ sub _is_bug_in_active_sprint {
     if ($vars) { $vars->{'output'} .= "is_bug_in_active_sprint - ref_bug_id:" . $ref_bug_id . "<br />"; }
 
     my $current = $self->get_team_current_sprint();
-    if ($current->is_item_in_sprint($ref_bug_id)) {
+    if ($current && $current->is_item_in_sprint($ref_bug_id)) {
         return $current->id();
     }
     my $backlog = $self->get_team_backlog();
-    if ($backlog->is_item_in_sprint($ref_bug_id)) {
+    if ($backlog && $backlog->is_item_in_sprint($ref_bug_id)) {
         return $backlog->id();
     }
     return undef;
