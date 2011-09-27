@@ -180,7 +180,7 @@ sub debug_set2_func1($) {
 
     $vars->{'output'} .= "<p><strong>debug_set2_func1</strong><br />";
 
-    my $sprint_id = 182; # Team 'Backlog test' sprint 'testi 3'
+    my $sprint_id = 182;                                                    # Team 'Backlog test' sprint 'testi 3'
     my $sprint    = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
 
     $vars->{'output'} .= "<br />";

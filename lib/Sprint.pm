@@ -578,16 +578,16 @@ sub get_item_array {
 sub get_biggest_team_order {
     my $self = shift;
 
-    my $item_array         = $self->get_item_array();
-    my $number_of_items    = (scalar @{$item_array});
-    if($number_of_items > 0) {
-        my $li                 =  - 1;
+    my $item_array      = $self->get_item_array();
+    my $number_of_items = (scalar @{$item_array});
+    if ($number_of_items > 0) {
+        my $li                 = -1;
         my $last               = @{$item_array}[$li];
         my $biggest_order_item = Bugzilla::Extension::Scrums::Bugorder->new($last);
         return $biggest_order_item->team_order();
     }
     else {
-        return 0; # No items in sprint
+        return 0;    # No items in sprint
     }
 }
 
