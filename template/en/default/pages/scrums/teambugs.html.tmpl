@@ -208,6 +208,14 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
     bind_sortable_lists(all_lists);
     get_sprint();
+
+    $(window).unload(
+    	function() 
+    	{
+	    detect_unsaved_change(); 
+        } 
+    );
+
   });
 </script>
 
@@ -384,6 +392,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
   <tr>
     <td colspan="2" align="right">
+      <input type="button" class="scrums_wide_button" value="Save" onClick="save_all();" />
       <input type="button" class="toggle_scroll" value="Toggle Scroll Bars" onClick="toggle_scroll();" />
     </td>
   </tr>

@@ -84,6 +84,13 @@
     all_lists.push(unordered_bugs);
 
     bind_sortable_lists(all_lists);
+
+    $(window).unload(
+    	function() 
+    	{
+	    detect_unsaved_change(); 
+        } 
+    );
   });
 </script>
 
@@ -102,6 +109,7 @@
   </tr>
   <tr>
     <td colspan="2" align="right">
+      <input type="button" class="scrums_wide_button" value="Save" onClick="save_all();" />
       <input type='button' class='toggle_scroll' value='Toggle Scroll Bars' onClick="toggle_scroll();" />
     </td>
   </tr>

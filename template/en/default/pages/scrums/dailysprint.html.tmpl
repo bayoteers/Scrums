@@ -111,6 +111,13 @@
     // Only *after* everything else has been done backlog is pushed to 'sprint_lists'
     // Because backlog is in 'sprint_lists', it is saved (it is never changed)
     // Nothing else is done with backlog item.
+
+    $(window).unload(
+    	function() 
+    	{
+	    detect_unsaved_change(); 
+        } 
+    );
   });
 </script>
 
@@ -129,6 +136,7 @@
   </tr>
   <tr>
     <td colspan="2" align="right">
+      <input type="button" class="scrums_wide_button" id="save_button" disabled="true" value="Save" onClick="save_all();" />
       <input type="button" class="toggle_scroll" value="Toggle Scroll Bars" onClick="toggle_scroll();" />
     </td>
   </tr>
