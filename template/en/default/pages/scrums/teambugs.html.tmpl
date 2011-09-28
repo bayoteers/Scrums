@@ -290,7 +290,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
      * Ajax call if succesfull, if server responds without throwing exception. Ordered
      * errors are shown in error message. Function shows status of saving to user.
      */
-    function saveResponse(response, status, xhr) {
+    function savedPersoncap(response, status, xhr) {
         var retObj = eval("(" + response + ")");
 
         if (retObj.errors) {
@@ -311,7 +311,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
             schema: 'personcapacity',
             action: 'update',
             data: json_params
-        }, saveResponse, 'text');
+        }, savedPersoncap, 'text');
     }
   
     function makeeditable(fieldid) {
