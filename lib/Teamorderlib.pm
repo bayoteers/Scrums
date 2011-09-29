@@ -63,7 +63,7 @@ sub update_bug_order_from_json {
 
     my $err = team_bug_order($team_id, $content);
 
-    if(!$err) {
+    if (!$err) {
         $dbh->bz_commit_transaction();
     }
     else {
@@ -96,14 +96,14 @@ sub team_bug_order {
         }
     }
 
-    # Team orders are processed first. Reason is, that uprioritised_in changes also team order. 
+    # Team orders are processed first. Reason is, that uprioritised_in changes also team order.
     # Process_team_orders function stores initial values of team order into hash map
     process_team_orders($all_team_sprints_and_unprioritised_in, $original_sprints, \%old_order_hash);
 
     process_unprioritised_in($unprioritised_in_bugs, \@active_sprints);
 
     my $err = _compare_to_original_values($original_sprints, \%sprints_hash, \%lengths_hash, \%old_order_hash);
-    if($err) {
+    if ($err) {
         return $err;
     }
 }
@@ -130,8 +130,8 @@ sub process_sprint() {
 sub process_unprioritised_in() {
     my ($unprioritised_in, $active_sprints) = @_;
 
-        # Unprioritised_in must be handled separately
-        # Table scrums_bug_order is however updated for unprioritised_in at the same time as scrums_sprint_bug_map, because order in table is irrelevant.
+    # Unprioritised_in must be handled separately
+    # Table scrums_bug_order is however updated for unprioritised_in at the same time as scrums_sprint_bug_map, because order in table is irrelevant.
     foreach my $bug (@{$unprioritised_in}) {
         Bugzilla->dbh->do('DELETE from scrums_sprint_bug_map where bug_id=? and (sprint_id = ? or sprint_id = ?)',
                           undef, $bug,
@@ -145,7 +145,7 @@ sub process_team_orders() {
     my ($updated_sprints_and_unprioritised_in, $originals, $old_order_hash) = @_;
 
     my %all_team_sprints_and_unprioritised_in = %{$updated_sprints_and_unprioritised_in};
-    my %original_sprints = %{$originals};
+    my %original_sprints                      = %{$originals};
 
     my $counter = 1;
 
@@ -156,7 +156,7 @@ sub process_team_orders() {
         # This means, that table is sprint and not unprioritised_in
         if ($sprint_id != -1) {
             foreach my $bug (@{$bugs}) {
-                # Old values of team order need to be fetch one bug at a time. 
+                # Old values of team order need to be fetch one bug at a time.
                 # This is because it is not possible to know in advance, which bugs user has added to sprint.
                 # Even if bug has not previously been in sprint, it might have record in scrums_bug_order.
                 my $old_team_order = _old_team_order($bug);
@@ -189,24 +189,24 @@ sub _compare_to_original_values {
     my ($original_sprints_ref, $sprints_hash, $lengths_hash, $old_order_hash) = @_;
 
     my %original_sprints = %{$original_sprints_ref};
-    my @sprint_id_array = keys %original_sprints;
+    my @sprint_id_array  = keys %original_sprints;
 
     my $original_list_counter = 1;
 
     for my $sprint_id (@sprint_id_array) {
-        my $bugs = $original_sprints{$sprint_id};
+        my $bugs                   = $original_sprints{$sprint_id};
         my $original_sprint_length = scalar @{$bugs};
-        if($original_sprint_length != $lengths_hash->{$sprint_id}) {
-            return 1; # error=1
+        if ($original_sprint_length != $lengths_hash->{$sprint_id}) {
+            return 1;    # error=1
         }
         foreach my $bug (@{$bugs}) {
             my $before_update_team_order = $old_order_hash->{$bug};
-            if($original_list_counter != $before_update_team_order) {
-                return 1; # error=1
+            if ($original_list_counter != $before_update_team_order) {
+                return 1;    # error=1
             }
             my $before_update_sprint_id = $sprints_hash->{$bug};
-            if($sprint_id != $before_update_sprint_id) {
-                return 1; # error=1
+            if ($sprint_id != $before_update_sprint_id) {
+                return 1;    # error=1
             }
             $original_list_counter = $original_list_counter + 1;
         }
