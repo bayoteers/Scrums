@@ -24,6 +24,7 @@ package Bugzilla::Extension::Scrums::Teams;
 use Bugzilla::Extension::Scrums::Team;
 use Bugzilla::Extension::Scrums::Sprint;
 use Bugzilla::Extension::Scrums::Sprintslib;
+use Bugzilla::Extension::Scrums::Teamorderlib;
 
 use Bugzilla::Util qw(trick_taint);
 use Bugzilla::Util;
@@ -657,7 +658,7 @@ sub update_team_bugs {
         $vars->{'errors'} = $error;
     }
     else {
-        update_bug_order_from_json($team_id, $data);
+        update_bug_order_from_json($team_id, $data, $vars);
     }
 }
 

@@ -407,11 +407,21 @@ function save(lists, schema, obj_id, data_lists) {
         }
     }
 
+    var original_lists = new Object();
+    for (var i = 0; i < lists.length; i++) {
+        var list = lists[i];
+        var list_id = list.id;
+        original_lists[list_id] = [];
+        for (var k = 0; k < list.original_list.length; k++) {
+            original_lists[list_id].push(list.original_list[k][0][0]);
+        }
+    }
+
     $.post('page.cgi?id=scrums/ajax.html', {
         schema: schema,
         action: 'set',
         obj_id: obj_id,
-        data: JSON.stringify(data_lists)
+        data: JSON.stringify({"data_lists" : data_lists, "original_lists" : original_lists})
     }, saveResponse        , 'text');
 }
 
