@@ -453,7 +453,6 @@ sub ajax_sprint_bugs {
 sub _show_team_bugs {
     my ($vars) = @_;
 
-    # TODO This can be divided into two distinct functions
     my $cgi     = Bugzilla->cgi;
     my $team_id = $cgi->param('teamid');
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
@@ -464,7 +463,7 @@ sub _show_team_bugs {
     my $capacity;
     my $sprint = $team->get_team_current_sprint();
 
-    $vars->{'active_sprint'}      = $sprint;
+    $vars->{'active_sprint'} = $sprint;
 
     if ($sprint) {
         $vars->{'capacity'} = $sprint->get_capacity_summary();
@@ -479,10 +478,8 @@ sub _show_team_bugs {
     my @sprint_names;
     push @sprint_names, $team_backlog->name();
 
-# !!!!!!!! TODO ! $team->all_items_not_in_sprint();
-
     $vars->{'active_sprint_id'} = $sprint->id();
-    $vars->{'backlog_id'} = $team_backlog->id();
+    $vars->{'backlog_id'}       = $team_backlog->id();
 
     # Component, product and classification names are needed for creating bug lists, that have editable search
     my $components = $team->components();

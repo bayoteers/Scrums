@@ -148,10 +148,17 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
     var backlog_search_url = search_link_sprint_items([% backlog_id %]);
     var backlog = new listObject("sortable2", "headers2", "[% backlog_id %]", 'Backlog', null, backlog_search_url);
   [% ELSE %]
+    var other_than_active_sprint_search_url = "buglist.cgi?query_format=advanced&";
+    other_than_active_sprint_search_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2C";
+    other_than_active_sprint_search_url += "actual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
+    other_than_active_sprint_search_url += "[% FOREACH status IN bug_status_open %]bug_status=[% status %]&[% END %]";
+    other_than_active_sprint_search_url += "[% FOREACH class IN classifications %]classification=[% class %]&[% END %]";
+    other_than_active_sprint_search_url += "[% FOREACH product IN products %]product=[% product %]&[% END %]";
+    other_than_active_sprint_search_url += "[% FOREACH component IN components %]component=[% component %]&[% END %]";
+
     // When all items are shown as 'backlog' to user, backlog must have sprint id of unprioritised items.
     // This is important because all its items are saved as actual backlog otherwise.
-// TODO !!!!!!!!!!!!!!!!!!!!!!!!!1
-    var backlog = new listObject("sortable2", "headers2", '-1', 'Backlog (all items)');
+    var backlog = new listObject("sortable2", "headers2", '-1', 'Backlog (all items)', null, other_than_active_sprint_search_url);
   [% END %]
 
   var sprint_search_url = search_link_sprint_items([% active_sprint.id() %]);
@@ -205,9 +212,16 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
         }, renderSprint        , 'json');
     }
 
-    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-        sprint_id: [% backlog_id %]
-    }, renderBacklog        , 'json');
+    [% IF team.is_using_backlog() %]
+        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+            sprint_id: [% backlog_id %]
+        }, renderBacklog, 'json');
+    [% ELSE %]
+        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+	    action: "other_items_than_in_active_sprint",
+            team_id: [% team.id() %]
+        }, renderBacklog, 'json');
+    [% END %]
 
     all_lists.push(backlog);
 
