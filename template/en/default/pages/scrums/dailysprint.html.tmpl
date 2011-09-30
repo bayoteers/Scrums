@@ -36,7 +36,8 @@
   unordered_bugs_search_url += "[% FOREACH product IN products %]product=[% product %]&[% END %]";
   unordered_bugs_search_url += "[% FOREACH component IN components %]component=[% component %]&[% END %]";
 
-  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
+  var sprint_search_url = search_link_sprint_items([% active_sprint.id() %]);
+  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', null, sprint_search_url);
   var backlog = new listObject("sortableX", "headersX", "[% backlog.sprint.id() %]", 'Backlog'); // Idle list
   var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs', null, unordered_bugs_search_url);
 
@@ -74,12 +75,15 @@
     all_lists.push(sprint);
     all_lists.push(unordered_bugs);
 
-    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-        sprint_id: [% active_sprint.id() %]
-    }, renderSprint, 'json');
+    if([% active_sprint.id() %])
+    {
+        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+            sprint_id: [% active_sprint.id() %]
+        }, renderSprint, 'json');
+    }
 
     $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-        sprint_id: [% backlog.sprint.id() %]
+        sprint_id: [% backlog_id %]
     }, receiveBacklog, 'json');
 
     $.post('page.cgi?id=scrums/ajaxbuglist.html', {

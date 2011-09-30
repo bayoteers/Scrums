@@ -464,15 +464,8 @@ sub _show_team_bugs {
     my $capacity;
     my $sprint = $team->get_team_current_sprint();
 
-    my %team_sprint;
-    if ($sprint) {
-        $team_sprint{'sprint'} = $sprint;
-        my $spr_bugs = $sprint->get_bugs();
-        $team_sprint{'bugs'} = $spr_bugs;
-        push @team_sprints_array, \%team_sprint;
-    }
-    $vars->{'team_sprints_array'} = \@team_sprints_array;
     $vars->{'active_sprint'}      = $sprint;
+
     if ($sprint) {
         $vars->{'capacity'} = $sprint->get_capacity_summary();
 
@@ -486,17 +479,12 @@ sub _show_team_bugs {
     my @sprint_names;
     push @sprint_names, $team_backlog->name();
 
-    my %backlog_container;
-    $backlog_container{'sprint'} = $team_backlog;
-    if ($team->is_using_backlog()) {
-        $backlog_container{'bugs'} = $team_backlog->get_bugs();
-    }
-    else {
-        $backlog_container{'bugs'} = $team->all_items_not_in_sprint();
-    }
-    $backlog_container{'sprint_names'} = \@sprint_names;
-    $vars->{'backlog'} = \%backlog_container;
+# !!!!!!!! TODO ! $team->all_items_not_in_sprint();
 
+    $vars->{'active_sprint_id'} = $sprint->id();
+    $vars->{'backlog_id'} = $team_backlog->id();
+
+    # Component, product and classification names are needed for creating bug lists, that have editable search
     my $components = $team->components();
     my @comp_names;
     my @prod_names;
@@ -542,18 +530,6 @@ sub show_archived_sprints {
         unshift @team_sprints_array, \%team_sprint;
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
-}
-
-sub show_backlog_and_items {
-    my ($vars) = @_;
-
-    my $cgi     = Bugzilla->cgi;
-    my $team_id = $cgi->param('teamid');
-    my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
-    $vars->{'team'}                = $team;
-    $vars->{'unprioritised_items'} = $team->unprioritised_items();
-
-    _show_team_bugs($vars);
 }
 
 sub edit_sprint {

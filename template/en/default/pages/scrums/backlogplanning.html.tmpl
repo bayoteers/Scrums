@@ -37,8 +37,8 @@
   unordered_bugs.show_columns.push('creation_date')
   unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
 
-  var backlog_search_url = search_link_sprint_items([% backlog.sprint.id() %]);
-  var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog', null, backlog_search_url);
+  var backlog_search_url = search_link_sprint_items([% backlog_id %]);
+  var backlog = new listObject("sortable", "headers", "[% backlog_id %]", 'Backlog', null, backlog_search_url);
   backlog.show_columns.push('creation_date')
 
   var sprint = new listObject("sortableX", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]'); // Idle list
@@ -69,12 +69,15 @@
     all_lists.push(backlog);
     all_lists.push(unordered_bugs);
 
-    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-        sprint_id: [% active_sprint.id() %]
-    }, receive_sprintbugs, 'json');
+    if([% active_sprint_id %])
+    {
+        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+            sprint_id: [% active_sprint_id() %]
+        }, receive_sprintbugs, 'json');
+    }
 
     $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-        sprint_id: [% backlog.sprint.id() %]
+        sprint_id: [% backlog_id %]
     }, renderBacklog, 'json');
 
     $.post('page.cgi?id=scrums/ajaxbuglist.html', {

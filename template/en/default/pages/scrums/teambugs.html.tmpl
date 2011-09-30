@@ -145,8 +145,8 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
   var team_id = [% team.id %];
 
   [% IF team.is_using_backlog() %]
-    var backlog_search_url = search_link_sprint_items([% backlog.sprint.id() %]);
-    var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog', null, backlog_search_url);
+    var backlog_search_url = search_link_sprint_items([% backlog_id %]);
+    var backlog = new listObject("sortable2", "headers2", "[% backlog_id %]", 'Backlog', null, backlog_search_url);
   [% ELSE %]
     // When all items are shown as 'backlog' to user, backlog must have sprint id of unprioritised items.
     // This is important because all its items are saved as actual backlog otherwise.
@@ -169,6 +169,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
   var sprint_rendered = false;
   var backlog_rendered = false;
   var sprint_info_showed = false;
+  var initialised = false;
 
   function save_all()
   {
@@ -197,12 +198,15 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
     all_lists.push(sprint);
 
-    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-        sprint_id: [% active_sprint.id() %]
-    }, renderSprint        , 'json');
+    if([% active_sprint.id() %])
+    {
+        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+            sprint_id: [% active_sprint.id() %]
+        }, renderSprint        , 'json');
+    }
 
     $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-        sprint_id: [% backlog.sprint.id() %]
+        sprint_id: [% backlog_id %]
     }, renderBacklog        , 'json');
 
     all_lists.push(backlog);
@@ -244,9 +248,16 @@ function renderBacklog(result)
 
 function check_receive_status()
 {
-    if(backlog_rendered && sprint_rendered && sprint_info_showed)
+    if(initialised) 
+    {
+        $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+        $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
+	after_rendering();
+    }
+    else if(backlog_rendered && sprint_rendered && sprint_info_showed)
     {
 	after_rendering();
+	initialised = true;
     }
 }
 
@@ -454,9 +465,9 @@ function after_rendering()
           </th>
           <td align="right">
         <select name="sprintid" onchange="get_sprint();" id="selected_sprint">
-        [% FOREACH name IN team_sprints_array %]
-          <option value="[% name.sprint.id() %]"[% IF name.sprint.id() == sprint.id() %] selected="selected"[% END %]>
-          [% IF name.sprint.is_current() %]*[% END %][% name.sprint.name %]</option>
+        [% IF active_sprint %]
+          <option value="[% active_sprint.id() %]" selected="selected">
+          *[% active_sprint.name() %]</option>
         [% END %]
           <option value="new_sprint">&#060; new sprint &#062;</option>
         </select>

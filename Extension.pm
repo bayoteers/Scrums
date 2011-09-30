@@ -624,14 +624,8 @@ sub page_before_template {
             $vars->{'buglist'} = $sprint->get_bugs();
         }
     }
-    elsif ($page eq 'scrums/teambugs.html') {
+    elsif ($page eq 'scrums/teambugs.html' || $page eq 'scrums/dailysprint.html' || $page eq 'scrums/backlogplanning.html') {
         show_team_and_sprints($vars);
-    }
-    elsif ($page eq 'scrums/teambugs.html' || $page eq 'scrums/dailysprint.html') {
-        show_team_and_sprints($vars);
-    }
-    elsif ($page eq 'scrums/backlogplanning.html') {
-        show_backlog_and_items($vars);
     }
     elsif ($page eq 'scrums/archivedsprints.html') {
         show_archived_sprints($vars);
