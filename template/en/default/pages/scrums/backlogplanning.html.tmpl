@@ -41,13 +41,16 @@
   var backlog = new listObject("sortable", "headers", "[% backlog.sprint.id() %]", 'Backlog', null, backlog_search_url);
   backlog.show_columns.push('creation_date')
 
-  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
+  var sprint = new listObject("sortableX", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]'); // Idle list
 
   // *** Global variables ***
   schema = 'team';
   object_id = [% team.id %];
 
   var all_lists = [];
+  var unordered_items_rendered = false;
+  var backlog_rendered = false;
+  var sprintbugs_received = false;
 
   var bug_positions = [];
 
@@ -60,30 +63,24 @@
       do_save(saved_lists);
   }
 
-  [% PROCESS 'global/lists_unordered.js.tmpl' %]
-  // data from backend
-
-  [% PROCESS 'global/lists_backlog.js.tmpl' %]
-
- var sprint_bugs = [[% FOREACH bug IN active_sprint.get_bugs() %] [% bugid = bug.0 %]
- [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", "", "", [% bug.10 %], [% bug.11 %], 0],[% END %]];
-
   $(document).ready(function() {
     var html = '';
 
-    bind_items_to_list(sprint, sprint_bugs);
-
-    $('#sprints').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
-    bind_items_to_list(backlog, backlog_bugs);
-    update_lists(backlog, 0);
     all_lists.push(backlog);
-
-    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
-    bind_items_to_list(unordered_bugs, unordered_list_data);
-    update_lists(unordered_bugs, 0);
     all_lists.push(unordered_bugs);
 
-    bind_sortable_lists(all_lists);
+    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+        sprint_id: [% active_sprint.id() %]
+    }, receive_sprintbugs, 'json');
+
+    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+        sprint_id: [% backlog.sprint.id() %]
+    }, renderBacklog, 'json');
+
+    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+	action: "unprioritised_items",
+        team_id: [% team.id() %]
+    }, renderItems, 'json');
 
     $(window).unload(
     	function() 
@@ -92,6 +89,53 @@
         } 
     );
   });
+
+function renderBacklog(result)
+{
+    data = result.data;
+    var backlog_bugs = data.bugs;
+
+    bind_items_to_list(backlog, backlog_bugs);
+    $('#sprints').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
+    update_lists(backlog, 0);
+    backlog_rendered = true;
+    check_receive_status();
+}
+
+function renderItems(result)
+{
+    data = result.data;
+    var unprioritised_items = data.bugs;
+
+    bind_items_to_list(unordered_bugs, unprioritised_items);
+    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
+    update_lists(unordered_bugs, 0);
+    unordered_items_rendered = true;
+    check_receive_status();
+}
+
+function receive_sprintbugs(result)
+{
+    data = result.data;
+    var sprint_bugs = data.bugs;
+
+    bind_items_to_list(sprint, sprint_bugs);
+    sprintbugs_received = true;
+    check_receive_status();
+}
+
+function check_receive_status()
+{
+    if(backlog_rendered && unordered_items_rendered && sprintbugs_received)
+    {
+	after_rendering();
+    }
+}
+
+function after_rendering()
+{
+    bind_sortable_lists(all_lists);
+}
 </script>
 
 <div class="bz_title_container">

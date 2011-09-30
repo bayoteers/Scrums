@@ -374,7 +374,11 @@ sub unprioritised_bugs {
         left(b.short_desc, 40),
         b.short_desc,
         b.creation_ts,
-        b.bug_severity
+        b.bug_severity,
+        0,
+        0,
+        0,
+        0
     from 
 	scrums_componentteam sct
     inner join
@@ -422,7 +426,11 @@ sub unprioritised_items {
         left(b.short_desc, 40),
         b.short_desc,
         b.creation_ts,
-        b.bug_severity
+        b.bug_severity,
+        0,
+        0,
+        0,
+        0
     from 
 	scrums_componentteam sct
     inner join

@@ -166,6 +166,10 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
   var all_lists = [];
   var bug_positions = [];
 
+  var sprint_rendered = false;
+  var backlog_rendered = false;
+  var sprint_info_showed = false;
+
   function save_all()
   {
     // ! Notice! Lists need to be pushed into 'saved_lists' array in this order. They are also saved in that order. 
@@ -177,11 +181,6 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
   }
 
   // data from backend
-
-  [% PROCESS 'global/lists_backlog.js.tmpl' %]
-
- var sprint_bugs = [[% FOREACH bug IN active_sprint.get_bugs() %] [% bugid = bug.0 %]
- [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", "", "", [% bug.10 %], [% bug.11 %], 0],[% END %]];
 
  var foo = "[% active_sprint.name() %]";
 
@@ -196,17 +195,18 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
     var historyStr = "[% IF history %]<table>[% FOREACH sprint IN history %]<tr><th>[% sprint.0 %]</th><td style='min-width: 110px;'>Total Work: [% sprint.1 %]</td><td>Total Persons: [% sprint.2 %]</td></tr>[% END %]</table>[% END %]";
     sprint.history = historyStr;
 
-    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
-    bind_items_to_list(sprint, sprint_bugs);
-    update_lists(sprint, 0);
     all_lists.push(sprint);
 
-    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
-    bind_items_to_list(backlog, backlog_bugs);
-    update_lists(backlog, 0);
+    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+        sprint_id: [% active_sprint.id() %]
+    }, renderSprint        , 'json');
+
+    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+        sprint_id: [% backlog.sprint.id() %]
+    }, renderBacklog        , 'json');
+
     all_lists.push(backlog);
 
-    bind_sortable_lists(all_lists);
     get_sprint();
 
     $(window).unload(
@@ -217,6 +217,46 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
     );
 
   });
+
+function renderSprint(result)
+{
+    data = result.data;
+    var sprint_bugs = data.bugs;
+
+    bind_items_to_list(sprint, sprint_bugs);
+    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+    update_lists(sprint, 0);
+    sprint_rendered = true;
+    check_receive_status();
+}
+
+function renderBacklog(result)
+{
+    data = result.data;
+    var backlog_bugs = data.bugs;
+
+    bind_items_to_list(backlog, backlog_bugs);
+    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
+    update_lists(backlog, 0);
+    backlog_rendered = true;
+    check_receive_status();
+}
+
+function check_receive_status()
+{
+    if(backlog_rendered && sprint_rendered && sprint_info_showed)
+    {
+	after_rendering();
+    }
+}
+
+function after_rendering()
+{
+    bind_sortable_lists(all_lists);
+    demark_sprint_capacity(sprint.estimatedcapacity, sprint.list, backlog.list);
+    update_lists(sprint, 0);
+    update_lists(backlog, 0);
+}
 </script>
 
 <script type="text/javascript">

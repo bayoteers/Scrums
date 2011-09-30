@@ -493,24 +493,11 @@ function show_sprint(result)
     sprint.pred_estimate = data.prediction;
     sprint.history = data.history;
 
-    if(sprint_callback) {
-        sprint_callback(data.estimatedcapacity, data.bugs, backlog_bugs);
-    }
-
+    sprint_info_showed = true;
     $('#sprint_info').html(sprint.start_date+' &mdash; '+sprint.end_date);
     $('#sprint_button').html("<input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
 
-    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
-    bind_items_to_list(sprint, data.bugs);
-    update_lists(sprint, 0);
-
-    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
-    bind_items_to_list(backlog, backlog_bugs);
-    update_lists(backlog, 0);
-    all_lists = [];
-    all_lists.push(sprint);
-    all_lists.push(backlog);
-    bind_sortable_lists(all_lists);
+    check_receive_status();
 }
 
 function edit_sprint()

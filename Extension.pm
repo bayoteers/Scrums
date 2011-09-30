@@ -606,6 +606,24 @@ sub page_before_template {
             ajax_sprint_bugs($vars);
         }
     }
+    elsif ($page eq 'scrums/ajaxbuglist.html') {
+        my $cgi       = Bugzilla->cgi;
+        my $action    = $cgi->param('action');
+        my $team_id   = $cgi->param('team_id');
+        my $sprint_id = $cgi->param('sprint_id');
+        if ($action eq "unprioritised_items") {
+            my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+            $vars->{'buglist'} = $team->unprioritised_items();
+        }
+        elsif ($action eq "unprioritised_bugs") {
+            my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+            $vars->{'buglist'} = $team->unprioritised_bugs();
+        }
+        else {
+            my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+            $vars->{'buglist'} = $sprint->get_bugs();
+        }
+    }
     elsif ($page eq 'scrums/teambugs.html') {
         show_team_and_sprints($vars);
     }
