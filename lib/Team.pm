@@ -49,7 +49,6 @@ use constant DB_COLUMNS => qw(
   weekly_velocity_start
   weekly_velocity_end
   scrum_master
-  is_using_backlog
   );
 
 use constant REQUIRED_CREATE_FIELDS => qw(
@@ -61,7 +60,6 @@ use constant UPDATE_COLUMNS => qw(
   name
   owner
   scrum_master
-  is_using_backlog
   );
 
 use constant VALIDATORS => { name => \&_check_name, };
@@ -115,7 +113,6 @@ sub _check_name {
 sub set_name             { $_[0]->set('name',             $_[1]); }
 sub set_owner            { $_[0]->set('owner',            $_[1]); }
 sub set_scrum_master     { $_[0]->set('scrum_master',     $_[1]); }
-sub set_is_using_backlog { $_[0]->set('is_using_backlog', $_[1]); }
 
 sub set_component {
     my ($self, $component_id) = @_;
@@ -229,7 +226,6 @@ sub scrum_master          { return $_[0]->{'scrum_master'}; }
 sub weekly_velocity_value { return $_[0]->{'weekly_velocity_value'}; }
 sub weekly_velocity_start { return $_[0]->{'weekly_velocity_start'}; }
 sub weekly_velocity_end   { return $_[0]->{'weekly_velocity_end'}; }
-sub is_using_backlog      { return $_[0]->{'is_using_backlog'}; }
 
 sub owner_user {
     my ($self) = @_;
