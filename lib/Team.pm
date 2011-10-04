@@ -110,9 +110,9 @@ sub _check_name {
 ####       Methods         ####
 ###############################
 
-sub set_name         { $_[0]->set('name',         $_[1]); }
-sub set_owner        { $_[0]->set('owner',        $_[1]); }
-sub set_scrum_master { $_[0]->set('scrum_master', $_[1]); }
+sub set_name             { $_[0]->set('name',             $_[1]); }
+sub set_owner            { $_[0]->set('owner',            $_[1]); }
+sub set_scrum_master     { $_[0]->set('scrum_master',     $_[1]); }
 
 sub set_component {
     my ($self, $component_id) = @_;
@@ -448,6 +448,69 @@ sub unprioritised_items {
 
 }
 
+#
+# Condition for item to be unscheduled is, that it is not in active (recent) sprint.
+# Those items, that are in team's product backlog (srums_sprints.item_type =2) are included also
+# "Item" might be either task or bug. Task has severity "change request", "feature" or "task" and bug has some other reverity value.
+#
+sub all_items_not_in_sprint {
+    my $self = shift;
+
+    my $dbh = Bugzilla->dbh;
+
+    my ($items_not_in_sprint) = $dbh->selectall_arrayref(
+        'select
+        b.bug_id,
+        b.remaining_time,
+        b.bug_status,
+        p.realname,
+        left(b.short_desc, 40),
+        b.short_desc,
+        b.creation_ts,
+        b.bug_severity,
+        0,
+        0,
+        sum(work_time) as work_done,
+        sum(work_time)+b.remaining_time as total_work
+    from 
+	scrums_componentteam sct
+    inner join
+	bugs b on b.component_id = sct.component_id
+    inner join 
+        profiles p on p.userid = b.assigned_to
+    inner join
+	bug_status bs on b.bug_status = bs.value
+    inner join 
+        longdescs l on l.bug_id = b.bug_id
+    where 
+	sct.teamid = ? and
+	bs.is_open = 1 and
+        not exists 
+    (select null from 
+        scrums_sprint_bug_map sbm 
+    inner join 
+        scrums_sprints spr on sbm.sprint_id = spr.id 
+    where 
+        b.bug_id = sbm.bug_id and 
+        spr.id = 
+        (select id from scrums_sprints spr2 where spr2.team_id = ? and spr2.item_type = 1 and not exists 
+        (select null from scrums_sprints spr3 where spr3.team_id = ? and spr3.item_type = 1 and spr3.start_date > spr2.start_date)))
+    group by
+        b.bug_id,
+        b.remaining_time,
+        b.bug_status,
+        p.realname,
+        left(b.short_desc, 40),
+        b.short_desc,
+        b.creation_ts,
+        b.bug_severity
+    order by
+	bug_id', undef, $self->id, $self->id, $self->id
+    );
+
+    return $items_not_in_sprint;
+}
+
 sub _get_active_sprints_bug_ids {
     my $self = shift;
 
@@ -470,17 +533,31 @@ sub get_active_sprints_bug_orders {
     return $items;
 }
 
+sub is_team_responsible_for_component_id {
+    my $self = shift;
+    my ($ref_id) = @_;
+
+    my $dbh = Bugzilla->dbh;
+    my $component_ids = $dbh->selectcol_arrayref('SELECT component_id FROM scrums_componentteam WHERE teamid = ?', undef, $self->id);
+    if (grep { $_ eq $ref_id } @{$component_ids}) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
 sub _is_bug_in_active_sprint {
     my $self = shift;
     my ($ref_bug_id, $vars) = @_;
     if ($vars) { $vars->{'output'} .= "is_bug_in_active_sprint - ref_bug_id:" . $ref_bug_id . "<br />"; }
 
     my $current = $self->get_team_current_sprint();
-    if ($current->is_item_in_sprint($ref_bug_id)) {
+    if ($current && $current->is_item_in_sprint($ref_bug_id)) {
         return $current->id();
     }
     my $backlog = $self->get_team_backlog();
-    if ($backlog->is_item_in_sprint($ref_bug_id)) {
+    if ($backlog && $backlog->is_item_in_sprint($ref_bug_id)) {
         return $backlog->id();
     }
     return undef;

@@ -129,6 +129,29 @@ sub bug_end_of_update {
         }
     }
 
+    my $scrums_action = $cgi->param('scrums_action');
+    if ($scrums_action =~ /^(\d+)$/) {
+        $scrums_action = $1;
+        if ($scrums_action > -1) {
+            if (not Bugzilla->user->in_group('scrums_editteams')) {
+                ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "sprint" });
+            }
+
+            my $sprnt = Bugzilla::Extension::Scrums::Sprint->new($scrums_action);
+            my $team  = $sprnt->get_team();
+            if (!$team->is_team_responsible_for_component_id($bug->{component_id})) {
+                my $responsible = $team->team_of_component($bug->{component_id});
+                my $resp_name   = "[none]";
+                if ($responsible) {
+                    $resp_name = $responsible->name();
+                }
+                my $comp_name = $bug->component();
+                ThrowUserError("scrums_not_responsible_team", { bug_id => $bug->bug_id, responsible_team_name => $resp_name, comp_name => $comp_name });
+            }
+            $sprnt->add_bug_into_sprint($bug->bug_id);
+        }
+    }
+
     return;
 }
 
@@ -516,6 +539,10 @@ sub page_before_template {
         elsif ($action eq "move2") {
             debug_function4($vars);
         }
+
+        if ($action eq "set2func1") {
+            debug_set2_func1($vars);
+        }
     }
 
     # Teams
@@ -682,6 +709,26 @@ sub config_add_panels {
     $modules->{Scrums} = "Bugzilla::Extension::Scrums::ConfigScrums";
 
     return;
+}
+
+sub template_before_process {
+    my ($self, $args) = @_;
+
+    my $file = $args->{file};
+    if ($file eq "list/edit-multiple.html.tmpl") {
+        my $vars = $args->{vars};
+        my $dbh  = Bugzilla->dbh;
+        use Data::Dumper;
+        #        my $user_id = $vars->{'cgi'}->{'.cookies'}->{Bugzilla_login}->{value}[0];
+        my $user = Bugzilla->login(LOGIN_REQUIRED);
+        my $sprints =
+          $dbh->selectall_arrayref(  "select s.id, s.name, scrums_team.name from "
+                                   . "(select * from scrums_sprints where "
+                                   . "item_type <> 2 "
+                                   . "order by start_date desc) as s, scrums_team where s.team_id = scrums_team.id "
+                                   . "group by team_id");
+        $vars->{sprints} = $sprints;
+    }
 }
 
 # This must be the last line of your extension.
