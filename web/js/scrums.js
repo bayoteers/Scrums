@@ -27,7 +27,7 @@ function toggle_scroll()
     });
 }
 
-function listObject(ul_id, h_id, id, name, li_tmpl, link_url) 
+function listObject(ul_id, h_id, id, name, li_tmpl, link_url, offset_step) 
 {
     this.ul_id = ul_id;
     this.id = id;
@@ -37,6 +37,10 @@ function listObject(ul_id, h_id, id, name, li_tmpl, link_url)
     this.orginal_list = [];
     this.visible = -1;
     this.offset = 0;
+    if(offset_step)
+    {
+        this.offset_step = offset_step;
+    }
     this.offset_step = 99999; // default value
     this.name = name;
     this.li_tmpl = li_tmpl;

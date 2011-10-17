@@ -26,8 +26,8 @@
 [% PROCESS global/lists.html.tmpl %]
 
 <script type="text/javascript">
-  var ordered_bugs = new listObject("sortable1", "headers", '0', 'Item Order', $("#ReleaseBugLiTmpl"));
-  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', $("#ReleaseBugLiTmpl"));
+  var ordered_bugs = new listObject("sortable1", "headers", '0', 'Item Order', $("#ReleaseBugLiTmpl"), null, 20);
+  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', $("#ReleaseBugLiTmpl"), null, 20);
 
 var ordered_list_data = [[% FOREACH bug IN scheduled_bugs %] [% bugid = bug.0 %]
  [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], "[% bug.1 %]", "[% bug.2 %]", "[% bug.3 | replace( '"', '\'' ) %]", "[% bug.4 %]", "[% bug.5 %]", "", "", 0, 0, 0],[% END %]];
@@ -47,8 +47,12 @@ var unordered_list_data = [[% FOREACH bug IN unprioritised_bugs %] [% bugid = bu
   $(document).ready(function() {
     $('#left').html(html = parseTemplate($('#ReleaseListTmpl').html(), { list: ordered_bugs, extra_middle: '' }));
     $('#right').html(html = parseTemplate($('#ReleaseListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
-    update_lists(unordered_bugs, 0, unordered_list_data);
-    update_lists(ordered_bugs, 0, ordered_list_data);
+    bind_items_to_list(ordered_bugs, ordered_list_data);
+    bind_items_to_list(unordered_bugs, unordered_list_data);
+
+    update_lists(unordered_bugs, 0);
+    update_lists(ordered_bugs, 0);
+
     all_lists.push(unordered_bugs);
     all_lists.push(ordered_bugs);
     bind_sortable_lists(all_lists);
