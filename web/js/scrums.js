@@ -41,7 +41,10 @@ function listObject(ul_id, h_id, id, name, li_tmpl, link_url, offset_step)
     {
         this.offset_step = offset_step;
     }
-    this.offset_step = 99999; // default value
+    else
+    {
+        this.offset_step = 99999; // default value
+    }
     this.name = name;
     this.li_tmpl = li_tmpl;
     this.show_columns = ['order', 'bug_id', 'points', 'summary'];
@@ -89,9 +92,9 @@ function select_step(list_id)
     {
         if (all_lists[i].id == list_id)
         {
-	    if(sel.value == "all")
+	    if(sel.value == "All")
 	    {
-	    	val = all_lists[i].length;
+	    	val = all_lists[i].list.length;
 		all_lists[i].offset = 0;
 	    }
 	    all_lists[i].offset_step = val;
@@ -292,9 +295,28 @@ function update_lists(bugs_list, move_pos)
         }
     }
 
+    if (move_pos == undefined) {
+        move_pos = 0;
+    }
+    bugs_list.offset += move_pos;
+    if (bugs_list.offset < 0) {
+	var remainder = bugs_list.visible.length % bugs_list.offset_step;
+        var list_length = bugs_list.visible.length;
+        bugs_list.offset = list_length - remainder;
+    }
+    if (bugs_list.offset >= bugs_list.visible.length) {
+        bugs_list.offset = 0;
+    }
+
+
     var html = '';
     // TODO This needs to fixed in order to paging to function
-    for (var i = 0; i < bugs_list.visible.length; i++) {
+    for (var i = bugs_list.offset; i < bugs_list.visible.length; i++) {
+
+        if (i > bugs_list.offset + bugs_list.offset_step - 1) {
+            break;
+        }
+
         var position = bugs_list.visible[i];
         html += create_bug_elem(bugs_list, position);
     } // for
