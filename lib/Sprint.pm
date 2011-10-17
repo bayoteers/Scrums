@@ -575,6 +575,39 @@ sub get_item_array {
     return \@array;
 }
 
+sub get_remaining_item_array {
+    my $self = shift;
+    my $dbh  = Bugzilla->dbh;
+    my ($sprint_items) = $dbh->selectall_arrayref(
+        'select
+        sbm.bug_id
+    from
+	scrums_sprint_bug_map sbm
+    inner join
+        scrums_bug_order bo
+    on
+        bo.bug_id = sbm.bug_id
+    inner join
+        bugs b
+    on
+        sbm.bug_id = b.bug_id
+    inner join
+        bug_status bs
+    on
+        b.bug_status = bs.value
+    where
+	sprint_id = ? and
+        bs.is_open = 1
+    order by
+        team asc', undef, $self->id
+    );
+    my @array;
+    for my $row (@{$sprint_items}) {
+        push(@array, @{$row}[0]);
+    }
+    return \@array;
+}
+
 sub get_biggest_team_order {
     my $self = shift;
 

@@ -622,7 +622,7 @@ sub page_before_template {
         elsif ($action eq "other_items_than_in_active_sprint") {
             # This includes also items in backlog (which is disabled)
             my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
-            $vars->{'buglist'} = $team->all_items_not_in_sprint(); 
+            $vars->{'buglist'} = $team->all_items_not_in_sprint();
         }
         else {
             my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);

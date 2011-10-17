@@ -38,6 +38,7 @@
   [% END %]
 
   [% index = 0 %]
+
   [% FOREACH team IN teams %]
     <h1>
       Team '[% team.name %]'
@@ -57,7 +58,24 @@
 
     <table>
       [% IF active_sprint.id %]
+        [% IF treeviewurl %]
+          <tr>
+            <td>
+              [% remaining_items = active_sprint.get_remaining_item_array() %]
+	      <a href="[% treeviewurl %]&bug_id=[% FOREACH bug_id IN remaining_items %][% bug_id %],[% END %]">
+	        Remaining Items in Tree View
+	      </a>
+            </td>
+          </tr>
+	[% END %]
         <tr>
+          <td>
+            <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&search_deps=on&query_format=advanced&field0-0-0=scrums_sprint_bug_map.sprint_id&value0-0-0=[% active_sprint.id %]&type0-0-0=substring&order=scrums_team_order%2Cbug_severity&daily">
+              Remaining Items and Dependencies
+            </a>
+          </td>
+        </tr>
+	<tr>
           <td>
             <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&field0-0-0=scrums_sprint_bug_map.sprint_id&value0-0-0=[% active_sprint.id %]&type0-0-0=substring&order=scrums_team_order%2Cbug_severity&daily">
               Remaining Items

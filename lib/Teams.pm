@@ -210,6 +210,7 @@ sub _show_existing_team {
     my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team->id(), item_type => 1 });
     if (@{$sprints}) {
         my $last = pop(@{$sprints});
+        $vars->{'active_sprint'}      = $last;
         $vars->{'active_sprint_id'}   = $last->id();
         $vars->{'active_sprint_name'} = $last->name();
     }
