@@ -194,12 +194,14 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
     all_lists.push(sprint);
 
-    if([% active_sprint.id() %])
-    {
+    [% IF active_sprint.id() %]
         $.post('page.cgi?id=scrums/ajaxbuglist.html', {
             sprint_id: [% active_sprint.id() %]
         }, renderSprint        , 'json');
-    }
+    [% ELSE %]
+        bind_items_to_list(sprint, []); // Bug list is empty since there is even no sprint
+        sprint_rendered = true; 	// There is no point in waiting for sprint to arrive, that does not even exist.
+    [% END %]
 
     [% IF team.is_using_backlog() %]
         $.post('page.cgi?id=scrums/ajaxbuglist.html', {
