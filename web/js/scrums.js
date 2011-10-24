@@ -261,151 +261,6 @@ function bind_sortable_lists(lists) {
     }).disableSelection();
 }
 
-function create_item_line_html(bug, counter, show_columns)
-{
-    var str = '';
-    if (bug[10]) {
-        str += '<tr id=\'' + bug[0][0] + '\'  class="scrums_limited_area" bug_order_nr=\'' + counter + '\'>';
-    }
-    else {
-        str += '<tr id=\'' + bug[0][0] + '\' bug_order_nr=\'' + counter + '\'>';
-    }
-    if ($.inArray('order', show_columns) > -1) { 
-        str += '<td class=\'colF sortable\'> <span class=\'number\'>' + counter + '</span></td>';
-    }
-    if ($.inArray('bug_id', show_columns) > -1) {
-	str += '<td class=\'colD sortable\'>' + bug[0][1] + '</td>';
-    }
-    if ($.inArray('points', show_columns) > -1) { 
-	str += '<td class=\'colF sortable\'>' + bug[1] + '</td>';
-    }
-    if ($.inArray('status', show_columns) > -1) { 
-	str += '<td class=\'colC sortable\'>' + bug[2] + '</td>';
-    }
-    if ($.inArray('assigned', show_columns) > -1) {
-        str += '<td class=\'colA sortable\'>' + bug[3] + '</td>';
-    }
-    if ($.inArray('severity', show_columns) > -1) { 
-        str += '<td class=\'colA sortable\'> ' + bug[7] + '</td>';
-    }
-    if ($.inArray('summary', show_columns) > -1) {  
-	str += '<td title=\'' + bug[5] + '\' class=\'sortable\'> ' + bug[5] + '</td>';
-    }
-    if ($.inArray('creation_date', show_columns) > -1) {  
-	str += '<td class=\'sortable\'>' + bug[6] + '</td>';
-    }
-    str += '</tr>';
-    return str;
-}
-
-function create_list_html(list)
-{
-   var html = '<h3 id="' + list.h_id + '">'
-   if(list.link_url)
-   {
-       html += '<a href="' + list.link_url + '">' + list.name + ' (<span id="items_' + list.id + '"></span>)</a>';
-   }
-   else
-   {
-       html += list.name;
-   }
-   html += '</h3>';
-   html +=    '<div class="content" >';
-   html +=      '<div class="scrollTableContainer" id="container">';
-   html +=        '<table class="dataTable" id="table' + list.ul_id + '">';
-   html +=          '<thead id="mythead">';
-   html +=            '<tr>';
-   if ($.inArray('order', list.show_columns) > -1) { 
-       html += '<th class="sortable">#</th>';
-   }
-   if ($.inArray('bug_id', list.show_columns) > -1) {
-       html += '<th class="sortable colF">' + field_descs.bug_id + '</th>';
-   }
-   if ($.inArray('points', list.show_columns) > -1) {
-       html += '<th class="sortable colF">' + field_descs.remaining_time + '</th>';
-   }
-   if ($.inArray('status', list.show_columns) > -1) {
-       html += '<th class="sortable colF">' + field_descs.bug_status + '</th>';
-   }
-   if ($.inArray('assigned', list.show_columns) > -1) {
-       html += '<th class="sortable colF">' + field_descs.assigned_to + '</th>';
-   }
-   if ($.inArray('severity', list.show_columns) > -1) {
-       html += '<th class="sortable colF">' + field_descs.bug_severity + '</th>';
-   }
-   if ($.inArray('summary', list.show_columns) > -1) {
-       html += '<th class="sortable colF">' + field_descs.short_desc + '</th>';
-   }
-   if ($.inArray('creation_date', list.show_columns) > -1) {
-       html += '<th class="sortable">' + field_descs.creation_ts + '</th>';
-   }
-   html +=            '</tr>';
-   html +=          '</thead>';
-   html +=        '<tbody id="' + list.ul_id + '" class="connectedSortable sortable">';
-   html +=        '</tbody>';
-   html +=      '</table>';
-   html +=    '</div>';
-   html +=  '</div>';
-   return html;
-}
-
-function create_release_item_list_html(list) {
-  var html = '<h3 id="' + list.h_id + '">' + list.name + '</h3>';
-  html += '<div class="content">';
-  html +=   '<p>';
-  html +=     '<input type="button" value="Previous" OnClick=\'move_list_left("' + list.id + '");\'/>';
-  html +=     '<input type="button" value="Next" OnClick=\'move_list_right("' + list.id + '");\'/>';
-  html +=     'Show';
-  html +=     '<select id="' + list.id + '" onchange=\'select_step("' + list.id + '");\'>';
-  html +=       '<option>10</option>';
-  html +=       '<option selected="selected">20</option>';
-  html +=       '<option>50</option>';
-  html +=       '<option>All</option>';
-  html +=     '</select>';
-  html +=     '(<span id="items_' + list.id + '"></span>)';
-  html +=   '</p>';
-  html +=   '<table class="dataTable">';
-  html +=     '<thead>';
-  html +=       '<tr>';
-  html +=         '<th class="sortable">Priority</th>';
-  html += 	  '<th class="sortable" class="colF">' + field_descs.bug_id + '</th>';
-  html +=         '<th class="sortable" class="colF">' + field_descs.bug_status + '</th>';
-  html +=         '<th class="sortable" class="colF">' + field_descs.bug_severity + '</th>';
-  html +=         '<th class="sortable" class="colF">' + field_descs.short_desc + '</th>';
-  html +=         '<th class="sortable" class="colF">Team</th>';
-  html +=         '<th class="sortable" class="colF">Sprint</th>';
-  html +=       '</tr>';
-  html +=     '</thead>';
-  html +=     '<tbody id="' + list.ul_id + '" class="connectedSortable sortable">';
-  html +=     '</tbody>';
-  html +=   '</table>';
-  html += '</div>';
-  return html;
-}
-
-
-function create_release_item_line(bug, counter, show_columns)
-{
-    var html = '<tr id="' + bug[0][0] + '" bug_order_nr="' + counter + '">';
-    if ($.inArray('order', show_columns) > -1) {
-        html += '<td class="colF"><span class="number">' + counter + '</span></td>';
-    }
-    if ($.inArray('creation_date', show_columns) > -1) {
-        html += '<td class="sortable">' + bug[6] + '</td>';
-    }
-    html += '<td class="colD">' + bug[0][1] + '</td>';
-    html += '<td class="colC">' + bug[1] + '</td>';
-    html += '<td class="colD">' + bug[2] + '</td>';
-    html += '<td class="colA">' + bug[3] + '</td>';
-    if ($.inArray('severity', show_columns) > -1) {
-        html += '<td class="colA sortable">' + bug[7] + '</td>';
-    }
-    html += '<td class="colB"><a href="page.cgi?id=scrums/createteam.html&teamid=' + bug[6] + '">' + bug[4] + '</a></td>';
-    html += '<td><a href="page.cgi?id=scrums/sprintburndown.html&sprintid=' + bug[7] + '">' + bug[5] + '</a></td>';
-    html += '</tr>';
-    return html;
-}
-
 
 function bind_items_to_list(bugs_list, item_rows)
 {
@@ -551,36 +406,6 @@ function saveResponse(response, status, xhr)
 }
 
 
-function save(lists, schema, obj_id, data_lists) {
-    if (data_lists == undefined) {
-        var data_lists = new Object();
-    }
-    for (var i = 0; i < lists.length; i++) {
-        var list = lists[i];
-        var list_id = list.id;
-        data_lists[list_id] = [];
-        for (var k = 0; k < list.list.length; k++) {
-            data_lists[list_id].push(list.list[k][0][0]);
-        }
-    }
-
-    var original_lists = new Object();
-    for (var i = 0; i < lists.length; i++) {
-        var list = lists[i];
-        var list_id = list.id;
-        original_lists[list_id] = [];
-        for (var k = 0; k < list.original_list.length; k++) {
-            original_lists[list_id].push(list.original_list[k][0][0]);
-        }
-    }
-
-    $.post('page.cgi?id=scrums/ajax.html', {
-        schema: schema,
-        action: 'set',
-        obj_id: obj_id,
-        data: JSON.stringify({"data_lists" : data_lists, "original_lists" : original_lists})
-    }, saveResponse        , 'text');
-}
 
 function check_if_changed()
 {
@@ -629,169 +454,6 @@ function detect_unsaved_change()
     }
 }
 
-function show_sprint(result)
-{
-    data = result.data;
-    if(result.errormsg != "")
-    {
-	alert(result.errormsg);
-	return;
-    }
-    data = result.data;
-
-    var sprint = all_lists[0];
-    sprint._status = data._status;
-    sprint.description = data.description;
-    sprint.start_date = data.start_date;
-    sprint.end_date = data.end_date;
-
-    sprint.estimatedcapacity = data.estimatedcapacity
-    sprint.personcapacity = data.personcapacity
-    sprint.pred_estimate = data.prediction;
-    sprint.history = data.history;
-
-    sprint_info_showed = true;
-    $('#sprint_info').html(sprint.start_date+' &mdash; '+sprint.end_date);
-    $('#sprint_button').html("<input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
-
-    check_receive_status();
-}
-
-function edit_sprint()
-{
-    sprint = all_lists[0];
-    $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: true, sprintid: sprint.id }));
-    $('#sprint_action').html('<h3>Edit Sprint</h3>');
-    $("input[name=sprintname]").val(sprint.name.replace('Sprint ', ''));
-    $("input[name=description]").val(sprint.description);
-    $("input[name=start_date]").val(sprint.start_date);
-    $("input[name=end_date]").val(sprint.end_date);
-    $("input[name=submit]").val('Save');
-    $('#personcapacity').html(sprint.personcapacity);
-    $("input[name=estimatedcapacity]").val(sprint.estimatedcapacity);
-    $('#estimate').html(sprint.pred_estimate);
-    $('#history').html(sprint.history);
-    // prepare Options Object 
-    var options = { 
-        success:   create_sprint,
-        dataType: 'json'
-        } 
-    $('#new_sprint_form').ajaxForm(options);
-        var range_begin = "";
-        var range_end = "";
-
-        var today = new Date();
-        $("#datepicker_min").datepicker({ maxDate: today, dateFormat: 'yy-mm-dd' });
-        $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
-}
-
-        function cancel()
-        {
-          window.location = "page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]";  
-        }
-
-        function checkvalues()
-        {
-        gettime();
-
-        //var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
-        var sprintname = $('input[name=sprintname]').val();
-
-        if(sprintname == '')
-        {
-          alert("Sprint must have name.");
-          return false;
-        }
-
-        if(sprintname.match(/^\S/) == null)
-        {
-          alert("Sprint name can not start with whitespace");
-          return false;
-        }
-
-        if(range_begin == "")
-        {
-            alert("Sprint must have start date");
-            return false;
-        }
-
-        return true;
-        }
-
-        function askconfirm()
-        {
-        return confirm("Are you sure you want to delete sprint '[% sprintname %]'?");
-        }
-
-        function gettime() 
-        {
-            range_begin = $('#datepicker_min').val();
-            range_end = $('#datepicker_max').val();
-        }
-
-
-
-function get_sprint()
-{
-    if ($('#selected_sprint').val() == 'new_sprint')
-    {
-        $('#sprint').html(parseTemplate($('#NewSprintTmpl').html(), { list: sprint, edit: false, sprintid: 0 }));
-        $('#sprint_action').html('<h3>Create Sprint</h3>');
-        
-        var options = { 
-            success:   create_sprint,
-            dataType: 'json'
-            } 
-        $('#new_sprint_form').ajaxForm(options);
-
-        var range_begin = "";
-        var range_end = "";
-
-        var today = new Date();
-        $("#datepicker_min").datepicker({ maxDate: today, dateFormat: 'yy-mm-dd' });
-        $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
-        $('#history').html(sprint.history);
-    } else
-    {
-            $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
-            teamid: team_id,
-            sprintid: $('#selected_sprint').val(),
-        }, show_sprint, 'json');
-   }
-}
-
-function create_sprint(result)
-{
-    data = result.data;
-    if(result.errormsg != "")
-    {
-	alert(result.errormsg);
-	return;
-    }
-
-    if (data.name)
-    {
-        var sprint_select_name = data.name;
-        if (data.is_current)
-        {
-            sprint_select_name = '*'+sprint_select_name;
-        }
-        s_option = $('#selected_sprint option[value='+data.id+']');
-        if (s_option.val())
-        {
-            s_option.text(sprint_select_name);
-        } else
-        { 
-            $('#selected_sprint').children().each(function () { $(this).removeAttr('selected');});
-            $('#selected_sprint option:last-child').before('<option value="'+data.id+'" selected="selected">'+sprint_select_name+'</option>');
-        }
-        show_sprint(result);
-    } else {
-        $('#selected_sprint option').each(function () { if ($(this).attr('selected')) { $(this).remove(); return false; };});
-        $('#selected_sprint option').first().attr('selected', 'selected');
-        get_sprint();
-    }
-}
 
 function do_save(saved_lists)
 {
@@ -849,5 +511,36 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id)
 	var list = ordered_lists[i];
         list.original_list = $.extend(true, [], list.list);
     }
+}
+
+function save(lists, schema, obj_id, data_lists) {
+    if (data_lists == undefined) {
+        var data_lists = new Object();
+    }
+    for (var i = 0; i < lists.length; i++) {
+        var list = lists[i];
+        var list_id = list.id;
+        data_lists[list_id] = [];
+        for (var k = 0; k < list.list.length; k++) {
+            data_lists[list_id].push(list.list[k][0][0]);
+        }
+    }
+
+    var original_lists = new Object();
+    for (var i = 0; i < lists.length; i++) {
+        var list = lists[i];
+        var list_id = list.id;
+        original_lists[list_id] = [];
+        for (var k = 0; k < list.original_list.length; k++) {
+            original_lists[list_id].push(list.original_list[k][0][0]);
+        }
+    }
+
+    $.post('page.cgi?id=scrums/ajax.html', {
+        schema: schema,
+        action: 'set',
+        obj_id: obj_id,
+        data: JSON.stringify({"data_lists" : data_lists, "original_lists" : original_lists})
+    }, saveResponse        , 'text');
 }
 
