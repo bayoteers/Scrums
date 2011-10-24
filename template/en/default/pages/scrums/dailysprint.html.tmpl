@@ -23,7 +23,7 @@
     style_urls = ['skins/standard/admin.css']
 %]
 
-[% PROCESS global/lists.html.tmpl %]
+[% PROCESS pages/scrums/listcolumns.html.tmpl %]
 
 <script type="text/javascript">
 
@@ -37,9 +37,9 @@
   unordered_bugs_search_url += "[% FOREACH component IN components %]component=[% component %]&[% END %]";
 
   var sprint_search_url = search_link_sprint_items([% active_sprint.id() %]);
-  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', null, sprint_search_url);
+  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', create_item_line_html, sprint_search_url);
   var backlog = new listObject("sortableX", "headersX", "[% backlog.sprint.id() %]", 'Backlog'); // Idle list
-  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs', null, unordered_bugs_search_url);
+  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs', create_item_line_html, unordered_bugs_search_url);
 
   unordered_bugs.show_columns.push('creation_date');
   unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
@@ -105,7 +105,8 @@ function renderSprint(result)
     var sprint_bugs = data.bugs;
 
     bind_items_to_list(sprint, sprint_bugs);
-    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+    var	html = create_list_html(sprint);
+    $('#sprint').html(html);
 
     update_lists(sprint, 0);
     sprint_rendered = true;
@@ -128,7 +129,9 @@ function renderItems(result)
     var unprioritised_items = data.bugs;
 
     bind_items_to_list(unordered_bugs, unprioritised_items);
-    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
+
+    var html = create_list_html(unordered_bugs);
+    $('#unordered').html(html);
 
     update_lists(unordered_bugs, 0);
     unordered_items_rendered = true;
