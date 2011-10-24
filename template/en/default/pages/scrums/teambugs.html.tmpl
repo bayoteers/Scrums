@@ -143,30 +143,52 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
 <script type="text/javascript">
   var team_id = [% team.id %];
-  var backlog = new listObject("sortable2", "headers2", "[% backlog.sprint.id() %]", 'Backlog');
 
-  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]');
+  [% IF team.is_using_backlog() %]
+    var backlog_search_url = search_link_sprint_items([% backlog_id %]);
+    var backlog = new listObject("sortable2", "headers2", "[% backlog_id %]", 'Backlog', null, backlog_search_url);
+  [% ELSE %]
+    var other_than_active_sprint_search_url = "buglist.cgi?query_format=advanced&";
+    other_than_active_sprint_search_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2C";
+    other_than_active_sprint_search_url += "actual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
+    other_than_active_sprint_search_url += "[% FOREACH status IN bug_status_open %]bug_status=[% status %]&[% END %]";
+    other_than_active_sprint_search_url += "[% FOREACH class IN classifications %]classification=[% class %]&[% END %]";
+    other_than_active_sprint_search_url += "[% FOREACH product IN products %]product=[% product %]&[% END %]";
+    other_than_active_sprint_search_url += "[% FOREACH component IN components %]component=[% component %]&[% END %]";
 
+    // When all items are shown as 'backlog' to user, backlog must have sprint id of unprioritised items.
+    // This is important because all its items are saved as actual backlog otherwise.
+    var backlog = new listObject("sortable2", "headers2", '-1', 'Backlog (all items)', null, other_than_active_sprint_search_url);
+  [% END %]
+
+  var sprint_search_url = search_link_sprint_items([% active_sprint.id() %]);
+
+  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', null, sprint_search_url);
+
+  // *** Global variables ***
   sprint_callback = demark_sprint_capacity;
+  schema = 'team';
+  object_id = [% team.id %];
 
   var all_lists = [];
   var bug_positions = [];
 
+  var sprint_rendered = false;
+  var backlog_rendered = false;
+  var sprint_info_showed = false;
+  var initialised = false;
+
   function save_all()
   {
-     //save_lists(sprint_lists, backlog, 'team', [% team.id %]);
-     save(all_lists, 'team', [% team.id %]);
+    // ! Notice! Lists need to be pushed into 'saved_lists' array in this order. They are also saved in that order. 
+    //           Mixing them spoils team order values.
+    var saved_lists = [];
+    saved_lists.push(all_lists[0]); // Sprint
+    saved_lists.push(all_lists[1]); // Backlog
+    do_save(saved_lists);
   }
 
   // data from backend
- var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",[[% FOREACH bug IN team_sprint.bugs %]
- [% bugid = bug.0 %]
- [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", "", "", [% bug.10 %], [% bug.11 %], 0],[% END %]], "[% team_sprint.sprint.status() %]", "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],[% END %]};
-
-  [% PROCESS 'global/lists_backlog.js.tmpl' %]
-
- var sprint_bugs = [[% FOREACH bug IN active_sprint.get_bugs() %] [% bugid = bug.0 %]
- [[[% bug.0 %],"[% "${bugid}" FILTER bug_link(bugid) FILTER none | replace( '"', '\'' ) %]"], [% bug.1 %], "[% bug.2 %]", "[% bug.3 %]", "[% bug.4 | replace( '"', '\"' ) %][% IF (bug.5.length > 40) %]...[% END %]", "[% bug.5 | replace( '"', '\'' ) %]", "", "", [% bug.10 %], [% bug.11 %], 0],[% END %]];
 
  var foo = "[% active_sprint.name() %]";
 
@@ -181,17 +203,85 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
     var historyStr = "[% IF history %]<table>[% FOREACH sprint IN history %]<tr><th>[% sprint.0 %]</th><td style='min-width: 110px;'>Total Work: [% sprint.1 %]</td><td>Total Persons: [% sprint.2 %]</td></tr>[% END %]</table>[% END %]";
     sprint.history = historyStr;
 
-    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
-    update_lists(backlog, 0, backlog_bugs);
-
-    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
-    update_lists(sprint, 0, sprint_bugs);
     all_lists.push(sprint);
+
+    if([% active_sprint.id() %])
+    {
+        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+            sprint_id: [% active_sprint.id() %]
+        }, renderSprint        , 'json');
+    }
+
+    [% IF team.is_using_backlog() %]
+        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+            sprint_id: [% backlog_id %]
+        }, renderBacklog, 'json');
+    [% ELSE %]
+        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+	    action: "other_items_than_in_active_sprint",
+            team_id: [% team.id() %]
+        }, renderBacklog, 'json');
+    [% END %]
+
     all_lists.push(backlog);
-    all_lists = [sprint, backlog];
-    bind_sortable_lists(all_lists);
+
     get_sprint();
+
+    $(window).unload(
+    	function() 
+    	{
+	    detect_unsaved_change(); 
+        } 
+    );
+
   });
+
+function renderSprint(result)
+{
+    data = result.data;
+    var sprint_bugs = data.bugs;
+
+    bind_items_to_list(sprint, sprint_bugs);
+    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+    update_lists(sprint, 0);
+    sprint_rendered = true;
+    check_receive_status();
+}
+
+function renderBacklog(result)
+{
+    data = result.data;
+    var backlog_bugs = data.bugs;
+
+    bind_items_to_list(backlog, backlog_bugs);
+    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
+    update_lists(backlog, 0);
+    backlog_rendered = true;
+    check_receive_status();
+}
+
+function check_receive_status()
+{
+    if(initialised) 
+    {
+        $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+        $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
+	after_rendering();
+    }
+    else if(backlog_rendered && sprint_rendered && sprint_info_showed)
+    {
+	after_rendering();
+	initialised = true;
+    }
+}
+
+function after_rendering()
+{
+    bind_sortable_lists(all_lists);
+    demark_sprint_capacity(sprint.estimatedcapacity, sprint.list, backlog.list);
+    update_lists(sprint, 0);
+    update_lists(backlog, 0);
+}
 </script>
 
 <script type="text/javascript">
@@ -265,7 +355,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
      * Ajax call if succesfull, if server responds without throwing exception. Ordered
      * errors are shown in error message. Function shows status of saving to user.
      */
-    function saveResponse(response, status, xhr) {
+    function savedPersoncap(response, status, xhr) {
         var retObj = eval("(" + response + ")");
 
         if (retObj.errors) {
@@ -286,7 +376,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
             schema: 'personcapacity',
             action: 'update',
             data: json_params
-        }, saveResponse, 'text');
+        }, savedPersoncap, 'text');
     }
   
     function makeeditable(fieldid) {
@@ -355,6 +445,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
   [% team.name %] Sprint
 </div>
 
+[% PROCESS pages/scrums/navi.html.tmpl %]
 
 <table>
   <tr>
@@ -366,8 +457,8 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
   <tr>
     <td colspan="2" align="right">
+      <input type="button" class="scrums_wide_button" id="save_button" disabled="true" value="Save" onClick="save_all();" />
       <input type="button" class="toggle_scroll" value="Toggle Scroll Bars" onClick="toggle_scroll();" />
-      <input type="button" value="Save" OnClick="save_all();"/> 
     </td>
   </tr>
 </table>
@@ -388,9 +479,9 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
           </th>
           <td align="right">
         <select name="sprintid" onchange="get_sprint();" id="selected_sprint">
-        [% FOREACH name IN team_sprints_array %]
-          <option value="[% name.sprint.id() %]"[% IF name.sprint.id() == sprint.id() %] selected="selected"[% END %]>
-          [% IF name.sprint.is_current() %]*[% END %][% name.sprint.name %]</option>
+        [% IF active_sprint %]
+          <option value="[% active_sprint.id() %]" selected="selected">
+          *[% active_sprint.name() %]</option>
         [% END %]
           <option value="new_sprint">&#060; new sprint &#062;</option>
         </select>

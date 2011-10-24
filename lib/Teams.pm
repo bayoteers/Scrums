@@ -24,12 +24,12 @@ package Bugzilla::Extension::Scrums::Teams;
 use Bugzilla::Extension::Scrums::Team;
 use Bugzilla::Extension::Scrums::Sprint;
 use Bugzilla::Extension::Scrums::Sprintslib;
+use Bugzilla::Extension::Scrums::Teamorderlib;
 
 use Bugzilla::Util qw(trick_taint);
-
 use Bugzilla::Util;
-
 use Bugzilla::Error;
+use Bugzilla::Component;
 
 use strict;
 use base qw(Exporter);
@@ -155,12 +155,13 @@ sub show_create_team {
                 if (not Bugzilla->user->in_group('scrums_editteams')) {
                     ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
                 }
-                my $team_name    = $cgi->param('name');
-                my $team_owner   = $cgi->param('userid');
-                my $scrum_master = $cgi->param('scrummasterid');
+                my $team_name        = $cgi->param('name');
+                my $team_owner       = $cgi->param('userid');
+                my $scrum_master     = $cgi->param('scrummasterid');
+                my $is_using_backlog = $cgi->param('usesbacklog');
                 if ($team_owner =~ /^([0-9]+)$/) {
-                    $team_owner = $1;                                                       # $data now untainted
-                    $error = _update_team($team, $team_name, $team_owner, $scrum_master);
+                    $team_owner = $1;                                                                          # $data now untainted
+                    $error = _update_team($team, $team_name, $team_owner, $scrum_master, $is_using_backlog);
                     if ($error ne "") {
                         ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });
                     }
@@ -209,6 +210,7 @@ sub _show_existing_team {
     my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team->id(), item_type => 1 });
     if (@{$sprints}) {
         my $last = pop(@{$sprints});
+        $vars->{'active_sprint'}      = $last;
         $vars->{'active_sprint_id'}   = $last->id();
         $vars->{'active_sprint_name'} = $last->name();
     }
@@ -392,13 +394,15 @@ sub edit_team {
             ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
         }
     }
-    $vars->{'editteam'}             = $editteam;
-    $vars->{'teamid'}               = $cgi->param('teamid');
-    $vars->{'teamname'}             = $cgi->param('teamname');
+    $vars->{'editteam'} = $editteam;
+    my $team_id = $cgi->param('teamid');
+    $vars->{'teamid'} = $team_id;
+    if ($editteam ne "") {
+        my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+        $vars->{'team'} = $team;
+    }
     $vars->{'realname'}             = $cgi->param('realname');
     $vars->{'loginname'}            = $cgi->param('loginname');
-    $vars->{'ownerid'}              = $cgi->param('ownerid');
-    $vars->{'scrummasterid'}        = $cgi->param('scrummasterid');
     $vars->{'scrummasterrealname'}  = $cgi->param('scrummasterrealname');
     $vars->{'scrummasterloginname'} = $cgi->param('scrummasterloginname');
 }
@@ -406,23 +410,20 @@ sub edit_team {
 sub ajax_sprint_bugs {
     my ($vars) = @_;
     my $cgi = Bugzilla->cgi;
-    # security checks?
     my @sprints;
 
     my $teamid;
     my $sprintid;
     if ($cgi->param('teamid') =~ /(\d+)/) {
         $teamid = $1;
-        #$teamid = $cgi->param('teamid');
-        #$teamid =~ /(\d+)/;
     }
 
+    my $sprints = undef;
     if ($cgi->param('sprintid') =~ /(\d+)/) {
         $sprintid = $1;
-        #$sprintid = $cgi->param('sprintid');
-        #$sprintid =~ /(\d+)/;
+        $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, item_type => 1 });
     }
-    my $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, item_type => 1 });
+
     $vars->{'json_text'} = '';
     if ($sprints) {
         use JSON;
@@ -463,15 +464,8 @@ sub _show_team_bugs {
     my $capacity;
     my $sprint = $team->get_team_current_sprint();
 
-    my %team_sprint;
-    if ($sprint) {
-        $team_sprint{'sprint'} = $sprint;
-        my $spr_bugs = $sprint->get_bugs();
-        $team_sprint{'bugs'} = $spr_bugs;
-        push @team_sprints_array, \%team_sprint;
-    }
-    $vars->{'team_sprints_array'} = \@team_sprints_array;
-    $vars->{'active_sprint'}      = $sprint;
+    $vars->{'active_sprint'} = $sprint;
+
     if ($sprint) {
         $vars->{'capacity'} = $sprint->get_capacity_summary();
 
@@ -485,11 +479,37 @@ sub _show_team_bugs {
     my @sprint_names;
     push @sprint_names, $team_backlog->name();
 
-    my %backlog_container;
-    $backlog_container{'sprint'}       = $team_backlog;
-    $backlog_container{'bugs'}         = $team_backlog->get_bugs();
-    $backlog_container{'sprint_names'} = \@sprint_names;
-    $vars->{'backlog'}                 = \%backlog_container;
+    $vars->{'active_sprint_id'} = $sprint->id();
+    $vars->{'backlog_id'}       = $team_backlog->id();
+
+    # Component, product and classification names are needed for creating bug lists, that have editable search
+    my $components = $team->components();
+    my @comp_names;
+    my @prod_names;
+    my @class_names;
+    for my $comp (@{$components}) {
+        my $co_name = $comp->name();
+        if (!(grep { $_ eq $co_name } @comp_names)) {
+            push @comp_names, $co_name;
+        }
+        my $prod   = $comp->product();
+        my $p_name = $prod->name();
+        if (!(grep { $_ eq $p_name } @prod_names)) {
+            push @prod_names, $p_name;
+        }
+        my $c_id       = $prod->classification_id();
+        my $class      = new Bugzilla::Classification($c_id);
+        my $class_name = $class->name();
+        if (!(grep { $_ eq $class_name } @class_names)) {
+            push @class_names, $class_name;
+        }
+    }
+    my @bug_status_open = Bugzilla::Status::BUG_STATE_OPEN();
+    $vars->{'bug_status_open'} = \@bug_status_open;
+
+    $vars->{'components'}      = \@comp_names;
+    $vars->{'products'}        = \@prod_names;
+    $vars->{'classifications'} = \@class_names;
 }
 
 sub show_archived_sprints {
@@ -508,24 +528,6 @@ sub show_archived_sprints {
         unshift @team_sprints_array, \%team_sprint;
     }
     $vars->{'team_sprints_array'} = \@team_sprints_array;
-}
-
-sub show_backlog_and_items {
-    my ($vars) = @_;
-
-    my $cgi     = Bugzilla->cgi;
-    my $team_id = $cgi->param('teamid');
-    my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
-    $vars->{'team'}                = $team;
-    $vars->{'unprioritised_items'} = $team->unprioritised_items();
-
-    my $team_backlog = $team->get_team_backlog();
-
-    my %backlog_container;
-    $backlog_container{'sprint'} = $team_backlog;
-    #$backlog_container{'bugs'}   = $team_backlog->get_bugs();
-    $backlog_container{'bugs'} = $team_backlog->get_items();
-    $vars->{'backlog'} = \%backlog_container;
 }
 
 sub edit_sprint {
@@ -630,7 +632,7 @@ sub update_team_bugs {
         $vars->{'errors'} = $error;
     }
     else {
-        update_bug_order_from_json($team_id, $data);
+        update_bug_order_from_json($team_id, $data, $vars);
     }
 }
 
@@ -775,7 +777,7 @@ sub _sanitise_sprint_data {
 }
 
 sub _update_team {
-    my ($team, $name, $owner, $scrum_master) = @_;
+    my ($team, $name, $owner, $scrum_master, $is_using_backlog) = @_;
 
     my $error = "";
     if ($name =~ /^([-\ \w]+)$/) {
@@ -801,10 +803,15 @@ sub _update_team {
         $scrum_master = "";
     }
 
+    if ($is_using_backlog =~ /^([0-9])$/) {
+        $is_using_backlog = $1;    # $data now untainted
+    }
+
     if ($error eq "") {
         $team->set_name($name);
         $team->set_owner($owner);
         $team->set_scrum_master($scrum_master);
+        $team->set_is_using_backlog($is_using_backlog);
         $team->update();
     }
 

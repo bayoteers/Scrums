@@ -41,28 +41,9 @@ use base qw(Exporter);
 # used by your extension in here. (Make sure you also list them in
 # @EXPORT.)
 our @EXPORT = qw(
-  update_bug_order_from_json
   sprint_summary
   handle_person_capacity
   );
-#
-# Important!
-# Data needs to be in exact format:
-#
-#  { -1 : [1,2,3,4,5], 18 : [10,11,12] }
-#
-
-sub update_bug_order_from_json {
-    my ($team_id, $data) = @_;
-
-    my $json = new JSON::XS;
-    if ($data =~ /(.*)/) {
-        $data = $1;    # $data now untainted
-    }
-    my $content = $json->allow_nonref->utf8->relaxed->decode($data);
-
-    team_bug_order($team_id, $content);
-}
 
 sub handle_person_capacity {
     my ($data, $vars) = @_;
@@ -80,88 +61,6 @@ sub handle_person_capacity {
     my $capacity  = $params->{capacity};
     my $sprint    = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
     $sprint->set_member_capacity($person_id, $capacity);
-}
-
-sub team_bug_order {
-    my ($team_id, $all_team_sprints_and_unprioritised_in) = @_;
-
-    my %sprints_hash;
-
-    _get_sprints_hash(\%sprints_hash, $team_id);
-
-    my @sprint_id_array = keys %{$all_team_sprints_and_unprioritised_in};
-    for my $sprint_id (@sprint_id_array) {
-        my $bugs = $all_team_sprints_and_unprioritised_in->{$sprint_id};
-
-        if ($sprint_id == -1) {
-            process_unprioritised_in($bugs);
-        }
-        else {
-            process_sprint($sprint_id, $bugs, \%sprints_hash);
-        }
-    }
-
-    process_team_orders($all_team_sprints_and_unprioritised_in);
-}
-
-sub process_sprint() {
-    my ($sprint_id, $bugs, $sprints_hash) = @_;
-
-    # print "Processing sprint\n";
-    foreach my $bug (@{$bugs}) {
-        my $old_sprint = $sprints_hash->{$bug};
-
-        if ($old_sprint == $sprint_id) {
-            # print "(Sprint is unchanged)\n";
-        }
-        elsif ($old_sprint == 0) {
-            Bugzilla->dbh->do('INSERT INTO scrums_sprint_bug_map (bug_id, sprint_id) values (?, ?)', undef, $bug, $sprint_id);
-        }
-        else {
-            Bugzilla->dbh->do('UPDATE scrums_sprint_bug_map set sprint_id=? where bug_id=?', undef, $sprint_id, $bug);
-        }
-    }
-}
-
-sub process_unprioritised_in() {
-    my ($unprioritised_in) = @_;
-
-    foreach my $bug (@{$unprioritised_in}) {
-        Bugzilla->dbh->do('DELETE from scrums_sprint_bug_map where bug_id=?',         undef, $bug);
-        Bugzilla->dbh->do('UPDATE scrums_bug_order set team = NULL where bug_id = ?', undef, $bug);
-    }
-}
-
-sub process_team_orders() {
-    my ($ref) = @_;
-
-    my %all_team_sprints_and_unprioritised_in = %{$ref};
-
-    my $counter = 1;
-
-    my @sprint_id_array = keys %all_team_sprints_and_unprioritised_in;
-    for my $sprint_id (@sprint_id_array) {
-        my $bugs = $all_team_sprints_and_unprioritised_in{$sprint_id};
-
-        # This means, that table is sprint and not unprioritised_in
-        if ($sprint_id != -1) {
-            foreach my $bug (@{$bugs}) {
-                my $old_team_order = _old_team_order($bug);
-                if ($old_team_order == -1) {
-                    Bugzilla->dbh->do('INSERT INTO scrums_bug_order (bug_id, team) values (?, ?)', undef, $bug, $counter);
-                }
-                elsif ($counter != $old_team_order) {
-                    Bugzilla->dbh->do('UPDATE scrums_bug_order set team=? where bug_id=?', undef, $counter, $bug);
-                }
-                else {
-                    # Team order for bug ($bug) is unchanged ($old_team_order)
-                }
-                $counter = $counter + 1;
-            }
-        }
-        # Unprioritised_in must be handled separately
-        # Table scrums_bug_order is however updated for unprioritised_in at the same time as scrums_sprint_bug_map, because order in table is irrelevant.
-    }
 }
 
 sub sprint_summary {
@@ -655,47 +554,6 @@ sub _ending_item_status {
         }
     }
     return ($open, $closed);
-}
-
-sub _old_team_order {
-    my ($bug_id) = @_;
-
-    my ($item_id, $team_order) = Bugzilla->dbh->selectrow_array('SELECT bug_id, team FROM scrums_bug_order WHERE bug_id = ?', undef, $bug_id);
-    if ($item_id) {
-        return $team_order;
-    }
-    return -1;
-}
-
-#
-# There are at most two sprints in database, that are active.
-# One is backlog and one is the most recent sprint.
-#
-sub _get_sprints_hash {
-    my ($sprints_hash, $team_id) = @_;
-
-    my $dbh = Bugzilla->dbh;
-    my $sth = $dbh->prepare(
-        "select
-	sbm.bug_id as bug_id,
-	spr.id as sprint
-    from 
-	scrums_sprint_bug_map sbm
-    inner join 
-	scrums_sprints spr on sbm.sprint_id = spr.id
-    where 
-	spr.team_id = ? and
-        spr.item_type = 2 or spr.id = 
-        (select id from scrums_sprints spr2 where spr2.team_id = ? and spr2.item_type = 1 and not exists 
-        (select null from scrums_sprints spr3 where spr3.team_id = ? and spr3.item_type = 1 and spr3.start_date > spr2.start_date))"
-                           );
-    trick_taint($team_id);
-    $sth->execute($team_id, $team_id, $team_id);
-
-    while (my $row = $sth->fetchrow_arrayref) {
-        my ($bug_id, $sprint) = @$row;
-        $sprints_hash->{$bug_id} = $sprint;
-    }
 }
 
 1;

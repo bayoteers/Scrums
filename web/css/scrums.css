@@ -22,6 +22,8 @@
 table.dataTable {
     margin: 0;
     padding: 0;
+    border-collapse:separate;
+    border-spacing:0px 0px;
 }
 
 
@@ -105,4 +107,4 @@ div.scrollTableContainer td:last-child {padding-right: 2px;}
     border-left: 2px solid green;
 }
 
-
+input.scrums_wide_button { min-width:130px; }

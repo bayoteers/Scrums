@@ -74,13 +74,13 @@
 <form method="post" name="newteam" action="page.cgi?id=scrums/createteam.html">
   <input type="hidden" name="teamid" value="[% teamid %]"/>
   <input type="hidden" name="editteam" value="[% editteam %]"/>
-  <input type="hidden" name="userid" value="[% ownerid %]"/>
-  <input type="hidden" name="scrummasterid" value="[% scrummasterid %]"/>
+  <input type="hidden" name="userid" value="[% IF team %][% team.owner() %][% END %]"/>
+  <input type="hidden" name="scrummasterid" value="[% IF team %][% team.scrum_master() %][% END %]"/>
 
   <table>
     <tr>
       <td><b>Team Name:</b></td>
-      <td><input type="text" name="name" value="[% teamname %]"></td>
+      <td><input type="text" name="name" value="[% IF team %][% team.name() %][% END %]"></td>
     </tr>
     <tr>
       <td><b>Team Owner:</b></td>
@@ -91,6 +91,16 @@
       <td><b>Scrum Master:</b></td>
       <td><input type="text" name="scrummasterrealname" value="[% scrummasterrealname %]" disabled="true"/></td>
       <td><input type="button" value="Search For User" onclick="searchscrummaster()"/>
+    </tr>
+    <tr>
+      <td><b>Team uses backlog:</b></td>
+      <td>
+	<select name="usesbacklog"/>
+	  <option value="1" [% IF team && team.is_using_backlog() %]selected="true"[% END %]>Yes</option>
+	  <option value="0" [% IF team && !team.is_using_backlog() %]selected="true"[% END %]>No</option>
+	</select>
+      </td>
+      <td>&nbsp;</td>
     </tr>
     <tr><td colspan="3"></td></tr>
     <tr>

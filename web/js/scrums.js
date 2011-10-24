@@ -27,15 +27,24 @@ function toggle_scroll()
     });
 }
 
-function listObject(ul_id, h_id, id, name, li_tmpl) {
+function listObject(ul_id, h_id, id, name, li_tmpl, link_url, offset_step) 
+{
     this.ul_id = ul_id;
     this.id = id;
     this.h_id = h_id;
+    this.link_url = link_url;
     this.list = [];
     this.orginal_list = [];
     this.visible = -1;
     this.offset = 0;
-    this.offset_step = 99999; // default value
+    if(offset_step)
+    {
+        this.offset_step = offset_step;
+    }
+    else
+    {
+        this.offset_step = 99999; // default value
+    }
     this.name = name;
     this.li_tmpl = li_tmpl;
     this.show_columns = ['order', 'bug_id', 'points', 'summary'];
@@ -47,11 +56,32 @@ function listObject(ul_id, h_id, id, name, li_tmpl) {
     this.personcapacity = null;
     this.pred_estimate = "-";
     this.history = "";
+
+    this.originally_contains_item = function (ref_item_id)
+    {
+	for(var i = 0; i < this.original_list.length; i++)
+	{
+	    if(this.original_list[i][0][0] == ref_item_id)
+	    {
+		return true;
+	    }
+	}
+	return false;
+    }
 }
 
 var from_list_ul_id = '';
 
 var sprint_callback = null;
+
+function search_link_sprint_items(sprint_id)
+{
+    var link_url = "buglist.cgi?query_format=advanced&";
+    link_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
+    link_url += "order=scrums_team_order&";
+    link_url += "field0-0-0=scrums_sprint_bug_map.sprint_id&type0-0-0=equals&value0-0-0=" + sprint_id;
+    return link_url;
+}
 
 function select_step(list_id)
 {
@@ -62,9 +92,9 @@ function select_step(list_id)
     {
         if (all_lists[i].id == list_id)
         {
-	    if(sel.value == "all")
+	    if(sel.value == "All")
 	    {
-	    	val = all_lists[i].length;
+	    	val = all_lists[i].list.length;
 		all_lists[i].offset = 0;
 	    }
 	    all_lists[i].offset_step = val;
@@ -117,7 +147,7 @@ function switch_lists(ui, lists) {
         if (list.ul_id == to_list_ul_id) {
             to_i = l;
         }
-        if (list.ul_id == from_list_ul_id) {
+        if (list.ul_id == from_list_ul_id) {	
             from_i = l;
         }
     }
@@ -185,6 +215,10 @@ function switch_lists(ui, lists) {
         $("#" + lists[from_i].ul_id).html(get_noitems_html());
     }
 
+    var changed = check_if_changed();
+
+    var elem = $("#save_button");
+    elem[0].disabled = !changed;
 
     $('#'+bug_id).children().each(function ()
     {
@@ -213,7 +247,8 @@ function bind_sortable_lists(lists) {
             from_list_ul_id = ui.item.parent().attr('id');
         },
         stop: function(event, ui) {
-            switch_lists(ui, lists);;
+            switch_lists(ui, lists);
+//	    save_all();
         },
         items: 'tr:not(.ignoresortable)',
         helper: function(event , item)
@@ -241,15 +276,17 @@ function create_bug_elem(list, position)
     });
 }
 
-function update_lists(bugs_list, move_pos, data)
-{
-    if (data != undefined) {
-        bugs_list.list = data;
-        //deep copy
-        bugs_list.original_list = $.extend(true, [], data);
-        bugs_list.visible = -1;
-    }
 
+function bind_items_to_list(bugs_list, item_rows)
+{
+    bugs_list.list = item_rows;
+    //deep copy
+    bugs_list.original_list = $.extend(true, [], item_rows);
+    bugs_list.visible = -1;
+}
+
+function update_lists(bugs_list, move_pos)
+{
     if (bugs_list.visible == -1) {
         // show all
         bugs_list.visible = [];
@@ -258,9 +295,28 @@ function update_lists(bugs_list, move_pos, data)
         }
     }
 
+    if (move_pos == undefined) {
+        move_pos = 0;
+    }
+    bugs_list.offset += move_pos;
+    if (bugs_list.offset < 0) {
+	var remainder = bugs_list.visible.length % bugs_list.offset_step;
+        var list_length = bugs_list.visible.length;
+        bugs_list.offset = list_length - remainder;
+    }
+    if (bugs_list.offset >= bugs_list.visible.length) {
+        bugs_list.offset = 0;
+    }
+
+
     var html = '';
     // TODO This needs to fixed in order to paging to function
-    for (var i = 0; i < bugs_list.visible.length; i++) {
+    for (var i = bugs_list.offset; i < bugs_list.visible.length; i++) {
+
+        if (i > bugs_list.offset + bugs_list.offset_step - 1) {
+            break;
+        }
+
         var position = bugs_list.visible[i];
         html += create_bug_elem(bugs_list, position);
     } // for
@@ -357,6 +413,8 @@ function saveResponse(response, status, xhr)
 	}
 	else
 	{
+    	    var elem = $("#save_button");
+            elem[0].disabled = true;
 		//alert("Success");
 	}
 }
@@ -375,12 +433,69 @@ function save(lists, schema, obj_id, data_lists) {
         }
     }
 
+    var original_lists = new Object();
+    for (var i = 0; i < lists.length; i++) {
+        var list = lists[i];
+        var list_id = list.id;
+        original_lists[list_id] = [];
+        for (var k = 0; k < list.original_list.length; k++) {
+            original_lists[list_id].push(list.original_list[k][0][0]);
+        }
+    }
+
     $.post('page.cgi?id=scrums/ajax.html', {
         schema: schema,
         action: 'set',
         obj_id: obj_id,
-        data: JSON.stringify(data_lists)
+        data: JSON.stringify({"data_lists" : data_lists, "original_lists" : original_lists})
     }, saveResponse        , 'text');
+}
+
+function check_if_changed()
+{
+    for (var z = 0; z < all_lists.length; z++) 
+    {
+        var list = all_lists[z];
+	if(list.list.length != list.original_list.length)
+	{
+	    return true;
+	}
+        for (var i = 0; i < list.list.length; i++) 
+        {
+	    if(list.id == -1)
+            {
+		if (list.originally_contains_item(list.list[i][0][0]) == false)
+		{
+		    return true;
+		}
+	    }
+	    else
+	    {
+	    	if(list.list[i][0][0] != list.original_list[i][0][0])
+	    	{
+		    return true;
+	 	}
+	    }
+
+        }
+    }
+    return false; // Content not changed
+}
+
+function detect_unsaved_change()
+{
+    if(check_if_changed())
+    {
+	if(confirm('There are unsaved changes. Changes would be lost. Save before continuing to exit?'))
+	{
+	    save_all();
+	    return true; // Content changed permanently
+	}
+	else
+	{
+	    return false;
+	}
+    }
 }
 
 function show_sprint(result)
@@ -393,7 +508,7 @@ function show_sprint(result)
     }
     data = result.data;
 
-    var sprint = new listObject("sortable", "headers", data.id, 'Sprint '+data.name);
+    var sprint = all_lists[0];
     sprint._status = data._status;
     sprint.description = data.description;
     sprint.start_date = data.start_date;
@@ -404,22 +519,11 @@ function show_sprint(result)
     sprint.pred_estimate = data.prediction;
     sprint.history = data.history;
 
-    if(sprint_callback) {
-        sprint_callback(data.estimatedcapacity, data.bugs, backlog_bugs);
-    }
-
+    sprint_info_showed = true;
     $('#sprint_info').html(sprint.start_date+' &mdash; '+sprint.end_date);
     $('#sprint_button').html("<input type='button' value='Edit Sprint' onClick='edit_sprint();'/>");
 
-    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
-    update_lists(sprint, 0, data.bugs);
-
-    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
-    update_lists(backlog, 0, backlog_bugs);
-    all_lists = [];
-    all_lists.push(sprint);
-    all_lists.push(backlog);
-    bind_sortable_lists(all_lists);
+    check_receive_status();
 }
 
 function edit_sprint()
@@ -558,34 +662,62 @@ function create_sprint(result)
     }
 }
 
-
+function do_save(saved_lists)
+{
+    var unordered_list = null;
+    var ordered_lists = new Array();
+    for (var i = 0; i < saved_lists.length; i++)
+    {
+	if(saved_lists[i].id == -1)
+        {
+	    unordered_list = saved_lists[i];
+	}
+	else
+	{
+	    ordered_lists.push(saved_lists[i]);
+	}
+    }
+    save_lists(ordered_lists, unordered_list, schema, object_id);
+}
 
 function save_lists(ordered_lists, unordered_list, schema, obj_id)
 {
     // need to use Object instead of Array when ajaxing an associative array
     var data_lists = new Object();
-    var list_id = String(-1);
-    data_lists[list_id] = [];
-    for (var i = 0; i < unordered_list.list.length; i++)
+
+    if(unordered_list)
     {
-        var found = false;
-        for (var k = 0; k < unordered_list.original_list.length; k++)
+        var list_id = String(-1);
+        data_lists[list_id] = [];
+        for (var i = 0; i < unordered_list.list.length; i++)
         {
-            if (unordered_list.original_list[k][0][0] == unordered_list.list[i][0][0])
+            var found = false;
+            for (var k = 0; k < unordered_list.original_list.length; k++)
             {
-                found = true;
-                break;
+                if (unordered_list.original_list[k][0][0] == unordered_list.list[i][0][0])
+                {
+                    found = true;
+                    break;
+                }
             }
-        }
             if (found != true)
             {
                 // this bug is new in unordered list
                 data_lists[list_id].push(unordered_list.list[i][0][0])
             }
-
+	}
     }
     save(ordered_lists, schema, obj_id, data_lists);
-    unordered_list.original_list = $.extend(true, [], unordered_list.list);
+
+    if(unordered_list)
+    {
+        unordered_list.original_list = $.extend(true, [], unordered_list.list);
+    }
+    for (var i = 0; i < ordered_lists.length; i++)
+    {
+	var list = ordered_lists[i];
+        list.original_list = $.extend(true, [], list.list);
+    }
 }
 
 // le template engine

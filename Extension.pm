@@ -487,6 +487,9 @@ sub install_update_db {
     Bugzilla->dbh->bz_drop_column("scrums_sprints", "nominal_schedule");
     Bugzilla->dbh->bz_drop_column("scrums_sprints", "is_active");
 
+    use constant USAGE_FLAG_DEFINITION => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' };
+    Bugzilla->dbh->bz_add_column("scrums_team", "is_using_backlog", USAGE_FLAG_DEFINITION, undef);
+
     return;
 }
 
@@ -603,14 +606,31 @@ sub page_before_template {
             ajax_sprint_bugs($vars);
         }
     }
-    elsif ($page eq 'scrums/teambugs.html') {
-        show_team_and_sprints($vars);
+    elsif ($page eq 'scrums/ajaxbuglist.html') {
+        my $cgi       = Bugzilla->cgi;
+        my $action    = $cgi->param('action');
+        my $team_id   = $cgi->param('team_id');
+        my $sprint_id = $cgi->param('sprint_id');
+        if ($action eq "unprioritised_items") {
+            my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+            $vars->{'buglist'} = $team->unprioritised_items();
+        }
+        elsif ($action eq "unprioritised_bugs") {
+            my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+            $vars->{'buglist'} = $team->unprioritised_bugs();
+        }
+        elsif ($action eq "other_items_than_in_active_sprint") {
+            # This includes also items in backlog (which is disabled)
+            my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+            $vars->{'buglist'} = $team->all_items_not_in_sprint();
+        }
+        else {
+            my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+            $vars->{'buglist'} = $sprint->get_bugs();
+        }
     }
-    elsif ($page eq 'scrums/teambugs.html' || $page eq 'scrums/dailysprint.html') {
+    elsif ($page eq 'scrums/teambugs.html' || $page eq 'scrums/dailysprint.html' || $page eq 'scrums/backlogplanning.html') {
         show_team_and_sprints($vars);
-    }
-    elsif ($page eq 'scrums/backlogplanning.html') {
-        show_backlog_and_items($vars);
     }
     elsif ($page eq 'scrums/archivedsprints.html') {
         show_archived_sprints($vars);

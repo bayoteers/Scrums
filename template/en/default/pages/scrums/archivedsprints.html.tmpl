@@ -52,7 +52,8 @@ var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_
         html = parseTemplate($('#ArchiveListTmpl').html(), { list: list, extra_middle: '' });
 
         $(html).appendTo($('#sprints'));
-        update_lists(list, 0, sprint_list_data[id][1]);
+	bind_items_to_list(list, sprint_list_data[id][1]);
+        update_lists(list, 0);
 
         // expand collapse
         //$("#"+list.ul_id).hide();

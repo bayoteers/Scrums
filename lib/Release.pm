@@ -185,7 +185,7 @@ sub scheduled_bugs {
 	not exists (select null from scrums_sprint_bug_map sbm_b
         inner join scrums_sprints s_b on s_b.id = sbm_b.sprint_id and s_b.item_type = 1 
 	where b.bug_id = sbm_b.bug_id and
-	s_b.nominal_schedule > s_a.nominal_schedule)
+	s_b.start_date > s_a.start_date)
     order by
 	rlease', undef, $self->id
     );
@@ -220,7 +220,7 @@ sub unprioritised_bugs {
 	not exists (select null from scrums_sprint_bug_map sbm_b
         inner join scrums_sprints s_b on s_b.id = sbm_b.sprint_id and s_b.item_type = 1 
 	where b.bug_id = sbm_b.bug_id and
-	s_b.nominal_schedule > s_a.nominal_schedule) and
+	s_b.start_date > s_a.start_date) and
 	f.status = "+" and
 	bs.is_open = 1 and
 	rfm.release_id = ?', undef, $self->id

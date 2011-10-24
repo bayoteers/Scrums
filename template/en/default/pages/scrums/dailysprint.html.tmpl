@@ -26,88 +26,146 @@
 [% PROCESS global/lists.html.tmpl %]
 
 <script type="text/javascript">
-  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs');
-  unordered_bugs.show_columns.push('creation_date')
+
+  var unordered_bugs_search_url = "buglist.cgi?query_format=advanced&";
+  unordered_bugs_search_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2C";
+  unordered_bugs_search_url += "actual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
+  unordered_bugs_search_url += "bug_severity=blocker&bug_severity=critical&bug_severity=major&bug_severity=normal&bug_severity=minor&bug_severity=risk&";
+  unordered_bugs_search_url += "[% FOREACH status IN bug_status_open %]bug_status=[% status %]&[% END %]";
+  unordered_bugs_search_url += "[% FOREACH class IN classifications %]classification=[% class %]&[% END %]";
+  unordered_bugs_search_url += "[% FOREACH product IN products %]product=[% product %]&[% END %]";
+  unordered_bugs_search_url += "[% FOREACH component IN components %]component=[% component %]&[% END %]";
+
+  var sprint_search_url = search_link_sprint_items([% active_sprint.id() %]);
+  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', null, sprint_search_url);
+  var backlog = new listObject("sortableX", "headersX", "[% backlog.sprint.id() %]", 'Backlog'); // Idle list
+  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs', null, unordered_bugs_search_url);
+
+  unordered_bugs.show_columns.push('creation_date');
   unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
+
+  // *** Global variables ***
+  schema = 'team';
+  object_id = [% team.id %];
 
   var all_lists = [];
   var bug_positions = [];
 
+  var sprint_rendered = false;
+  var backlog_received = false;
+  var unordered_items_rendered = false;
+
   function save_all()
   {
-    save_lists(sprint_lists, unordered_bugs, 'team', [% team.id %]);
+      var saved_lists = [];
+      saved_lists.push(all_lists[0]);
+      saved_lists.push(backlog);	// Idle list
+      saved_lists.push(all_lists[1]);
+      do_save(saved_lists);
   }
-
-  [% PROCESS 'global/lists_unordered.js.tmpl' unprioritised_items = unprioritised_bugs %]
-  // data from backend
-  var sprint_list_data = 
-  {[% FOREACH team_sprint IN team_sprints_array %]
-  
-      [% team_sprint.sprint.id() %]: ["[% team_sprint.sprint.name() %]",
-                                      [[% FOREACH bug IN team_sprint.bugs %]
-                                       [% bugid = bug.0 %]
-                                       [% PROCESS 'global/lists_bug.js.tmpl' bug = bug bugid = bugid %]
-                                      [% END %]],
-                                      "[% team_sprint.sprint.status() %]",
-                                      "[% team_sprint.sprint.nominal_schedule() %]",
-                                      "[% team_sprint.sprint.description() | replace( '"', '\"' ) %]"],
-  [% END %]};
-
-  var sprint_lists = [];
 
   $(document).ready(function() {
     var html = '';
 
-    for (id in sprint_list_data)
+    sprint_rendered = false;
+    backlog_received = false;
+    unordered_items_rendered = false;
+
+    all_lists = [];
+    all_lists.push(sprint);
+    all_lists.push(unordered_bugs);
+
+    if([% active_sprint.id() %])
     {
-      // last argument is the name
-      var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0]);
-      // last argument is the bug list
-      // extra stuff for sprint
-      list._status = sprint_list_data[id][2]
-      list.nominal_schedule = sprint_list_data[id][3]
-      list.description = sprint_list_data[id][4]
-
-      html = parseTemplate($('#ListTmpl').html(), { list: list, extra_middle: '' });
-      $(html).appendTo($('#sprints'));
-      update_lists(list, 0, sprint_list_data[id][1]);
-
-      // expand collapse
-      //$("#"+list.ul_id).hide();
-      //toggle the componenet with class msg_body
-      var ul_id = list.ul_id;
-      $("#" + list.h_id).click(function()
-      {
-          $(this).nextAll(".content:first").slideToggle(500);
-      });
-
-      sprint_lists.push(list);
+        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+            sprint_id: [% active_sprint.id() %]
+        }, renderSprint, 'json');
     }
 
-    //$('#sprints').html(html);
-    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
-    update_lists(unordered_bugs, 0, unordered_list_data);
-    all_lists = $.extend(true, [], sprint_lists);
-    all_lists.push(unordered_bugs);
-    bind_sortable_lists(all_lists);
+    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+        sprint_id: [% backlog_id %]
+    }, receiveBacklog, 'json');
+
+    $.post('page.cgi?id=scrums/ajaxbuglist.html', {
+	action: "unprioritised_bugs",
+        team_id: [% team.id() %]
+    }, renderItems, 'json');
+
+    $(window).unload(
+    	function() 
+    	{
+	    detect_unsaved_change(); 
+        } 
+    );
   });
+
+function renderSprint(result)
+{
+    data = result.data;
+    var sprint_bugs = data.bugs;
+
+    bind_items_to_list(sprint, sprint_bugs);
+    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+
+    update_lists(sprint, 0);
+    sprint_rendered = true;
+    check_receive_status();
+}
+
+function receiveBacklog(result)
+{
+    data = result.data;
+    var backlog_bugs = data.bugs;
+
+    bind_items_to_list(backlog, backlog_bugs);
+    backlog_received = true;
+    check_receive_status();
+}
+
+function renderItems(result)
+{
+    data = result.data;
+    var unprioritised_items = data.bugs;
+
+    bind_items_to_list(unordered_bugs, unprioritised_items);
+    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: unordered_bugs, extra_middle: '' }));
+
+    update_lists(unordered_bugs, 0);
+    unordered_items_rendered = true;
+    check_receive_status();
+}
+
+function check_receive_status()
+{
+    if(unordered_items_rendered && sprint_rendered && backlog_received)
+    {
+	after_rendering();
+    }
+}
+
+function after_rendering()
+{
+    bind_sortable_lists(all_lists);
+}
 </script>
 
 <div class="bz_title_container">
   '[% team.name %]' New Bugs
 </div>
 
+[% PROCESS pages/scrums/navi.html.tmpl %]
+
 <table>
   <tr>
-    <td valign="top" id="sprints" width="50%">
+    <td valign="top" id="sprint" width="50%">
     </td>
     <td valign="top" id="unordered" width="50%">
     </td>
   </tr>
   <tr>
     <td colspan="2" align="right">
+      <input type="button" class="scrums_wide_button" id="save_button" disabled="true" value="Save" onClick="save_all();" />
       <input type="button" class="toggle_scroll" value="Toggle Scroll Bars" onClick="toggle_scroll();" />
-      <input type="button" value="Save" OnClick="save_all();" />
     </td>
   </tr>
 </table>
