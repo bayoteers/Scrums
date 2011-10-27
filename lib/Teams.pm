@@ -481,7 +481,7 @@ sub _show_team_bugs {
     my @sprint_names;
     push @sprint_names, $team_backlog->name();
 
-    $vars->{'backlog_id'}       = $team_backlog->id();
+    $vars->{'backlog_id'} = $team_backlog->id();
 
     # Component, product and classification names are needed for creating bug lists, that have editable search
     my $components = $team->components();

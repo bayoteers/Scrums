@@ -24,7 +24,8 @@
 
 ><style>
 <!--
-p { max-width: 1000px; }
+p { max-width: 900px; text-align: justify; }
+
 -->
 </style
 
@@ -80,31 +81,73 @@ CLASS="section"
 NAME="teamplanning"
 >1.4. Team's planning views</A
 </H2
-><H3>Steps of planning</H3>
+
+><H3>Creating new sprint</H3>
 <p>
-Any individual item weather it is bug or other item, can be in different states depending on plans, that team has.
-Item can be, in Scrums point of view, in unplanned state, in backlog, in sprint plan or elapsed. 
-Every item is forced into predefined path through different stages. This has purpose of enforcing product and team management.
-Control of work flow is gained by dividing tasks into separate roles.<br>
-<img src="extensions/Scrums/web/img/item-path.png" />
-</p
+Editing sprint information is done in sprint planning page. Same page is used for planning the content of sprint. 
+Page shows currently active sprint and if team is completely new and there are no sprints, page shows empty form to create first sprint.
+If team has previous sprint, that is shown in sprint planning page, creating new sprint is selected by selecting 'new sprint' from
+drop-down list of sprints. Drop-down list of sprints is located in sprint summary box. Selecting 'new sprint' in drop-down list
+brings empty form, where sprint information is registered. Pressing 'create'-button in form creates new sprint.
+</p>
+<P>
+Creating a new sprint archives previous active sprint. 
+Because of this, it is not possible to create a new sprint while previous sprint does not have end time.
+Sprint is meant to last for a limited time. This is also enforced by allowing
+only one active sprint simultaneously. Archiving means ending sprint once and for all. 
+It is not possible to plan sprints that will begin in future. 
+It is equally impossible to go back to previous sprint and open it again after it has ended.
+</P
+
+><H3>Editing existing sprint</H3>
 <p>
-Backlog for team is simple list of items, where items are in defined order.
-Unplanned items are taken into backlog, whence they become planned<sup>1</sup>. Items in backlog can be sorted. 
-Order of items is meant to represent relative priority of items.
-</p
-><p>
-Items in backlog are taken into sprint, whence they become scheduled<sup>2</sup>. Each sprint has defined time schedule and
-also items inside individual sprint can be ordered. 
-</p
-><p>
+Editing sprint information is done in sprint planning page. Same page is used for planning the content of sprint. 
+Page shows currently active sprint. This is only sprint in drop-down list of sprints. 
+Pressing 'edit sprint'-button in sprint summary box brings form where sprint information can be edited.
+</p>
+<p>
+Because only one simultaneous sprint is allowed, time periods of different sprints can not overlap.
+</p>
+<H3>Usage of backlog</H3>
+<p>
+Using backlog in team working is optional. Usage is desided however on team bases. Either whole team uses backlog or does not use it. Backlog has the purpose of enabling more product and team management. Backlog usage gives more control on product and team working and it does this in forced manner. Control of work flow is gained by restricting sub-tasks of team planning into predefined user roles.
+</p>
+<p>
+Backlog as well as sprint in Scrums extension is independent of item state or severity. Path of an item in Scrums goes through different stages. Path depends on whether team uses backlog or not. Item can be, in Scrums point of view, in unplanned state, in backlog, plan or elapsed state. 
+Scrums extension treats all items equally regardless of weather item is a bug or other item and regardless of bug severity. 
+</p>
+<p>
+Unplanned state of where item starts it's path. Any item, that is assigned to team, but has not been put to backlog or sprint yet, is in unplanned state. In case that team uses backlog item needs to be added to backlog before it can be added to any sprint. When sprint is finished, all items, that are included in sprint become elapsed. Actually 'elapsed' is not a separate state. It exists only in a sence, that sprint is archived, when it is finished. Same item can end up being in two or more successive sprints. While those sprints are archived, item still stays in those finished sprints. Actual state, that items in sprint have, when sprint is finished, is insignificant. This corresponds to general rule, that Scrums extension has.
+</p>
+<p>
+<img src="extensions/Scrums/web/img/item-path.png" /><br>
+Usage of backlog
+</p>
+<p>
+<img src="extensions/Scrums/web/img/item-path_b.png" /><br>
+Path of an item without backlog
+</p>
+<p>
+Both sprints and backlog for team are simple lists of items, where items are in set order.
+ Order of items is meant to represent relative priority of items.
+ When team uses backlog relative priorities of items are defined so, that items in sprint can first and items in backlog are placed after them, both lists in set order of items.
+</p>
+<p>
+Taking unplanned item into backlog sets team priority but does not give schedule. Taking item from backlog into sprint sets also time schedule for a bug because sprint has time schedule. Team priority remains in item, but it may change in case relative order of items changes while taking item into sprint. 
+</p>
+<p>
 After sprint has ended it is archived<sup>3</sup>. 
 It is notable, that item, which remains open, while sprint is archived, becomes unplanned once more.
-</p
-><H3>Team product back-log planning</H3
+</p>
+
+<H3>Team product backlog planning</H3
 ><P>
-Team is assigned components, whence all tasks and but related to assigned components are fixed to team.
-Set of components, that team is responsible, form virtual product, team product.
+Team is assigned components, whence all tasks and bugs related to assigned components are assigned to team.
+Assignement is fixed and it is changed only by changing those components, that team is responsible.
+Set of components, that team is responsible form team product. Team can be responsible of component or components, that
+make up a set of whole products, one product or some part of a larger product. Each component can be assigned to at most one team.
+</P
+><P>
 View for back-log planning consists of two lists of items. 'Unordered bugs'-list contains any open item, that belongs to team, but which
 has not been taken into other lists. 'Backlog'-list contains items, that are in team product backlog, but which are not
 scheduled in sprint. Taking items into backlog is managing product. Product means in here those components, that the team
@@ -114,8 +157,12 @@ in question has responsibility. Product backlog is common to any responsibilitie
 Items are taken into backlog by dragging lines from one list to another. Order of items in backlog is saved. 
 On the other hand order of items in unordered bugs-list is not saved. Items can be also moved in opposite direction
 from backlog to unordered bugs. Order of items is changed by sorting with mouse. Item is selected with mouse and dragged into new position in list or other list. In the end item is dropped into new place by releasing.
+</p>
+<p>
+Changes, that user has made to lists remain unsaved until user presses save-button. If user navigates away from page and desides not to save changes, unsaved changes are lost.
 </P
-><H3>Sprint planning</H3
+
+><H3>Sprint content planning</H3
 ><P>
 View consists of two lists of items. Sprint list contains all items in sprint. Shown sprint is currently active sprint, that
 team has, since team can have only one active sprint simultaneously.
@@ -123,30 +170,31 @@ team has, since team can have only one active sprint simultaneously.
 scheduled in sprint. Items are in only one active list simultaneously.
 </P
 ><P>
-It is possible to edit sprint information. From sprint editing it is also possible to move sprint into archived state.
-Archiving means ending sprint once and for all. Sprint is meant to last limited time. This is also enforced by allowing
-only one active sprint simultaneously. While ending and archiving sprint end date must be given.
-</P
-><P>
 Items are taken into sprint by dragging lines from one list to another. Order of items in sprint is also saved and
 items can be sorted. 
 Items can be also moved in opposite direction from sprint to backlog. 
 Order of items is changed by sorting with mouse. Item is selected with mouse and dragged into new position in list or other list. In the end item is dropped into new place by releasing.
+</P
+<p>
+Changes, that user has made to lists remain unsaved until user presses save-button. If user navigates away from page and desides not to save changes, unsaved changes are lost.
 </P
 ><H3>Sprint burn-down chart</H3
 ><P>
 Burn-down chart shows progress of sprint. Primary quantity, that is measured in burn-down chart is
 <i>time remaining</i>. It is shown, so that it would be possible to make predictions about sprint into future.
 Also the amount of total work in sprint can be shown. This feature is optional and it makes sense only when work hours have been recorded
-into system during the sprint.
+into system during the sprint. Alternative unit of measure in sprint burn-down chart is number of items. 
+Main information is still remaining work, which is now measured as number of items, 
+but total work amount makes sense now despite whether done hours have been recorded during sprint or not.
 </P
 ><P>
-Status summary pie charts and tables show number of open and closed items in sprint. Second pie chart shows more detailed, what status items
-in sprint have.
+Status summary pie charts and tables show current situation of sprint as numbers of open and closed items in sprint. 
+Second pie chart shows in more detail, what status items in sprint have.
 </P
 ><H3>Archived sprints</H3
 ><P>
-Archived sprints-view shows ended sprints of team. Sprints are shown in time order. Newest sprint is shown first.
+Archived sprints-view shows ended sprints of team. Ended sprints can not be edited. 
+Sprints are shown in time order. Newest sprint is shown first.
 </P>
 
 <!---------------------------------------------------------------------------------------------------------------------------------------->

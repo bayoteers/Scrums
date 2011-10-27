@@ -24,7 +24,7 @@
 
 ><style>
 <!--
-p { max-width: 1000px; }
+p { max-width: 900px; text-align: justify; }
 -->
 </style
 
@@ -81,36 +81,51 @@ NAME="dailytasks"
 >1.5. Team's daily tasks</A
 </H2
 
-><H3>Active sprint tasks</H3
+><H3>Remaining items</H3
 ><P>
 View consists of list of items. List contains all items in active sprint, that are currently open. As long as items are open,
-they remain visible in list.
+they remain visible in list. When items are closed, they dissappear from <i>Remaining items</i> pages, but it is noticable, that
+they remain in sprint and are visible in planning page, reporting and later in archived sprint.
 </P
-><i
-><H4>Using InlineEditor-extension in combination of item list</H4
+<p>
+There are two pages, that have almost identical list of bugs than 'Remaining items' page. These two pages are 
+<i>Remaining items in tree view</i> and <i>Remaining items and dependencies</i>. First shows same list of items, but in tree view and
+second show items in a list, but includes dependencies. Showing items in tree is based on EnhancedTreeView-extension, which is stand alone extension.
+If that extension is non-existent in Bugzilla deployment where Scrums-extension is used, tree view can not be shown. 
+In that case the whole link is not visible. 
+Scrums-extension or team in it do not need any kind of configuring based on deployment of EnhancedTreeView-extension.
+</p>
+
+<H4>Using InlineEditor-extension in combination of item list</H4
 ><P>
-InlineEditor is stand-alone extension. It is utility, that can be used in combination with Scrums-extension.
-InlineEditor enhances Active sprint tasks-view. It makes each item in list editable, so that user does not need
+InlineEditor is stand-alone extension. It enables editing items inside bug list. Saving data is done with Ajax.
+InlineEditor is a utility, that can be used together with Scrums-extension.
+It is used to enhance 'Remaining items' and 'Remaining items and dependencies' pages, which use regular bug list of Bugzilla to represent list of items. 
+It makes each item in list editable, so that user does not need
 to open each item individually, but can edit all items in list in same page.
+If that extension is non-existent in Bugzilla deployment where Scrums-extension is used, fields are not editable.
 </P
 ><P>
 Fields, that are possible to edit in list with InlineEditor-extension, are bug_severity, priority, assigned_to, estimated_time and remaining_time. System administrator can choose, which fields are allowed to be edited in item list, by setting parameter inline_editor_bug_list_editable_fields. Only estimated_time is selected by default.
+Scrums-extension does not need any kind of configuring based on deployment of InlineEditor-extension.
 </P
 ><P>
 Item field 'assigned to' is handled in a special way, when item is edited in list. If item is in state new, it's assignee is hidden and empty marking '--' is shown instead. Because item is in state new, it is considered unassigned and assignee is hidden. When user starts to edit field, he has only one choice to choose from. He can only assign item to himself. If new item has been assigned to user in first place, assignee is shown in new item. This behavior of 'assigned to' -fields requires, that field is editable in item list. If the field is not editable, assignee is shown also, when item is in state new.
 </P
-></i
 
-><H3>New bugs</H3
+><H3>Unprioritised items</H3
 ><P>
 View consists of two lists of items. Sprint list contains all items in sprint. Shown sprint is currently active sprint, that
 team has, since team can have only one active sprint simultaneously.
 </P
 ><P>
 'Unordered bugs'-list contains any open bug, that belongs to team, but which has not been taken into other lists.
-It is notable, that bugs are only items, that are visible in this list in daily planning page. Items, that are not bugs, do
-not belong to daily planning. Purpose of unordered bugs in daily planning is, that team can pick bugs into
+It is notable, that bugs are only items, that are visible in this list in daily planning page. 
+In case that team uses backlog, items, that are not bugs, do not belong to daily planning. 
+Purpose of unordered bugs in daily planning is, that team can pick bugs into
 it's own work flow autonomously.
+If team does not use backlog, all open unprioritised items are visible in 'Unordered bugs' list regardless of their type.
+Bugs are visible in list, but also features and tasks are visible.
 </P
 ><P>
 Bugs are taken into sprint by dragging lines from one list to another. Order of items in sprint is also saved and
@@ -118,7 +133,10 @@ items can be sorted.
 Bugs can be also moved in opposite direction from sprint to unordered.
 Order of items is changed by sorting with mouse. Item is selected with mouse and dragged into new position in list or other list. In the end item is dropped into new place by releasing.
 </P>
-
+<p>
+Changes, that user has made to lists remain unsaved until user presses save-button. 
+If user navigates away from page and desides not to save changes, unsaved changes are lost.
+</P>
 <!---------------------------------------------------------------------------------------------------------------------------------------->
 
 <DIV
