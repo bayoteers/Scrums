@@ -101,11 +101,13 @@ sub team_bug_order {
     process_team_orders($all_team_sprints_and_unprioritised_in, $original_sprints, \%old_order_hash);
 
     process_unprioritised_in($unprioritised_in_bugs, \@active_sprints);
-
-    my $err = _compare_to_original_values($original_sprints, \%sprints_hash, \%lengths_hash, \%old_order_hash);
-    if ($err) {
-        return $err;
-    }
+#
+# Collision detection is disabled temporarely because it does not work correctly.
+#
+#    my $err = _compare_to_original_values($original_sprints, \%sprints_hash, \%lengths_hash, \%old_order_hash);
+#    if ($err) {
+#        return $err;
+#    }
 }
 
 sub process_sprint() {
