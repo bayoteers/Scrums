@@ -38,7 +38,7 @@
 
   var sprint_search_url = search_link_sprint_items([% active_sprint.id() %]);
   var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', create_item_line_html, sprint_search_url);
-  var backlog = new listObject("sortableX", "headersX", "[% backlog.sprint.id() %]", 'Backlog'); // Idle list
+  var backlog = new listObject("sortableX", "headersX", "[% backlog_id %]", 'Backlog'); // Idle list
   var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized bugs', create_item_line_html, unordered_bugs_search_url);
 
   unordered_bugs.show_columns.push('creation_date');
