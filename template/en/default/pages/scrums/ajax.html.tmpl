@@ -19,7 +19,9 @@
   #   Visa Korhonen <visa.korhonen@symbio.com>
   #%]
 { errors : [% IF errors %]true[% ELSE %]false[% END %],
-  errormsg: "[% errors %]"
+  errormsg: "[% errors %]",
+  warnings : [% IF warnings %]true[% ELSE %]false[% END %],
+  warningmsg: "[% warnings %]"
 }
 [% # json_text %]
 

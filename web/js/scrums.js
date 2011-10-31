@@ -401,7 +401,10 @@ function saveResponse(response, status, xhr)
 	{
     	    var elem = $("#save_button");
             elem[0].disabled = true;
-		//alert("Success");
+	}
+        if(retObj.warnings)
+	{
+	    alert(retObj.warningmsg);
 	}
 }
 
