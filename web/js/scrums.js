@@ -19,12 +19,38 @@
   *   Eero Heino <eero.heino@nokia.com>
   */
 
+// Global variable in page
+var show_scrollbars = false;
+
 function toggle_scroll()
 {
-    $('.content div').each(function (i, item)
-    {
-        $(item).toggleClass('autoheight');
-    });
+    show_scrollbars = !show_scrollbars;
+    render_all();
+}
+
+function render_all()
+{
+    var frame_height = 435;    
+    var scrollbar_1_visible = false;
+    var scrollbar_2_visible = false;
+    if(initialised && show_scrollbars) {
+	var table_1_height = 0;
+        $('#sprint .container').each(function (i, item)
+        {
+            table_1_height = $(item).height();
+        });
+        $('#unordered .container').each(function (i, item)
+        {
+            table_2_height = $(item).height();
+        });
+	scrollbar_1_visible = (table_1_height > frame_height);
+	scrollbar_2_visible = (table_2_height > frame_height);
+    }
+    $('#sprint').html(create_list_html(all_lists[0],    scrollbar_1_visible));
+    $('#unordered').html(create_list_html(all_lists[1], scrollbar_2_visible));
+    update_tables();
+    $("#table"+all_lists[0].ul_id).tablesorter();
+    $("#table"+all_lists[1].ul_id).tablesorter();
 }
 
 function listObject(ul_id, h_id, id, name, li_tmpl_function, link_url, offset_step) 
@@ -120,16 +146,9 @@ function update_positions(lists, index, init_sorter)
         bug_positions[index][lists[index].list[i][0][0]] = i;
     }
 
-    if (init_sorter && init_sorter != undefined)
-    {
-        $("#table"+lists[index].ul_id).tablesorter();
-    } else
-    {
-        var table = $("#table"+lists[index].ul_id);
-        table.trigger("update");
-    }
-
-    //$("#table"+bugs_list.ul_id).tablesorter({locale: 'de', useUI: false});
+    // Init sorter is ignored. Table sorter is initialised elsewhere
+    var table = $("#table"+lists[index].ul_id);
+    table.trigger("update");
     $('#items_' + lists[index].id).html(parseInt(lists[index].list.length));
 }
 
@@ -230,7 +249,6 @@ function switch_lists(ui, lists) {
 }
 
 function bind_sortable_lists(lists) {
-
     for (var l = 0; l < lists.length; l++)
     {
         list = lists[l];

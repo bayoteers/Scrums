@@ -54,6 +54,7 @@
   var sprint_rendered = false;
   var backlog_received = false;
   var unordered_items_rendered = false;
+  var initialised = false;
 
   function save_all()
   {
@@ -66,10 +67,6 @@
 
   $(document).ready(function() {
     var html = '';
-
-    sprint_rendered = false;
-    backlog_received = false;
-    unordered_items_rendered = false;
 
     all_lists = [];
     all_lists.push(sprint);
@@ -107,10 +104,6 @@ function renderSprint(result)
     var sprint_bugs = data.bugs;
 
     bind_items_to_list(sprint, sprint_bugs);
-    var	html = create_list_html(sprint);
-    $('#sprint').html(html);
-
-    update_lists(sprint, 0);
     sprint_rendered = true;
     check_receive_status();
 }
@@ -131,27 +124,31 @@ function renderItems(result)
     var unprioritised_items = data.bugs;
 
     bind_items_to_list(unordered_bugs, unprioritised_items);
-
-    var html = create_list_html(unordered_bugs);
-    $('#unordered').html(html);
-
-    update_lists(unordered_bugs, 0);
     unordered_items_rendered = true;
     check_receive_status();
 }
 
 function check_receive_status()
 {
-    if(unordered_items_rendered && sprint_rendered && backlog_received)
+    if(initialised) 
     {
-	after_rendering();
+	render_all();
+    }
+    else if(unordered_items_rendered && sprint_rendered && backlog_received)
+    {
+	render_all();
+	initialised = true;
+	toggle_scroll();
     }
 }
 
-function after_rendering()
+function update_tables()
 {
-    bind_sortable_lists(all_lists);
+    update_lists(sprint, 0);
+    update_lists(unordered_bugs, 0);
+    bind_sortable_lists(all_lists); // Does not initialise tablesorter
 }
+
 </script>
 
 <div class="bz_title_container">

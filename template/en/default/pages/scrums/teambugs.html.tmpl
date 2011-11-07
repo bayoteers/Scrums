@@ -233,8 +233,6 @@ function renderSprint(result)
     var sprint_bugs = data.bugs;
 
     bind_items_to_list(sprint, sprint_bugs);
-    $('#sprint').html(create_list_html(sprint));
-    update_lists(sprint, 0);
     sprint_rendered = true;
     check_receive_status();
 }
@@ -245,8 +243,6 @@ function renderBacklog(result)
     var backlog_bugs = data.bugs;
 
     bind_items_to_list(backlog, backlog_bugs);
-    $('#unordered').html(create_list_html(backlog));
-    update_lists(backlog, 0);
     backlog_rendered = true;
     check_receive_status();
 }
@@ -255,24 +251,24 @@ function check_receive_status()
 {
     if(initialised) 
     {
-        $('#sprint').html(create_list_html(sprint));
-        $('#unordered').html(create_list_html(backlog));
-	after_rendering();
+	render_all();
     }
     else if(backlog_rendered && sprint_rendered && sprint_info_showed)
     {
-	after_rendering();
+	render_all();
 	initialised = true;
+	toggle_scroll();
     }
 }
 
-function after_rendering()
+function update_tables()
 {
-    bind_sortable_lists(all_lists);
     demark_sprint_capacity(sprint.estimatedcapacity, sprint.list, backlog.list);
     update_lists(sprint, 0);
     update_lists(backlog, 0);
+    bind_sortable_lists(all_lists); // Does not initialise tablesorter
 }
+
 </script>
 
 <script type="text/javascript">

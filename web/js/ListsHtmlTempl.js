@@ -65,7 +65,7 @@ function create_release_item_line(bug, counter, show_columns)
 }
 
 
-function create_list_html(list)
+function create_list_html(list, show_scrollbars)
 {
    var html = '<h3 id="' + list.h_id + '">'
    if(list.link_url)
@@ -78,8 +78,14 @@ function create_list_html(list)
    }
    html += '</h3>';
    html +=    '<div class="content" >';
-   html +=      '<div class="scrollTableContainer" id="container">';
-   html +=        '<table class="dataTable" id="table' + list.ul_id + '">';
+   if(show_scrollbars == true) {
+       html +=      '<div class="scrollTableContainer container">';       
+   }
+   else
+   {
+       html +=      '<div class="autoheightContainer container">';
+   }
+   html +=        '<table class="dataTable" width="100%" id="table' + list.ul_id + '">';
    html +=          '<thead id="mythead">';
    html +=            '<tr>';
    if ($.inArray('order', list.show_columns) > -1) { 

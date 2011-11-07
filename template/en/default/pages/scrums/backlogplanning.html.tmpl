@@ -51,6 +51,7 @@
   var unordered_items_rendered = false;
   var backlog_rendered = false;
   var sprintbugs_received = false;
+  var initialised = false;
 
   var bug_positions = [];
 
@@ -101,9 +102,6 @@ function renderBacklog(result)
     var backlog_bugs = data.bugs;
 
     bind_items_to_list(backlog, backlog_bugs);
-    var	html = create_list_html(backlog);
-    $('#sprints').html(html);
-    update_lists(backlog, 0);
     backlog_rendered = true;
     check_receive_status();
 }
@@ -114,11 +112,6 @@ function renderItems(result)
     var unprioritised_items = data.bugs;
 
     bind_items_to_list(unordered_bugs, unprioritised_items);
-
-    var	html = create_list_html(unordered_bugs);    
-    $('#unordered').html(html);
-
-    update_lists(unordered_bugs, 0);
     unordered_items_rendered = true;
     check_receive_status();
 }
@@ -137,14 +130,19 @@ function check_receive_status()
 {
     if(backlog_rendered && unordered_items_rendered && sprintbugs_received)
     {
-	after_rendering();
+	render_all();
+	initialised = true;
+	toggle_scroll();
     }
 }
 
-function after_rendering()
+function update_tables()
 {
-    bind_sortable_lists(all_lists);
+    update_lists(backlog, 0);
+    update_lists(unordered_bugs, 0);
+    bind_sortable_lists(all_lists); // Does not initialise tablesorter
 }
+
 </script>
 
 <div class="bz_title_container">
@@ -155,7 +153,7 @@ function after_rendering()
 
 <table>
   <tr>
-    <td valign="top" id="sprints" width="50%">
+    <td valign="top" id="sprint" width="50%">
     </td>
     <td valign="top" id="unordered" width="50%">
     </td>
