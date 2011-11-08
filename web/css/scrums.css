@@ -95,4 +95,13 @@ div.scrollTableContainer td:last-child {
     border-left: 2px solid green;
 }
 
+table.linklist-big-icons img
+{
+    margin-bottom: 5px;
+    margin-top:    5px;
+    margin-left:   30px;
+    border: 6px    solid;
+    -moz-border-radius: 1.0em; 
+}
+
 input.scrums_wide_button { min-width:130px; }
