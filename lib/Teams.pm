@@ -472,6 +472,8 @@ sub _show_team_bugs {
         # History information for *new* sprint
         my $pred_estimate = $sprint->get_predictive_estimate();
         $vars->{'history'} = $pred_estimate->{'history'};
+
+        $vars->{'active_sprint_id'} = $sprint->id();
     }
 
     # There is always a backlog
@@ -479,8 +481,7 @@ sub _show_team_bugs {
     my @sprint_names;
     push @sprint_names, $team_backlog->name();
 
-    $vars->{'active_sprint_id'} = $sprint->id();
-    $vars->{'backlog_id'}       = $team_backlog->id();
+    $vars->{'backlog_id'} = $team_backlog->id();
 
     # Component, product and classification names are needed for creating bug lists, that have editable search
     my $components = $team->components();

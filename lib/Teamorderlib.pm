@@ -61,18 +61,23 @@ sub update_bug_order_from_json {
     my $dbh = Bugzilla->dbh;
     $dbh->bz_start_transaction();
 
-    my $err = team_bug_order($team_id, $content);
+    my $err;
+    my $warning;
+    ($err, $warning) = team_bug_order($team_id, $content);
 
     if (!$err) {
         $dbh->bz_commit_transaction();
     }
     else {
-        $vars->{'errors'} = "Collision in database update. Refresh page to update data.";
+        $vars->{'errors'} = "Collision in database update. Refresh page to update data. " . $err;
     }
+    $vars->{'warnings'} = $warning;
 }
 
 sub team_bug_order {
     my ($team_id, $content) = @_;
+
+    my ($err, $warning);
 
     my $all_team_sprints_and_unprioritised_in = $content->{"data_lists"};
     my $original_sprints                      = $content->{"original_lists"};
@@ -81,6 +86,7 @@ sub team_bug_order {
     my %old_order_hash;
 
     _get_sprints_hashes($team_id, \%sprints_hash, \%lengths_hash);
+    my $order_is_consistent = _check_team_order($team_id);
     my @active_sprints;
     my $unprioritised_in_bugs;
     my @sprint_id_array = keys %{$all_team_sprints_and_unprioritised_in};
@@ -101,11 +107,75 @@ sub team_bug_order {
     process_team_orders($all_team_sprints_and_unprioritised_in, $original_sprints, \%old_order_hash);
 
     process_unprioritised_in($unprioritised_in_bugs, \@active_sprints);
-
-    my $err = _compare_to_original_values($original_sprints, \%sprints_hash, \%lengths_hash, \%old_order_hash);
-    if ($err) {
-        return $err;
+    if ($order_is_consistent == 1) {
+        $err = _compare_to_original_values($original_sprints, \%sprints_hash, \%lengths_hash, \%old_order_hash);
     }
+    else {
+        $warning = "Inconsistency detected in team order. If situation persists, contact system administrator";
+    }
+    return ($err, $warning);
+}
+
+sub _check_team_order {
+    my ($team_id) = @_;
+
+    my $dbh         = Bugzilla->dbh;
+    my $team        = Bugzilla::Extension::Scrums::Team->new($team_id);
+    my $ref_counter = 1;
+    my $order_from_database;
+
+    my $sprint = $team->get_team_current_sprint();
+    if ($sprint) {
+        my ($sprint_items) = $dbh->selectall_arrayref(
+            'select
+            sbm.bug_id,
+            team
+        from
+	    scrums_sprint_bug_map sbm
+        left join
+            scrums_bug_order bo
+        on
+            bo.bug_id = sbm.bug_id
+        where
+	    sprint_id = ?
+        order by
+            team asc', undef, $sprint->id()
+        );
+
+        for my $row (@{$sprint_items}) {
+            $order_from_database = @{$row}[1];
+            if ($order_from_database != $ref_counter) {
+                return 0;
+            }
+            $ref_counter++;
+        }
+    }
+
+    my $backlog = $team->get_team_backlog();
+    my ($backlog_items) = $dbh->selectall_arrayref(
+        'select
+        sbm.bug_id,
+        team
+    from
+	scrums_sprint_bug_map sbm
+    left join
+        scrums_bug_order bo
+    on
+        bo.bug_id = sbm.bug_id
+    where
+	sprint_id = ?
+    order by
+        team asc', undef, $backlog->id()
+    );
+
+    for my $row (@{$backlog_items}) {
+        $order_from_database = @{$row}[1];
+        if ($order_from_database != $ref_counter) {
+            return 0;
+        }
+        $ref_counter++;
+    }
+    return 1;
 }
 
 sub process_sprint() {
@@ -150,6 +220,9 @@ sub process_team_orders() {
     my $counter = 1;
 
     my @sprint_id_array = keys %all_team_sprints_and_unprioritised_in;
+    # Sprints need to be processed in pre-defined order.
+    # This is important, because team order is otherwise wrong.
+    @sprint_id_array = sort { $a < $b } @sprint_id_array;
     for my $sprint_id (@sprint_id_array) {
         my $bugs = $all_team_sprints_and_unprioritised_in{$sprint_id};
 
@@ -193,25 +266,28 @@ sub _compare_to_original_values {
 
     my $original_list_counter = 1;
 
+    # Sprints need to be processed in pre-defined order.
+    # This is important, because team order is otherwise wrong.
+    @sprint_id_array = sort { $a < $b } @sprint_id_array;
     for my $sprint_id (@sprint_id_array) {
         my $bugs                   = $original_sprints{$sprint_id};
         my $original_sprint_length = scalar @{$bugs};
         if ($original_sprint_length != $lengths_hash->{$sprint_id}) {
-            return 1;    # error=1
+            return "(Sprint " . $sprint_id . " length " . $lengths_hash->{$sprint_id} . ")";
         }
         foreach my $bug (@{$bugs}) {
             my $before_update_team_order = $old_order_hash->{$bug};
             if ($original_list_counter != $before_update_team_order) {
-                return 1;    # error=1
+                return "(Bug " . $bug . " original order " . $original_list_counter . " from database " . $before_update_team_order . ")";
             }
             my $before_update_sprint_id = $sprints_hash->{$bug};
             if ($sprint_id != $before_update_sprint_id) {
-                return 1;    # error=1
+                return "(Bug " . $bug . " original sprint " . $sprint_id . " from database " . $before_update_sprint_id . ")";
             }
             $original_list_counter = $original_list_counter + 1;
         }
     }
-    return 0;
+    return "";
 }
 
 sub _old_team_order {

@@ -23,7 +23,7 @@
     style_urls = ['skins/standard/admin.css']
 %]
 
-[% PROCESS global/lists.html.tmpl %]
+[% PROCESS pages/scrums/listcolumns.html.tmpl %]
 
 <script type="text/javascript">
 
@@ -41,7 +41,7 @@ var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_
     for (id in sprint_list_data)
     {
         // last argument is the name
-        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0]);
+        var list = new listObject('sprint_list_' + id, 'sprint_header_' + id, id, sprint_list_data[id][0], create_item_line_html);
         // last argument is the bug list
         // extra stuff for sprint
         list._status = sprint_list_data[id][2]
@@ -49,7 +49,9 @@ var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_
         list.description = sprint_list_data[id][4]
 
         // Static list instead of sortable
-        html = parseTemplate($('#ArchiveListTmpl').html(), { list: list, extra_middle: '' });
+
+	html = create_list_html(list);
+	html += '<a href="page.cgi?id=scrums/sprintburndown.html&#038;sprintid=' + list.id + '">Burndown Chart</a>';
 
         $(html).appendTo($('#sprints'));
 	bind_items_to_list(list, sprint_list_data[id][1]);

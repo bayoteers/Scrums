@@ -23,12 +23,12 @@
     style_urls = ['skins/standard/admin.css']
 %]
 
-[% PROCESS global/lists.html.tmpl %]
+<script type="text/javascript" src="extensions/Scrums/web/js/SprintPage.js"></script>
 
 <script id="NewSprintTmpl" type="text/html">
     <form id='new_sprint_form' action='page.cgi' method="post">
       <input type='hidden' name='teamid' value='[% team.id %]' />
-      <# if (sprintid != 0) { print("<input type='hidden' name='sprintid' value='"+sprintid+"' />"); } #>
+      <sprintid>
       <input type='hidden' name='id' value='scrums/ajaxsprintbugs.html' />
 
       <div id='sprint_action'>
@@ -77,18 +77,7 @@
         <tr><td colspan="4"></td></tr>
         <tr>
           <td colspan="4" align="right">
-              <# if (edit) { #>
-                <input type='hidden' name='schema' value='editsprint' />
-                <input type="submit" value="Delete" name='deletesprint' />
-                &nbsp;
-                |
-                &nbsp;
-                <input type="button" value="Cancel" onclick="get_sprint();"/>
-                <input type="submit" name='editsprint' value="Save" onclick="return checkvalues();"/>
-              <# } else { #>
-                <input type='hidden' name='schema' value='newsprint' />
-                <input type="submit" name='newsprint' value="Create" onclick="return checkvalues();"/>
-              <# } #>
+          <buttonssection>
           </td>
         </tr>
       </table>
@@ -146,7 +135,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
   [% IF team.is_using_backlog() %]
     var backlog_search_url = search_link_sprint_items([% backlog_id %]);
-    var backlog = new listObject("sortable2", "headers2", "[% backlog_id %]", 'Backlog', null, backlog_search_url);
+    var backlog = new listObject("sortable2", "headers2", "[% backlog_id %]", 'Backlog', create_item_line_html, backlog_search_url);
   [% ELSE %]
     var other_than_active_sprint_search_url = "buglist.cgi?query_format=advanced&";
     other_than_active_sprint_search_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2C";
@@ -158,12 +147,12 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
     // When all items are shown as 'backlog' to user, backlog must have sprint id of unprioritised items.
     // This is important because all its items are saved as actual backlog otherwise.
-    var backlog = new listObject("sortable2", "headers2", '-1', 'Backlog (all items)', null, other_than_active_sprint_search_url);
+    var backlog = new listObject("sortable2", "headers2", '-1', 'Backlog (all items)', create_item_line_html, other_than_active_sprint_search_url);
   [% END %]
 
   var sprint_search_url = search_link_sprint_items([% active_sprint.id() %]);
 
-  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', null, sprint_search_url);
+  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', create_item_line_html, sprint_search_url);
 
   // *** Global variables ***
   sprint_callback = demark_sprint_capacity;
@@ -205,12 +194,14 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
 
     all_lists.push(sprint);
 
-    if([% active_sprint.id() %])
-    {
+    [% IF active_sprint.id() %]
         $.post('page.cgi?id=scrums/ajaxbuglist.html', {
             sprint_id: [% active_sprint.id() %]
         }, renderSprint        , 'json');
-    }
+    [% ELSE %]
+        bind_items_to_list(sprint, []); // Bug list is empty since there is even no sprint
+        sprint_rendered = true; 	// There is no point in waiting for sprint to arrive, that does not even exist.
+    [% END %]
 
     [% IF team.is_using_backlog() %]
         $.post('page.cgi?id=scrums/ajaxbuglist.html', {
@@ -242,7 +233,7 @@ function renderSprint(result)
     var sprint_bugs = data.bugs;
 
     bind_items_to_list(sprint, sprint_bugs);
-    $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
+    $('#sprint').html(create_list_html(sprint));
     update_lists(sprint, 0);
     sprint_rendered = true;
     check_receive_status();
@@ -254,7 +245,7 @@ function renderBacklog(result)
     var backlog_bugs = data.bugs;
 
     bind_items_to_list(backlog, backlog_bugs);
-    $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
+    $('#unordered').html(create_list_html(backlog));
     update_lists(backlog, 0);
     backlog_rendered = true;
     check_receive_status();
@@ -264,8 +255,8 @@ function check_receive_status()
 {
     if(initialised) 
     {
-        $('#sprint').html(parseTemplate($('#ListTmpl').html(), { list: sprint, extra_middle: '' }));
-        $('#unordered').html(parseTemplate($('#ListTmpl').html(), { list: backlog, extra_middle: '' }));
+        $('#sprint').html(create_list_html(sprint));
+        $('#unordered').html(create_list_html(backlog));
 	after_rendering();
     }
     else if(backlog_rendered && sprint_rendered && sprint_info_showed)
@@ -440,6 +431,8 @@ function after_rendering()
         editableEl.style.visibility = 'collapse';
     }
 </script>
+
+[% PROCESS pages/scrums/listcolumns.html.tmpl %]
 
 <div class="bz_title_container">
   [% team.name %] Sprint

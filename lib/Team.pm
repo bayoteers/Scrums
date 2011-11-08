@@ -285,10 +285,10 @@ sub all_teams {
         @{$team_list} = sort { lc($b->owner_user->name) cmp lc($a->owner_user->name) } @{$team_list};
     }
     elsif ($sort == 5) {
-        @{$team_list} = sort { lc($a->owner_user->login) cmp lc($b->owner_user->login) } @{$team_list};
+        @{$team_list} = sort { lc($a->scrum_master_user->name) cmp lc($b->scrum_master_user->name) } @{$team_list};
     }
     elsif ($sort == 6) {
-        @{$team_list} = sort { lc($b->owner_user->login) cmp lc($a->owner_user->login) } @{$team_list};
+        @{$team_list} = sort { lc($b->scrum_master_user->name) cmp lc($a->scrum_master_user->name) } @{$team_list};
     }
     else {
         @{$team_list} = sort { lc($a->id) cmp lc($b->id) } @{$team_list};
