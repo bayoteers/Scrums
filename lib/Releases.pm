@@ -202,7 +202,8 @@ sub handle_release_bug_data {
             $data = $1;    # $data now untainted
         }
         my $content      = $json->allow_nonref->utf8->relaxed->decode($data);
-        my $ordered_list = $content->{"0"};
+        my $data_lists   = $content->{"data_lists"};
+        my $ordered_list = $data_lists->{"0"};
         my $counter      = 1;
         for my $bug_id (@{$ordered_list}) {
             _set_bug_release_order($bug_id, $counter);
