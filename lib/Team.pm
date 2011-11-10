@@ -165,14 +165,6 @@ sub remove_member {
     Bugzilla->dbh->do('DELETE FROM scrums_teammember WHERE userid = ? AND teamid = ?', undef, $member_id, $team_id);
 }
 
-sub team_memberships_of_user {
-    my ($self, $user_id) = @_;
-
-    my $user_team_ids = Bugzilla->dbh->selectall_arrayref('SELECT teamid FROM scrums_teammember WHERE userid = ?', undef, $user_id);
-
-    return $user_team_ids;
-}
-
 sub team_of_component {
     my ($self, $component_id) = @_;
 
@@ -573,10 +565,6 @@ sub _is_bug_in_active_sprint {
         return $backlog->id();
     }
     return undef;
-}
-
-sub mysort {
-    lc($a->owner_user->name) cmp lc($b->owner_user->name);
 }
 
 1;
