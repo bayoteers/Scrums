@@ -378,8 +378,8 @@ sub get_member_workload {
     my $cum_member_workload = 0;
     my $sprint_bugs         = $self->get_bugs();
     for my $bug (@$sprint_bugs) {
-        if (@$bug[7] == $member_id) {
-            $cum_member_workload = $cum_member_workload + @$bug[1] + @$bug[8];
+        if (@$bug[9] == $member_id) {
+            $cum_member_workload = $cum_member_workload + @$bug[11];
         }
     }
     return $cum_member_workload;
@@ -958,24 +958,6 @@ sub is_current {
         return $now < $fsdate;
     }
     return 0;
-}
-
-sub is_locked {
-    my $self = shift;
-
-    # Backlog is never locked
-    if ($_[0]->{'item_type'} == 2) {
-        return 0;
-    }
-
-    # If there is following sprint, sprint has been archived and is locked
-    my $following = $self->get_following_sprint();
-    if ($following) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
 }
 
 1;
