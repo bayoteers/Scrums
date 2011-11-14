@@ -653,7 +653,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Params:      none.
 
- Returns:     Integer.
+ Returns:     Id (integer) of a Bugzilla::User object.
 
 =item C<scrum_master()>
 
@@ -661,7 +661,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Params:      none.
 
- Returns:     Integer.
+ Returns:     Id (integer) of a Bugzilla::User object.
 
 =item C<owner_user()>
 
@@ -771,7 +771,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Description: Returns whether team is responsible for given component or not.
 
- Params:      Id of the component (integer).
+ Params:      Id (integer) of A Bugzilla::Component object.
 
  Returns:     One if true and zero if false.
 
@@ -787,7 +787,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Description: Set owner user of the team.
 
- Params:      User id of owner of the team (integer).
+ Params:      Id (integer) of a Bugzilla::User object, that represents the owner of the team .
 
  Returns:     Nothing.
 
@@ -795,7 +795,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Description: Set scrum master user of the team.
 
- Params:      User id of scrums master of the team (integer).
+ Params:      Id (integer) of a Bugzilla::User object, that represents the scrum master of the team.
 
  Returns:     Nothing.
 
@@ -803,7 +803,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Description: Adds new component, that team is responsible.
 
- Params:      Id of the component (integer).
+ Params:      Id (integer) of A Bugzilla::Component object.
 
  Returns:     Nothing.
 
@@ -811,7 +811,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Description: Removes component from the list of components, that team is responsible.
 
- Params:      Id of the component (integer).
+ Params:      Id (integer) of A Bugzilla::Component object.
 
  Returns:     Nothing.
 
@@ -819,7 +819,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Description: Adds new member user to the team.
 
- Params:      User id of new team member.
+ Params:      Id (integer) of a Bugzilla::User object, that represents new team member.
 
  Returns:     Nothing.
 
@@ -827,7 +827,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Description: Removes given team member from team.
 
- Params:      User id of removed team member.
+ Params:      Id (integer) of a Bugzilla::User object, that represents removed team member.
 
  Returns:     Nothing.
 
@@ -863,7 +863,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Description: Return responsible team for component, if there is one.
 
- Params:      $param - id of component in question.
+ Params:      Id (integer) of A Bugzilla::Component object.
 
  Returns:     A Bugzilla::Extension::Scrums::Team object.
 
@@ -871,7 +871,7 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
 
  Description: Returns all teams, where user is member. In here membership includes also owner and scrum master roles in team.
 
- Params:      Id of the user.
+ Params:      Id (integer) of a Bugzilla::User object.
 
  Returns:     Reference to an array of Bugzilla::Extension::Scrums::Team objects.
 
@@ -882,6 +882,8 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
  Params:      none.
 
  Returns:     Reference to an array of Bugzilla::Extension::Scrums::Team objects.
+
+=back
 
 =cut
 
