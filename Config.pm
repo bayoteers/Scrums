@@ -27,6 +27,12 @@ use constant NAME => 'Scrums';
 
 use constant REQUIRED_MODULES => [
     {
+       package => 'libdate-calc-perl',
+       module  => 'Date::Calc',
+       version => 6.0,
+    },
+
+    {
        package => 'libxml-simple-perl',
        module  => 'XML::Simple',
        version => 2.18,
