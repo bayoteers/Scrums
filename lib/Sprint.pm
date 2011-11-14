@@ -378,8 +378,8 @@ sub get_member_workload {
     my $cum_member_workload = 0;
     my $sprint_bugs         = $self->get_bugs();
     for my $bug (@$sprint_bugs) {
-        if (@$bug[7] == $member_id) {
-            $cum_member_workload = $cum_member_workload + @$bug[1] + @$bug[8];
+        if (@$bug[9] == $member_id) {
+            $cum_member_workload = $cum_member_workload + @$bug[11];
         }
     }
     return $cum_member_workload;
@@ -960,25 +960,394 @@ sub is_current {
     return 0;
 }
 
-sub is_locked {
-    my $self = shift;
-
-    # Backlog is never locked
-    if ($_[0]->{'item_type'} == 2) {
-        return 0;
-    }
-
-    # If there is following sprint, sprint has been archived and is locked
-    my $following = $self->get_following_sprint();
-    if ($following) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
-
 1;
 
 __END__
+
+
+=head1 NAME
+
+Bugzilla::Extension::Scrums::Sprint - Scrums sprint class.
+
+=head1 SYNOPSIS
+
+    use Bugzilla::Extension::Scrums::Sprint;
+    my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+
+    $sprint->name(); 
+    $sprint->status();
+    $sprint->description();
+    $sprint->team_id();
+    $sprint->estimated_capacity();
+    $sprint->get_team();
+    $sprint->start_date();
+    $sprint->end_date();
+    $sprint->get_following_sprint();
+    $sprint->is_current();
+
+    $sprint->check_start_date($start_date);
+    $sprint->check_end_date($end_date);
+    $sprint->validate_span($this_id, $team_id, $span_start_date, $span_end_date);
+
+    $sprint->get_bugs();
+    $sprint->get_work_done();
+    $sprint->get_capacity_summary();
+    $sprint->calculate_remaining();
+    $sprint->get_member_capacity($member_id);
+    $sprint->get_member_workload($member_id);
+    $sprint->get_person_capacity();
+    $sprint->get_previous_sprint();
+    $sprint->get_predictive_estimate();
+    $sprint->get_items();
+    $sprint->get_item_array();
+    $sprint->get_remaining_item_array();
+    $sprint->get_biggest_team_order();
+    $sprint->is_item_in_sprint($bug_id);
+
+    $sprint->add_bug_into_sprint($added_bug_id, $insert_after_bug_id, $vars);
+    $sprint->add_bug_into_team_order($dbh, $added_bug_id, $new_bug_team_order_number, $previous_team_order_for_bug, $vars);
+    $sprint->remove_bug_from_sprint($removed_bug_id, $vars);
+
+    my $sprint = Bugzilla::Extension::Scrums::Sprint->create({ team_id => $team_id, name => $name, status => $status, item => $item });
+
+    $sprint->set_name($name);
+    $sprint->set_status($status);
+    $sprint->set_description($description);
+    $sprint->set_start_date($start_date);
+    $sprint->set_end_date($end_date);
+    $sprint->set_estimated_capacity($estimated_capacity);
+    $sprint->set_member_capacity($user_id, $capacity);
+
+    $sprint->update();
+
+    $sprint->remove_from_db;
+
+=head1 DESCRIPTION
+
+Sprint object represent either sprint or team backlog. These two applications have similar structure except that backlog does not have
+start and end dates. Item type separates these two applications of this same class.
+
+
+=head1 METHODS
+
+=over
+
+=item C<new($spint_id)>
+
+ Description: The constructor is used to load an existing sprint (backlog)
+              by passing a sprint ID.
+
+ Params:      $param - Sprint id from the database that we want to
+                       read in (integer). 
+
+ Returns:     A Bugzilla::Extension::Scrums::Sprint object.
+
+=item C<name()>
+
+ Description: Returns name of the sprint.
+
+ Params:      none.
+
+ Returns:     Sprint name (string).
+
+=item C<status()>
+
+ Description: Returns status of the sprint.
+
+ Params:      none.
+
+ Returns:     Sprint status (string).
+
+=item C<description()>
+
+ Description: Returns description of the sprint.
+
+ Params:      none.
+
+ Returns:     Sprint description (string).
+
+=item C<team_id()>
+
+ Description: Returns id of the team, that owns the sprint.
+
+ Params:      none.
+
+ Returns:     Id (integer) of a Bugzilla::Extension::Scrums::Team object.
+
+=item C<estimated_capacity()>
+
+ Description: Returns estimate about capacity, that is availabe for implementing sprint.
+
+ Params:      none.
+
+ Returns:     Capacity estimate (decimal number with two fractional digits).
+
+=item C<get_team()>
+
+ Description: Returns team that owns the sprint.
+
+ Params:      none.
+
+ Returns:     A Bugzilla::Extension::Scrums::Team object.
+
+=item C<start_date()>
+
+ Description: Returns starting date of the sprint.
+
+ Params:      none.
+
+ Returns:     Starting date (string in format 'yyyy-mm-dd').
+
+=item C<end_date()>
+
+ Description: Returns ending date of the sprint.
+
+ Params:      none.
+
+ Returns:     Ending date (string in format 'yyyy-mm-dd').
+
+=item C<get_following_sprint()>
+
+ Description: Returns sprint, that follows after this sprint. Starting date is used as sorting criteria.
+
+ Params:      none.
+
+ Returns:     A Bugzilla::Extension::Scrums::Sprint object.
+
+=item C<is_current()>
+
+ Description: Returns whether sprint is current ie. most recent sprint of the team, that it belongs.
+
+ Params:      none.
+
+ Returns:     One if true and zero if false.
+
+=item C<check_start_date($start_date)>
+
+ Description: Checks whether start date overlaps another sprint of the same team.
+
+ Params:      none.
+
+ Returns:     Nothing. Throws error, if start date overlaps another sprint of the same team
+
+=item C<check_end_date($end_date)>
+
+ Description: Checks whether end date overlaps another sprint of the same team.
+
+ Params:      none.
+
+ Returns:     Nothing. Throws error, if end date overlaps another sprint of the same team
+
+=item C<get_bugs()>
+
+ Description: Returns all items, that belong to sprint.
+
+ Params:      none.
+
+ Returns:     Reference to a table of data, that represents list of bugs.
+
+=item C<get_item_array()>
+
+ Description: Returns the ids of items, that belong to sprint. Items are sorted by team priority order.
+
+ Params:      none.
+
+ Returns:     Reference to an array of ids of Bugzilla::Bug objects (integers).
+
+=item C<get_remaining_item_array()>
+
+ Description: Returns the ids of items, that belong to sprint and are open. Items are sorted by team priority order.
+
+ Params:      none.
+
+ Returns:     Reference to an array of ids of Bugzilla::Bug objects (integers).
+
+=item C<is_item_in_sprint($bug_id)>
+
+ Description: Returns whether given item is in sprint or not.
+
+ Params:      Id (integer) of Bugzilla::Bug object representing tested bug.
+
+ Returns:     One if true and zero if false.
+
+=item C<get_biggest_team_order()>
+
+ Description: Returns biggest (last) team order of all items in sprint.
+
+ Params:      none.
+
+ Returns:     Integer.
+
+=item C<get_work_done()>
+
+ Description: Returns the sum of work, that has been reported to items in sprint.
+
+ Params:      none.
+
+ Returns:     Number of hours (decimal number with two fractional digits).
+
+=item C<get_capacity_summary()>
+
+ Description: Returns summary of reported hours in sprint and estimates of amount of work and capacity.
+
+ Params:      none.
+
+ Returns:     Reference to a hash table, that contains following keys: 'sprint_capacity', 'work_done', 'remaining_work', 'total_work', 'free_capacity'
+
+=item C<calculate_remaining()>
+
+ Description: Returns sum of remaining work in sprint.
+
+ Params:      none.
+
+ Returns:     Number of hours (decimal number with two fractional digits).
+
+=item C<get_member_capacity($member_id)>
+
+ Description: Returns capacity, that team member is estimated to put into sprint. Capacity is measured as a fraction of one. Capacity of one equals 100% effort.
+
+ Params:      Id (integer) of a Bugzilla::User object.
+
+ Returns:     Capacity between 0-1 (decimal number with two fractional digits).
+
+=item C<get_member_workload($member_id)>
+
+ Description: Returns the sum of work in those items in sprint, that have been assigned to given user.
+
+ Params:      Id (integer) of a Bugzilla::User object.
+
+ Returns:     Number of hours (decimal number with two fractional digits).
+
+=item C<get_person_capacity()>
+
+ Description: Returns the number of people, who have been allocated to sprint. Number of individuals is weighted with estimated capacity in sprint of each person. 
+
+ Params:      none.
+
+ Returns:     Number of people (decimal number with two fractional digits).
+
+=item C<get_previous_sprint()>
+
+ Description: Returns another sprint of same team, that precedes this sprint.
+
+ Params:      none.
+
+ Returns:     A Bugzilla::Extension::Scrums::Sprint obejct.
+
+=item C<get_predictive_estimate()>
+
+ Description: Returns work amount and person capacity history of maximum three previous sprints starting from this sprint. Estimate of avarage sprint is created from median of three sprints.
+
+ Params:      none.
+
+ Returns:     Reference to hash map, that contains keys 'prediction' and history'. 'Prediction' is number of hours. 'History' contains table of three sprints with sprint name, work hours and number of people.
+
+=item C<set_name($name)>
+
+ Description: Sets name of the sprint.
+
+ Params:      Name of sprint (string).
+
+ Returns:     Nothing.
+
+=item C<set_status($status)>
+
+ Description: Sets status of the sprint.
+
+ Params:      Status of sprint (string).
+
+ Returns:     Nothing.
+
+=item C<set_description($description)>
+
+ Description: Sets description of the sprint.
+
+ Params:      Description of sprint (string).
+
+ Returns:     Nothing.
+
+=item C<set_start_date($start_date)>
+
+ Description: Sets starting date of the sprint.
+
+ Params:      Starting date (string in format 'yyyy-mm-dd').
+
+ Returns:     Nothing.
+
+=item C<set_end_date($end_date)>
+
+ Description: Sets ending date of the sprint.
+
+ Params:      Starting date (string in format 'yyyy-mm-dd').
+
+ Returns:     Nothing.
+
+=item C<set_estimated_capacity($estimated_capacity)>
+
+ Description: Sets capacity estimate of the sprint.
+
+ Params:      Number of hours (decimal number with two fractional digits).
+
+ Returns:     Nothing.
+
+=item C<set_member_capacity($user_id, $capacity)>
+
+ Description: Sets capacity, that given team member is estimated to put into sprint. Capacity is measured as a fraction of one. Capacity of one equals 100% effort.
+
+ Params:      $user_id  - Id (integer) of a Bugzilla::User object.
+              $capacity - Decimal number with two fractional digits
+
+ Returns:     nothing.
+
+=item C<add_bug_into_sprint($added_bug_id, $insert_after_bug_id, $vars)>
+
+ Description: Adds given bug into sprint into given position. Updates also team order accordingly because all items in sprints always have team order. Sprint and team order are updated inside single transaction.
+
+ Params:      $added_bug_id        - Id (integer) of Bugzilla::Bug object representing added item
+              $insert_after_bug_id - Id (integer) of Bugzilla::Bug object representing preceding item in team order list
+              $vars                - Optional, used for debug printing
+
+ Returns:     Nothing.
+
+=item C<add_bug_into_team_order($dbh, $added_bug_id, $new_bug_team_order_number, $previous_team_order_for_bug, $vars)>
+
+ Description: Adds given bug into team order inside given transaction. Added item can already be in given team order in different position or item can be new to team order. Adding a new item into team order includes also updating other items in same team order by shifting them one position.
+
+ Params:      $dbh                         - Database handle, that contains open transaction
+              $added_bug_id                - Id (integer) of Bugzilla::Bug object representing added item
+              $new_bug_team_order_number   - Order (integer) of added item in team order
+              $previous_team_order_for_bug - Previous order (integer) of added item if given item was already previously in same team order. Undef, if item was not in same team order before adding.
+              $vars                        - Optional, used for debug printing
+
+ Returns:     Nothing.
+
+=item C<remove_bug_from_sprint($removed_bug_id, $vars)>
+
+ Description: Removes given item from sprint. Updates also team order accordingly because all items in sprints always have team order. Sprint and team order are updated inside single transaction.
+
+ Params:      $removed_bug_id                - Id (integer) of Bugzilla::Bug object representing removed item
+              $vars                          - Optional, used for debug printing
+
+ Returns:     Nothing.
+
+=back
+
+=head1 CLASS METHODS
+
+=over
+
+=item C<validate_span($this_id, $team_id, $span_start_date, $span_end_date)>
+
+ Description: Returns whether given timespan overlaps some existing sprint is a way, that is not possible to detect solely from single start and endpoints only.
+
+ Params:      $this_id           - Optional, id (integer) of checked sprint. This is given only, if checked sprint is already in database. This is to avoid detecting collision with sprint itself.
+              $team_id           - Id (integer) of team, that owns the sprint. Sprints of other teams are ignored.
+              $span_start_date   - Start date of tested timespan
+              $span_end_date     - End date of tested timespan
+
+ Returns:     One if true and zero if false.
+
+=back
+
+=cut
 
