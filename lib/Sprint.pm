@@ -1336,6 +1336,23 @@ start and end dates. Item type separates these two applications of this same cla
 
 =over
 
+=item C<create(\%params)>
+
+ Description: Creates a new sprint.
+
+ Params:      The hashref must have the following keys:
+              team_id            - Id (integer) of owner team
+              name               - Name of the sprint (string). This name
+                                   should be unique inside same team.
+              status             - Status of the sprint (string).
+              The following keys are optional:
+              description        - Description of sprint (string).
+              start_date         - Starting date of the sprint (string in format 'yyyy-mm-dd')
+              end_date           - Ending date of the sprint (string in format 'yyyy-mm-dd')
+              estimated_capacity - Number of hours, that are estimated to be put into sprint (decimal number with two fractional digits)
+
+ Returns:     A Bugzilla::Extension::Scrums::Sprint object.
+
 =item C<validate_span($this_id, $team_id, $span_start_date, $span_end_date)>
 
  Description: Returns whether given timespan overlaps some existing sprint is a way, that is not possible to detect solely from single start and endpoints only.
