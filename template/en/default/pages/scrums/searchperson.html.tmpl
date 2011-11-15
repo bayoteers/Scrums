@@ -31,7 +31,6 @@
     window.opener.document.forms['[% formname %]'].elements['[% formfieldprefix %]login'].value=login;
     // alert("Select");
     [% IF submit %]
-      // alert('Kutsutaan metodia submit');
       window.opener.document.forms['[% formname %]'].submit();
     [% END %]
     window.close();

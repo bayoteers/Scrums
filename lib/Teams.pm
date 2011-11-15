@@ -38,16 +38,12 @@ our @EXPORT = qw(
   ajax_sprint_bugs
   show_all_teams
   show_create_team
-  user_teams
   add_into_team
-  component_team
   search_person
   edit_team
   show_team_and_sprints
-  show_backlog_and_items
   show_archived_sprints
   edit_sprint
-  create_sprint
   update_team_bugs
   );
 
@@ -317,7 +313,6 @@ sub search_person {
     my $matchvalue    = $cgi->param('matchvalue') || '';
     my $matchstr      = $cgi->param('matchstr');
     my $matchtype     = $cgi->param('matchtype');
-    my $grouprestrict = $cgi->param('grouprestrict') || '0';
     my $query         = 'SELECT DISTINCT userid, login_name, realname, disabledtext ' . 'FROM profiles WHERE';
     my @bindValues;
     my $nextCondition;
@@ -544,7 +539,7 @@ sub edit_sprint {
     }
 
     $vars->{'teamid'} = $team_id;
-    my $editsprint = $cgi->param('editsprint');
+    my $editsprint = $cgi->param('editsprint'); # Not used?
     $vars->{'editsprint'} = $editsprint;
     my $previous_sprint = undef;
     if ($editsprint eq "true") {
@@ -820,3 +815,212 @@ sub _update_team {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Scrums::Teams - Scrums function library for team related features.
+
+Uses Scrums::Team
+
+=head1 SYNOPSIS
+
+    use Bugzilla::Extension::Scrums::Teams;
+
+    Bugzilla::Extension::Scrums::Teams::ajax_sprint_bugs($vars);
+    Bugzilla::Extension::Scrums::Teams::show_all_teams($vars);
+    Bugzilla::Extension::Scrums::Teams::show_create_team($vars);
+    Bugzilla::Extension::Scrums::Teams::add_into_team($vars);
+    Bugzilla::Extension::Scrums::Teams::search_person($vars);
+    Bugzilla::Extension::Scrums::Teams::edit_team($vars);
+    Bugzilla::Extension::Scrums::Teams::show_team_and_sprints($vars);
+    Bugzilla::Extension::Scrums::Teams::show_archived_sprints($vars);
+    Bugzilla::Extension::Scrums::Teams::edit_sprint($vars);
+    Bugzilla::Extension::Scrums::Teams::update_team_bugs($vars, $list_is_backlog);
+
+=head1 DESCRIPTION
+
+Teams.pm is a library, that contains all teams related functionalities. It is interface to server and its functions must be called with CGI-variables in hash-map ($vars).
+
+=head1 METHODS
+
+=over
+
+=item C<ajax_sprint_bugs($vars)>
+
+ Description: Fetches data of given sprint to be formatted as Json-sprint.
+
+ vars:        The hashref must have the following keys:
+              sprint_id       - id of a Bugzilla::Extension::Scrums::Sprint object of team owner.
+
+ Returns:     The vars-hashref is added the following keys:
+	      sprint		 - Sprint object including its items
+              prediction         - Predictive estimate, that is based on history data
+              history		 - History data of previous sprints
+              estimatedcapacity  - Estimated capacity of the sprint in hours
+              personcapacity     - Estimated effort of the sprint as allocated persons
+
+
+=item C<show_all_teams($vars)>
+
+ Description: Returns name of the team.
+
+ cgi:         The following keys in hashref are optional:
+              deleteteam         - Id (integer) of team, that is deleted from database
+              sort               - Code (integer) of sorting order for array of teams
+
+ Returns:     The vars-hashref is added the following keys:
+              sort               - Sorting order is returned back to client
+              teamlist           - Reference to an array of Bugzilla::Extension::Scrums::Team objects.
+
+
+=item C<show_create_team($vars)>
+
+ Description: Returns name of the team.
+
+ cgi:         The hashref must have the following keys:
+              teamid             - Id (integer) of Bugzilla::Extension::Scrums::Team object
+              The following keys in hashref are optional:
+              removedcomponent   - Removed component, id (integer) of A Bugzilla::Component object
+              component          - Added component, id (integer) of A Bugzilla::Component object
+              editteam           - Indicates, that team information is updated. This variable is either defined or not.
+              name               - Updated name of the team
+              userid             - Updated owner of the team, Id (integer) of a Bugzilla::User object
+              scrummasterid      - Updated scrum master of the team, Id (integer) of a Bugzilla::User object
+              usesbacklog        - Whether team uses backlog or not (when team information is updated)
+              userid             - User, who is either added or removed from team, id (integer) of a Bugzilla::User object
+              addintoteam        - Indicates, that user is added to team. This variable is either defined or not.
+
+
+ Returns:     The vars-hashref is added the following keys:
+              team               - Bugzilla::Extension::Scrums::Team object
+              active_sprint      - Bugzilla::Extension::Scrums::Sprint object
+              active_sprint_id   - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
+              active_sprint_name - Name of active sprint
+	      teamisnew          - Indicates, that new team was created. This variable is either defined or not.
+
+=item C<add_into_team($vars)>
+
+ Description: Puts given user information into template variable.
+
+ Returns:     The vars-hashref is added the following keys, that are all read from cgi-hashref:
+              userid             - Id (integer) of a Bugzilla::User object
+              teamid             - Id (integer) of Bugzilla::Extension::Scrums::Team object
+              userrealname       - Real name from Bugzilla::User object
+              userlogin          - Login name from Bugzilla::User object
+              teamname           - Name of team
+
+
+=item C<search_person($vars)>
+
+ Description: Creates SQL-query based on CGI-parameters. Executes query and forwards results into template.
+
+ cgi:         The hashref must have the following keys:
+              matchvalue         - Indicates, which profile field is used as search criteria
+              matchstr           - String value to be searched in SQL query
+              matchtype          - Possible values are 'regexp', 'notregexp', 'exact' or other
+
+ Returns:     The vars-hashref is added the following keys:
+              query              - Complete query string
+              users              - Reference to a table of data, that represents list of users.
+              The vars-hashref is added the following keys, that are all read from cgi-hashref:
+              formname           - Return address for template form
+              formfieldprefix    - Return address for template form
+              submit             - Action for template form
+
+ Returns:     String.
+
+=item C<edit_team($vars)>
+
+ Description: Puts information of given team into template variables.
+
+ cgi:         The hashref must have the following keys: 
+              teamid               - Id (integer) of Bugzilla::Extension::Scrums::Team object
+
+ Returns:     The vars-hashref is added the following keys:
+              team                 - Bugzilla::Extension::Scrums::Team object
+              The vars-hashref is added the following keys, that are all read from cgi-hashref:
+              editteam             - Action for template form
+              teamid               - Id (integer) of Bugzilla::Extension::Scrums::Team object
+              realname             - Real name from Bugzilla::User object
+              scrummasterrealname  - Real name from Bugzilla::User object
+              scrummasterloginname - Login name from Bugzilla::User object
+
+=item C<show_team_and_sprints($vars)>
+
+ Description: Either creates a new sprint or updates or deletes an old one. 
+              Also puts all needed information of team into template variables.
+
+ cgi:         The hashref must have the following keys: 
+              newsprint            - Indicates, that new sprint is created. This variable is either defined or not.
+              editsprint           - Indicates, that sprint is edited. This variable is either defined or not.
+              sprintid             - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
+              deletesprint         - Indicates, that sprint is deleted. This variable is either defined or not.
+
+ Returns:     The vars-hashref is added the following keys:
+              team                 - Bugzilla::Extension::Scrums::Team object
+              unprioritised_bugs   - Reference to a table of data, that represents list of bugs.
+              active_sprint        - Bugzilla::Extension::Scrums::Sprint object
+              capacity             - Capacity summary from active sprint
+              history              - Sprint history information
+              active_sprint_id     - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
+              backlog_id           - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
+
+=item C<show_archived_sprints($vars)>
+
+ Description: Puts information of archived sprints into template variables.
+
+ cgi:         The hashref must have the following keys: 
+              teamid               - Id (integer) of Bugzilla::Extension::Scrums::Team object
+
+ Returns:     The vars-hashref is added the following keys:
+              team                 - Bugzilla::Extension::Scrums::Team object
+              team_sprints_array   - Array of Bugzilla::Extension::Scrums::Sprint objects
+
+
+=item C<edit_sprint($vars)>
+
+ Description: Returns name of the team.
+
+ cgi:         The hashref must have the following keys: 
+              sprintid             - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
+
+ Returns:     The vars-hashref is added the following keys:
+              sprintname           - Name of given sprint (string)
+              description          - Description of given sprint (string)
+              start_date           - Starting date (string in format 'yyyy-mm-dd').
+              end_date             - Ending date (string in format 'yyyy-mm-dd')
+              estimatedcapacity    - Estimate of capacity, that is availabe for implementing sprint.
+              personcapacity       - Number of people, who have been allocated to sprint weighted with estimated effort in sprint of each person. 
+              prediction           - Number of hours as history based prediction
+              history              - Sprint history data
+
+
+=item C<create_sprint($vars)>
+
+ Description: Returns name of the team.
+
+ Params:      none.
+
+ Returns:     String.
+
+
+=item C<update_team_bugs($vars, $list_is_backlog)>
+
+ Description: Updates bug lists according to JSON text, that was received from client.
+
+ Params:      list_is_backlog     - Backlog requires different user rights
+
+ cgi:         The hashref must have the following keys: 
+              obj_id              - Team id, id (integer) of Bugzilla::Extension::Scrums::Team object
+              data                - JSON text, that contains bug lists
+
+ Returns:     The vars-hashref is added the following keys:
+              errors              - Possible errors as Ajax-return value
+              warnings            - Possible warnings as Ajax-return value
+
+=back
+
+=cut
+
