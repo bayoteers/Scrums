@@ -310,10 +310,10 @@ sub search_person {
     my $cgi = Bugzilla->cgi;
     my $dbh = Bugzilla->dbh;
 
-    my $matchvalue    = $cgi->param('matchvalue') || '';
-    my $matchstr      = $cgi->param('matchstr');
-    my $matchtype     = $cgi->param('matchtype');
-    my $query         = 'SELECT DISTINCT userid, login_name, realname, disabledtext ' . 'FROM profiles WHERE';
+    my $matchvalue = $cgi->param('matchvalue') || '';
+    my $matchstr   = $cgi->param('matchstr');
+    my $matchtype  = $cgi->param('matchtype');
+    my $query      = 'SELECT DISTINCT userid, login_name, realname, disabledtext ' . 'FROM profiles WHERE';
     my @bindValues;
     my $nextCondition;
 
@@ -539,7 +539,7 @@ sub edit_sprint {
     }
 
     $vars->{'teamid'} = $team_id;
-    my $editsprint = $cgi->param('editsprint'); # Not used?
+    my $editsprint = $cgi->param('editsprint');    # Not used?
     $vars->{'editsprint'} = $editsprint;
     my $previous_sprint = undef;
     if ($editsprint eq "true") {
