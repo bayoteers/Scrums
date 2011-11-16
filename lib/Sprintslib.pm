@@ -198,7 +198,6 @@ sub _create_plot_chart {
     my $index = scalar @{$hour_log_array};
 
     my $today = 1000 * Mktime(Today_and_Now());
-    $vars->{'end'}  = $today;
     $vars->{'last'} = $index;
 
     my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
@@ -212,7 +211,12 @@ sub _create_plot_chart {
         $d = $3;
         # The day, that ends sprint lasts for (almost) 24 hours.
         $spr_end = 1000 * Mktime($y, $m, $d, 23, 59, 0);
+        $vars->{'end'}  = $spr_end;
     }
+    else {
+        $vars->{'end'}  = $today;
+    }
+
     if ($sprint->start_date()) {
         my ($y, $m, $d);
         $sprint->start_date() =~ /^([0-9]+)-([0-9]+)-([0-9]+)$/;
@@ -221,6 +225,8 @@ sub _create_plot_chart {
         $d         = $3;
         $spr_start = 1000 * Mktime($y, $m, $d, 0, 0, 0);
     }
+
+
 
     my @remaining_array;
     my @worktime_array;
@@ -238,7 +244,12 @@ sub _create_plot_chart {
         $row     = @{$hour_log_array}[$index];
         $plot_ts = @{$row}[0];
         if ($spr_end > $plot_ts) {
-            $x = $spr_end;
+            if($spr_end < $today) {
+                $x = $spr_end;
+            }
+            else {
+                $x = $today;
+            }
         }
         else {
             $cum_remain    = $cum_remain - @{$row}[1];       # 'added' in remain field
