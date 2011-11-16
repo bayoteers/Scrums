@@ -841,7 +841,7 @@ Uses Scrums::Team
 
 =head1 DESCRIPTION
 
-Teams.pm is a library, that contains all teams related functionalities. It is interface to server and its functions must be called with CGI-variables in hash-map ($vars).
+Teams.pm is a library, that contains all teams related functionalities. It is interface to server and its functions must be called with CGI-variables in hash-map.
 
 =head1 METHODS
 

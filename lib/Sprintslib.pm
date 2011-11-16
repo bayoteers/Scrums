@@ -557,3 +557,63 @@ sub _ending_item_status {
 }
 
 1;
+
+__END__
+
+
+sub handle_person_capacity {
+    my ($data, $vars) = @_;
+
+sub sprint_summary {
+    my ($vars, $sprint_id) = @_;
+
+
+=head1 NAME
+
+Scrums::Teams - Scrums function library for sprint diagrams and features related to persons in sprint.
+
+
+=head1 SYNOPSIS
+
+    use Bugzilla::Extension::Scrums::Sprintslib;
+
+    Bugzilla::Extension::Scrums::Sprintslib::handle_person_capacity($data, $vars);
+    Bugzilla::Extension::Scrums::Sprintslib::sprint_summary($vars, $sprint_id);
+
+
+=head1 DESCRIPTION
+
+Sprintslib.pm is a library, that contains sprint diagram and Ajax related functionalities. It is interface to server and its functions must be called with CGI-variables in hash-map.
+
+=head1 METHODS
+
+=over
+
+=item C<handle_person_capacity($data, $vars)>
+
+ Description: Sets personal capacity of single person in sprint with Ajax-interface.
+
+ data:        JSON-string from Ajax-interface. Contains capacity information.
+
+
+=item C<sprint_summary($vars, $sprint_id)>
+
+ Description: Returns all diagram data and table data, that is needed for representing sprint summary.
+
+ Params:      sprint_id              - Id of a Bugzilla::Extension::Scrums::Sprint object.
+
+ Returns:     The vars-hashref is added the following keys:
+              remaining_hours_plot   - Data of remaining hours diagram 
+              worktime_hours_plot    - Data of work effort hours diagram 
+              remaining_items_plot   - Data of remaining items diagram 
+              worktime_items_plot    - Data of work effort items diagram 
+              summary                - Numbers of open and closed items
+              slist                  - Number of items in each status as an array
+              team_name              - Name of team from Bugzilla::Extension::Scrums::Team
+              team_id                - Id (integer) of Bugzilla::Extension::Scrums::Team object
+              sprint_name            - Name of sprint from Bugzilla::Extension::Scrums::Sprint
+
+=back
+
+=cut
+
