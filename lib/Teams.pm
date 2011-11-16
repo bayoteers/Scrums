@@ -1017,8 +1017,8 @@ Teams.pm is a library, that contains all teams related functionalities. It is in
               data                - JSON text, that contains bug lists
 
  Returns:     The vars-hashref is added the following keys:
-              errors              - Possible errors as Ajax-return value
-              warnings            - Possible warnings as Ajax-return value
+              errors              - Possible errors (string) to be returned as Ajax return value
+              warnings            - Possible warnings (string) to be returned as Ajax return value
 
 =back
 

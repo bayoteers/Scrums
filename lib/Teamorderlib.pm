@@ -333,3 +333,41 @@ sub _get_sprints_hashes {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Bugzilla::Extension::Scrums::Teamorderlib - Scrums function library for setting bug lists in sprint and backlog.
+
+
+=head1 SYNOPSIS
+
+    use Bugzilla::Extension::Scrums::Teamorderlib;
+
+    Bugzilla::Extension::Scrums::Teamorderlib::update_bug_order_from_json($team_id, $data, $vars);
+
+
+=head1 DESCRIPTION
+
+Teamorderlib.pm is a library for setting bug lists.
+
+=head1 METHODS
+
+=over
+
+=item C<update_bug_order_from_json($team_id, $data, $vars)>
+
+ Description: Sets bug lists in active sprint and backlog of team from JSON .
+
+ Params:      team_id          - Id of a Bugzilla::Extension::Scrums::Team object.
+              data             - JSON-string from Ajax-interface. Contains bug lists of active sprint and backlog.
+
+ Returns:     The vars-hashref is added the following keys:
+              errors              - Possible errors (string) to be returned as Ajax return value
+              warnings            - Possible warnings (string) to be returned as Ajax return value
+
+=back
+
+=cut
+

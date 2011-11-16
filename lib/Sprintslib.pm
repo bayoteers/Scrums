@@ -560,17 +560,9 @@ sub _ending_item_status {
 
 __END__
 
-
-sub handle_person_capacity {
-    my ($data, $vars) = @_;
-
-sub sprint_summary {
-    my ($vars, $sprint_id) = @_;
-
-
 =head1 NAME
 
-Scrums::Teams - Scrums function library for sprint diagrams and features related to persons in sprint.
+Bugzilla::Extension::Scrums::Sprintslib - Scrums function library for sprint diagrams and features related to persons in sprint.
 
 
 =head1 SYNOPSIS
