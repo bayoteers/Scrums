@@ -293,7 +293,11 @@ sub get_work_done {
             work_time > 0'
                            );
     $sth->execute($self->id);
-    my ($work_done) = $sth->fetchrow_array();
+    my $work_done = 0;
+    my ($temp) = $sth->fetchrow_array();
+    if ($temp) {
+        $work_done = $temp;
+    }
     return $work_done;
 }
 
@@ -444,8 +448,9 @@ sub get_predictive_estimate {
     my %pred_estimate;
     my $pred_estimate = \%pred_estimate;
     my ($total_work_1, $tot_persons_1, $total_work_2, $tot_persons_2, $total_work_3, $tot_persons_3);
-    my $prediction     = 0;
-    my $work_done      = $self->get_work_done();
+    my $prediction = 0;
+    my $work_done  = 0;
+    $work_done = $self->get_work_done();
     my $remaining_work = $self->calculate_remaining();
     $total_work_1  = $work_done + $remaining_work;
     $tot_persons_1 = $self->get_person_capacity();

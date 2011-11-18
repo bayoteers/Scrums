@@ -57,7 +57,7 @@ sub show_all_teams($) {
 
     my $cgi         = Bugzilla->cgi;
     my $delete_team = $cgi->param('deleteteam');
-    if ($delete_team ne "") {
+    if ($delete_team && $delete_team ne "") {
         if (not Bugzilla->user->in_group('admin')) {
             ThrowUserError('auth_failure', { group => "admin", action => "delete", object => "team" });
         }
@@ -123,7 +123,7 @@ sub show_create_team {
         if ($team_id =~ /^([0-9]+)$/) {
             $team_id = $1;    # $data now untainted
             my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
-            if ($cgi->param('removedcomponent') ne "") {
+            if ($cgi->param('removedcomponent') && $cgi->param('removedcomponent') ne "") {
                 if (not Bugzilla->user->in_group('scrums_editteams')) {
                     ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
                 }
@@ -134,7 +134,7 @@ sub show_create_team {
                     $team->remove_component($component_id);
                 }
             }
-            if ($cgi->param('component') ne "") {
+            if ($cgi->param('component') && $cgi->param('component') ne "") {
                 if (not Bugzilla->user->in_group('scrums_editteams')) {
                     ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
                 }
@@ -147,7 +147,7 @@ sub show_create_team {
                     $team->set_component($component_id);
                 }
             }
-            if ($cgi->param('editteam') ne "") {
+            if ($cgi->param('editteam') && $cgi->param('editteam') ne "") {
                 if (not Bugzilla->user->in_group('scrums_editteams')) {
                     ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
                 }
@@ -185,7 +185,10 @@ sub _show_existing_team {
 
     my $cgi = Bugzilla->cgi;
 
-    my $user_id = $cgi->param('userid');
+    my $user_id = 0;
+    if ($cgi->param('userid')) {
+        $user_id = $cgi->param('userid');
+    }
 
     if ($user_id ne "") {
         if (not Bugzilla->user->in_group('scrums_editteams')) {
@@ -193,8 +196,7 @@ sub _show_existing_team {
         }
         if ($user_id =~ /^([0-9]+)$/) {
             $user_id = $1;    # $data now untainted
-            my $add_into_team = $cgi->param('addintoteam');
-            if ($add_into_team ne "") {
+            if ($cgi->param('addintoteam') && $cgi->param('addintoteam') ne "") {
                 $team->set_member($user_id);
             }
             else {
@@ -315,7 +317,7 @@ sub search_person {
     my $matchtype  = $cgi->param('matchtype');
     my $query      = 'SELECT DISTINCT userid, login_name, realname, disabledtext ' . 'FROM profiles WHERE';
     my @bindValues;
-    my $nextCondition;
+    my $nextCondition = "";
 
     # Handle selection by login name, real name, or userid.
     if (defined($matchtype)) {
@@ -575,10 +577,10 @@ sub show_team_and_sprints {
     my $cgi   = Bugzilla->cgi;
     my $sprint_id;
 
-    if ($cgi->param('newsprint') ne "") {
+    if ($cgi->param('newsprint') && $cgi->param('newsprint') ne "") {
         _new_sprint($vars);
     }
-    elsif ($cgi->param('editsprint') ne "") {
+    elsif ($cgi->param('editsprint') && $cgi->param('editsprint') ne "") {
         my $sprint_id = $cgi->param('sprintid');
         if ($sprint_id ne "") {
             if ($sprint_id =~ /^([0-9]+)$/) {
@@ -590,7 +592,7 @@ sub show_team_and_sprints {
             }
         }
     }
-    elsif ($cgi->param('deletesprint') ne "") {
+    elsif ($cgi->param('deletesprint') && $cgi->param('deletesprint') ne "") {
         $sprint_id = $cgi->param('sprintid');
         if ($sprint_id =~ /^([0-9]+)$/) {
             $sprint_id = $1;        # $data now untainted

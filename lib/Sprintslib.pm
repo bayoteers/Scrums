@@ -174,7 +174,11 @@ sub _ending_hours {
             sprint_id = ?"
                            );
     $sth->execute($sprint_id);
-    my ($ending_remain) = $sth->fetchrow_array();
+    my $ending_remain = 0;
+    my ($temp_remain) = $sth->fetchrow_array();
+    if ($temp_remain) {
+        $ending_remain = $temp_remain;
+    }
 
     $sth = $dbh->prepare(
         "select
@@ -188,12 +192,20 @@ sub _ending_hours {
             sprint_id = ?"
                         );
     $sth->execute($sprint_id);
-    my ($ending_work_time) = $sth->fetchrow_array();
+    my $ending_work_time = 0;
+    my ($temp_work_time) = $sth->fetchrow_array();
+    if ($temp_work_time) {
+        $ending_work_time = $temp_work_time;
+    }
     return ($ending_remain, $ending_work_time);
 }
 
 sub _create_plot_chart {
     my ($vars, $sprint_id, $cum_remain, $cum_work_time, $hour_log_array) = @_;
+
+    if (!$cum_work_time) {
+        $cum_work_time = 0;
+    }
 
     my $index = scalar @{$hour_log_array};
 
@@ -211,10 +223,10 @@ sub _create_plot_chart {
         $d = $3;
         # The day, that ends sprint lasts for (almost) 24 hours.
         $spr_end = 1000 * Mktime($y, $m, $d, 23, 59, 0);
-        $vars->{'end'}  = $spr_end;
+        $vars->{'end'} = $spr_end;
     }
     else {
-        $vars->{'end'}  = $today;
+        $vars->{'end'} = $today;
     }
 
     if ($sprint->start_date()) {
@@ -226,8 +238,6 @@ sub _create_plot_chart {
         $spr_start = 1000 * Mktime($y, $m, $d, 0, 0, 0);
     }
 
-
-
     my @remaining_array;
     my @worktime_array;
     my @last_rem_plot;
@@ -235,7 +245,7 @@ sub _create_plot_chart {
     my $row;
     my ($x, $y);
 
-    my $plot_ts;
+    my $plot_ts = 0;
 
     if (!$spr_end) {
         $x = $today;
@@ -244,7 +254,7 @@ sub _create_plot_chart {
         $row     = @{$hour_log_array}[$index];
         $plot_ts = @{$row}[0];
         if ($spr_end > $plot_ts) {
-            if($spr_end < $today) {
+            if ($spr_end < $today) {
                 $x = $spr_end;
             }
             else {
@@ -252,9 +262,12 @@ sub _create_plot_chart {
             }
         }
         else {
-            $cum_remain    = $cum_remain - @{$row}[1];       # 'added' in remain field
-            $cum_remain    = $cum_remain + @{$row}[2];       # 'removed' in remain field
-            $cum_work_time = $cum_work_time - @{$row}[3];    # 'work_time'
+            $cum_remain = $cum_remain - @{$row}[1];    # 'added' in remain field
+            $cum_remain = $cum_remain + @{$row}[2];    # 'removed' in remain field
+            my $temp_work_time = @{$row}[3];           # 'work_time'
+            if ($temp_work_time) {
+                $cum_work_time = $cum_work_time - $temp_work_time;    # 'work_time'
+            }
             $index--;
         }
     }
@@ -312,8 +325,11 @@ sub _create_plot_chart {
             push @rem_plot2,       $y;
             push @remaining_array, \@rem_plot2;
 
-            $cum_work_time = $cum_work_time - @{$row}[3];    # 'work_time'
-            $y             = $cum_remain + $cum_work_time;
+            my $temp_work_time = @{$row}[3];           # 'work_time'
+            if ($temp_work_time) {
+                $cum_work_time = $cum_work_time - $temp_work_time;
+            }
+            $y = $cum_remain + $cum_work_time;
             my @work_plot2;
             push @work_plot2,     $x;
             push @work_plot2,     $y;

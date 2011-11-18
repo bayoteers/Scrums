@@ -328,7 +328,12 @@ sub _get_sprints_hashes {
     while (my $row = $sth->fetchrow_arrayref) {
         my ($bug_id, $sprint) = @$row;
         $sprints_hash->{$bug_id} = $sprint;
-        $lengths_hash->{$sprint} = $lengths_hash->{$sprint} + 1;
+        if (!$lengths_hash->{$sprint}) {
+            $lengths_hash->{$sprint} = 1;
+        }
+        else {
+            $lengths_hash->{$sprint} = $lengths_hash->{$sprint} + 1;
+        }
     }
 }
 
