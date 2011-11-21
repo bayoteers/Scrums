@@ -583,15 +583,16 @@ sub page_before_template {
     elsif ($page eq 'scrums/ajaxsprintbugs.html') {
 
         my $cgi    = Bugzilla->cgi;
-        my $schema = $cgi->param('schema');
-        if ($schema eq "newsprint") {
+        my $schema = "";
+        $schema = $cgi->param('schema');
+        if ($schema && $schema eq "newsprint") {
             $vars->{'editsprint'} = 1;
             $cgi->param(-name => 'editsprint', -value => 'true');
             my $sprintid = _new_sprint($vars);
             $cgi->param(-name => 'sprintid', -value => $sprintid);
             Bugzilla::Extension::Scrums::Teams::ajax_sprint_bugs($vars);
         }
-        elsif ($schema eq "editsprint") {
+        elsif ($schema && $schema eq "editsprint") {
             $vars->{'editsprint'} = 1;
             Bugzilla::Extension::Scrums::Teams::show_team_and_sprints($vars);
             Bugzilla::Extension::Scrums::Teams::ajax_sprint_bugs($vars);
@@ -606,15 +607,15 @@ sub page_before_template {
         my $action    = $cgi->param('action');
         my $team_id   = $cgi->param('team_id');
         my $sprint_id = $cgi->param('sprint_id');
-        if ($action eq "unprioritised_items") {
+        if ($action && $action eq "unprioritised_items") {
             my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
             $vars->{'buglist'} = $team->unprioritised_items();
         }
-        elsif ($action eq "unprioritised_bugs") {
+        elsif ($action && $action eq "unprioritised_bugs") {
             my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
             $vars->{'buglist'} = $team->unprioritised_bugs();
         }
-        elsif ($action eq "other_items_than_in_active_sprint") {
+        elsif ($action && $action eq "other_items_than_in_active_sprint") {
             # This includes also items in backlog (which is disabled)
             my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
             $vars->{'buglist'} = $team->all_items_not_in_sprint();
