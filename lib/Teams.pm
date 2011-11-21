@@ -34,16 +34,13 @@ use Bugzilla::Component;
 use strict;
 use base qw(Exporter);
 our @EXPORT = qw(
-  _new_sprint
-  ajax_sprint_bugs
+
   show_all_teams
   show_create_team
   add_into_team
   search_person
   edit_team
-  show_team_and_sprints
-  show_archived_sprints
-  edit_sprint
+  show_team_bugs
   update_team_bugs
   );
 
@@ -404,51 +401,10 @@ sub edit_team {
     $vars->{'scrummasterloginname'} = $cgi->param('scrummasterloginname');
 }
 
-sub ajax_sprint_bugs {
-    my ($vars) = @_;
-    my $cgi = Bugzilla->cgi;
-    my @sprints;
-
-    my $teamid;
-    my $sprintid;
-    if ($cgi->param('teamid') =~ /(\d+)/) {
-        $teamid = $1;
-    }
-
-    my $sprints = undef;
-    if ($cgi->param('sprintid') =~ /(\d+)/) {
-        $sprintid = $1;
-        $sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $teamid, id => $sprintid, item_type => 1 });
-    }
-
-    $vars->{'json_text'} = '';
-    if ($sprints) {
-        use JSON;
-        use Data::Dumper qw(Dumper);
-        for my $sprint (@{$sprints}) {
-            $vars->{'sprint'}            = $sprint;
-            $vars->{'prediction'}        = $sprint->get_predictive_estimate()->{'prediction'};
-            $vars->{'history'}           = $sprint->get_predictive_estimate()->{'history'};
-            $vars->{'estimatedcapacity'} = $sprint->estimated_capacity();
-            $vars->{'personcapacity'}    = $sprint->get_person_capacity();
-            $vars->{'json_text'} = to_json(
-                {
-                   name        => $sprint->name(),
-                   id          => $sprint->id(),
-                   bugs        => $sprint->get_bugs(),
-                   description => $sprint->description(),
-                   _status     => $sprint->status(),
-                   end_date    => $sprint->end_date(),
-                   start_date  => $sprint->start_date()
-                }    # json_text is not used!
-            );
-        }
-    }
-}
 
 # Show team bugs is a whole, which consists of team, sprints of team and
 # list of bugs (ids) that belong to sprints
-sub _show_team_bugs {
+sub show_team_bugs {
     my ($vars) = @_;
 
     my $cgi     = Bugzilla->cgi;
@@ -475,9 +431,6 @@ sub _show_team_bugs {
 
     # There is always a backlog
     my $team_backlog = $team->get_team_backlog();
-    my @sprint_names;
-    push @sprint_names, $team_backlog->name();
-
     $vars->{'backlog_id'} = $team_backlog->id();
 
     # Component, product and classification names are needed for creating bug lists, that have editable search
@@ -508,98 +461,6 @@ sub _show_team_bugs {
     $vars->{'components'}      = \@comp_names;
     $vars->{'products'}        = \@prod_names;
     $vars->{'classifications'} = \@class_names;
-}
-
-sub show_archived_sprints {
-    my ($vars) = @_;
-
-    my $team_id = Bugzilla->cgi->param('teamid');
-    $vars->{'team'} = Bugzilla::Extension::Scrums::Team->new($team_id);
-    my $archived_sprints = Bugzilla::Extension::Scrums::Sprint->match({ team_id => $team_id, item_type => 1 });
-    pop(@{$archived_sprints});
-    my @team_sprints_array;
-    for my $sprint (@{$archived_sprints}) {
-        my $spr_bugs = $sprint->get_bugs();
-        my %team_sprint;
-        $team_sprint{'sprint'} = $sprint;
-        $team_sprint{'bugs'}   = $spr_bugs;
-        unshift @team_sprints_array, \%team_sprint;
-    }
-    $vars->{'team_sprints_array'} = \@team_sprints_array;
-}
-
-sub edit_sprint {
-    my ($vars) = @_;
-
-    my $cgi     = Bugzilla->cgi;
-    my $team_id = $cgi->param('teamid');
-    my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
-    # User access is same for creating a new sprint and for editing existing sprint
-    # Editing bug lists is separate case
-    if ((not $team->is_team_super_user(Bugzilla->user)) && (not Bugzilla->user->in_group('scrums_editteams'))) {
-        ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
-    }
-
-    $vars->{'teamid'} = $team_id;
-    my $editsprint = $cgi->param('editsprint');    # Not used?
-    $vars->{'editsprint'} = $editsprint;
-    my $previous_sprint = undef;
-    if ($editsprint eq "true") {
-        my $sprint_id = $cgi->param('sprintid');
-        $vars->{'sprintid'} = $sprint_id;
-        my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
-        if (defined $sprint && ref($sprint)) {
-            $vars->{'sprintname'}        = $sprint->name();
-            $vars->{'description'}       = $sprint->description();
-            $vars->{'start_date'}        = $sprint->start_date();
-            $vars->{'end_date'}          = $sprint->end_date();
-            $vars->{'estimatedcapacity'} = $sprint->estimated_capacity();
-            $vars->{'personcapacity'}    = $sprint->get_person_capacity();
-
-            $previous_sprint = $sprint->get_previous_sprint();
-        }
-    }
-
-    if (defined $previous_sprint && ref($previous_sprint)) {
-        my $pred_estimate = $previous_sprint->get_predictive_estimate();
-        $vars->{'prediction'} = $pred_estimate->{'prediction'};
-        $vars->{'history'}    = $pred_estimate->{'history'};
-    }
-    else {
-        $vars->{'prediction'} = '-';
-    }
-}
-
-sub show_team_and_sprints {
-    my ($vars) = @_;
-
-    my $error = "";
-    my $cgi   = Bugzilla->cgi;
-    my $sprint_id;
-
-    if ($cgi->param('newsprint') && $cgi->param('newsprint') ne "") {
-        _new_sprint($vars);
-    }
-    elsif ($cgi->param('editsprint') && $cgi->param('editsprint') ne "") {
-        my $sprint_id = $cgi->param('sprintid');
-        if ($sprint_id ne "") {
-            if ($sprint_id =~ /^([0-9]+)$/) {
-                $sprint_id = $1;    # $data now untainted
-                _update_sprint($vars, $sprint_id);
-            }
-            else {
-                ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => " Invalid Sprint ID" });
-            }
-        }
-    }
-    elsif ($cgi->param('deletesprint') && $cgi->param('deletesprint') ne "") {
-        $sprint_id = $cgi->param('sprintid');
-        if ($sprint_id =~ /^([0-9]+)$/) {
-            $sprint_id = $1;        # $data now untainted
-            _delete_sprint($vars, $sprint_id);
-        }
-    }
-    _show_team_bugs($vars);
 }
 
 sub update_team_bugs {
@@ -634,145 +495,6 @@ sub update_team_bugs {
     }
 }
 
-sub _new_sprint {
-    my ($vars) = @_;
-
-    my $cgi          = Bugzilla->cgi;
-    my $error        = "";
-    my $teamid       = $cgi->param('teamid');
-    my $name         = $cgi->param('sprintname');
-    my $description  = $cgi->param('description');
-    my $start_date   = $cgi->param('start_date');
-    my $end_date     = $cgi->param('end_date');
-    my $est_capacity = $cgi->param('estimatedcapacity');
-
-    ($error, $teamid, $name, $description, $start_date, $end_date, $est_capacity) =
-      _sanitise_sprint_data($teamid, $name, $description, $start_date, $end_date, $est_capacity);
-
-    if ($teamid and $name) {
-
-        my $err = Bugzilla::Extension::Scrums::Sprint->validate_span(undef, $teamid, $start_date, $end_date);
-
-        if ($err) {
-            $vars->{errors} = $err;
-        }
-        else {
-            my $sprint = Bugzilla::Extension::Scrums::Sprint->create(
-                                                                     {
-                                                                       team_id            => $teamid,
-                                                                       status             => "NEW",
-                                                                       name               => $name,
-                                                                       description        => $description,
-                                                                       item_type          => 1,
-                                                                       start_date         => $start_date,
-                                                                       end_date           => $end_date,
-                                                                       estimated_capacity => $est_capacity
-                                                                     }
-                                                                    );
-        }
-    }
-    else {
-        ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });
-    }
-}
-
-sub _update_sprint {
-    my ($vars, $sprint_id) = @_;
-
-    my $cgi          = Bugzilla->cgi;
-    my $error        = "";
-    my $teamid       = $cgi->param('teamid');
-    my $name         = $cgi->param('sprintname');
-    my $description  = $cgi->param('description');
-    my $start_date   = $cgi->param('start_date');
-    my $end_date     = $cgi->param('end_date');
-    my $est_capacity = $cgi->param('estimatedcapacity');
-
-    ($error, $teamid, $name, $description, $start_date, $end_date, $est_capacity) =
-      _sanitise_sprint_data($teamid, $name, $description, $start_date, $end_date, $est_capacity);
-
-    if ($teamid and $name) {
-        my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
-
-        my $err = Bugzilla::Extension::Scrums::Sprint->validate_span($sprint_id, $teamid, $start_date, $end_date);
-        if ($err) {
-            $vars->{errors} = $err;
-        }
-        else {
-            $sprint->set_name($name);
-            $sprint->set_start_date($start_date);
-            $sprint->set_end_date($end_date);
-            $sprint->set_description($description);
-            $sprint->set_estimated_capacity($est_capacity);
-            $sprint->update();
-        }
-    }
-    else {
-        ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => $error });
-    }
-}
-
-sub _delete_sprint {
-    my ($vars, $sprint_id) = @_;
-
-    my $sprint      = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
-    my $sprint_bugs = $sprint->get_bugs();
-    if (scalar @{$sprint_bugs} > 0) {
-        ThrowUserError('sprint_has_bugs');
-    }
-    $sprint->remove_from_db();
-}
-
-sub _sanitise_sprint_data {
-    my ($teamid, $name, $description, $start_date, $end_date, $est_capacity) = @_;
-    my $error = "";
-
-    if ($teamid =~ /^([0-9]+)$/) {
-        $teamid = $1;    # $data now untainted
-    }
-    else {
-        $error .= " Illegal team id";
-        $teamid = "";
-    }
-
-    if ($name =~ /^(\S.*)/) {
-        $name = $1;      # $data now untainted
-    }
-    else {
-        $error .= " Illegal name";
-        $name = "";
-    }
-
-    if ($description =~ /(.*)/) {
-        $description = $1;    # $data now untainted
-    }
-    else {
-        $error .= " Illegal description";
-        $description = "";
-    }
-
-    if ($start_date =~ /^(\d{4}-\d{1,2}-\d{1,2})/) {
-        $start_date = $1;     # $data now untainted
-    }
-    else {
-        $error .= " Illegal start date";
-        $start_date = undef;
-    }
-
-    if ($end_date =~ /^(\d{4}-\d{1,2}-\d{1,2})/) {
-        $end_date = $1;       # $data now untainted
-    }
-    else {
-        $error .= " Illegal end date";
-        $end_date = undef;
-    }
-
-    if ($est_capacity =~ /(.*)/) {
-        $est_capacity = $1;    # $data now untainted
-    }
-
-    return ($error, $teamid, $name, $description, $start_date, $end_date, $est_capacity);
-}
 
 sub _update_team {
     my ($team, $name, $owner, $scrum_master, $is_using_backlog) = @_;
@@ -830,15 +552,12 @@ Uses Scrums::Team
 
     use Bugzilla::Extension::Scrums::Teams;
 
-    Bugzilla::Extension::Scrums::Teams::ajax_sprint_bugs($vars);
     Bugzilla::Extension::Scrums::Teams::show_all_teams($vars);
     Bugzilla::Extension::Scrums::Teams::show_create_team($vars);
     Bugzilla::Extension::Scrums::Teams::add_into_team($vars);
     Bugzilla::Extension::Scrums::Teams::search_person($vars);
     Bugzilla::Extension::Scrums::Teams::edit_team($vars);
-    Bugzilla::Extension::Scrums::Teams::show_team_and_sprints($vars);
-    Bugzilla::Extension::Scrums::Teams::show_archived_sprints($vars);
-    Bugzilla::Extension::Scrums::Teams::edit_sprint($vars);
+    Bugzilla::Extension::Scrums::Teams::show_team_bugs($vars);
     Bugzilla::Extension::Scrums::Teams::update_team_bugs($vars, $list_is_backlog);
 
 =head1 DESCRIPTION
@@ -849,7 +568,7 @@ Teams.pm is a library, that contains all teams related functionalities. It is in
 
 =over
 
-=item C<ajax_sprint_bugs($vars)>
+=item C<show_sprint($vars)>
 
  Description: Fetches data of given sprint to be formatted as Json-sprint.
 

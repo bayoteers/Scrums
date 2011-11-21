@@ -166,27 +166,6 @@ function create_sprint(result)
 	return;
     }
 
-    if (data.name)
-    {
-        var sprint_select_name = data.name;
-        if (data.is_current)
-        {
-            sprint_select_name = '*'+sprint_select_name;
-        }
-        s_option = $('#selected_sprint option[value='+data.id+']');
-        if (s_option.val())
-        {
-            s_option.text(sprint_select_name);
-        } else
-        { 
-            $('#selected_sprint').children().each(function () { $(this).removeAttr('selected');});
-            $('#selected_sprint option:last-child').before('<option value="'+data.id+'" selected="selected">'+sprint_select_name+'</option>');
-        }
-        show_sprint(result);
-    } else {
-        $('#selected_sprint option').each(function () { if ($(this).attr('selected')) { $(this).remove(); return false; };});
-        $('#selected_sprint option').first().attr('selected', 'selected');
-        get_sprint();
-    }
+    window.location.reload();
 }
 

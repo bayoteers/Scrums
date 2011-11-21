@@ -30,6 +30,7 @@ use Bugzilla::Error;
 use Bugzilla::Group;
 use Bugzilla::User;
 
+use Bugzilla::Extension::Scrums::Sprinthandle;
 use Bugzilla::Extension::Scrums::Teams;
 use Bugzilla::Extension::Scrums::Releases;
 use Bugzilla::Extension::Scrums::Sprintslib;
@@ -585,21 +586,20 @@ sub page_before_template {
         my $cgi    = Bugzilla->cgi;
         my $schema = "";
         $schema = $cgi->param('schema');
-        if ($schema && $schema eq "newsprint") {
-            $vars->{'editsprint'} = 1;
-            $cgi->param(-name => 'editsprint', -value => 'true');
-            my $sprintid = _new_sprint($vars);
+        if ($cgi->param("deletesprint")) {
+            Bugzilla::Extension::Scrums::Teams::delete_sprint();
+        }
+        elsif ($schema && $schema eq "newsprint") {
+            my $sprintid = new_sprint($vars);
             $cgi->param(-name => 'sprintid', -value => $sprintid);
-            Bugzilla::Extension::Scrums::Teams::ajax_sprint_bugs($vars);
+            Bugzilla::Extension::Scrums::Teams::show_sprint($vars);
         }
         elsif ($schema && $schema eq "editsprint") {
-            $vars->{'editsprint'} = 1;
-            Bugzilla::Extension::Scrums::Teams::show_team_and_sprints($vars);
-            Bugzilla::Extension::Scrums::Teams::ajax_sprint_bugs($vars);
-
+            Bugzilla::Extension::Scrums::Teams::update_sprint($vars);
+            Bugzilla::Extension::Scrums::Teams::show_sprint($vars);
         }
         else {
-            Bugzilla::Extension::Scrums::Teams::ajax_sprint_bugs($vars);
+            Bugzilla::Extension::Scrums::Teams::show_sprint($vars);
         }
     }
     elsif ($page eq 'scrums/ajaxbuglist.html') {
@@ -626,7 +626,7 @@ sub page_before_template {
         }
     }
     elsif ($page eq 'scrums/teambugs.html' || $page eq 'scrums/dailysprint.html' || $page eq 'scrums/backlogplanning.html') {
-        Bugzilla::Extension::Scrums::Teams::show_team_and_sprints($vars);
+        Bugzilla::Extension::Scrums::Teams::show_team_bugs($vars);
     }
     elsif ($page eq 'scrums/archivedsprints.html') {
         Bugzilla::Extension::Scrums::Teams::show_archived_sprints($vars);
