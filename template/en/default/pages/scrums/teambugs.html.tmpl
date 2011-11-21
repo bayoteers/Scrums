@@ -200,7 +200,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
         }, renderSprint        , 'json');
     [% ELSE %]
         bind_items_to_list(sprint, []); // Bug list is empty since there is even no sprint
-        sprint_rendered = true; 	// There is no point in waiting for sprint to arrive, that does not even exist.
+        sprint_rendered = true;         // There is no point in waiting for sprint to arrive, that does not even exist.
     [% END %]
 
     [% IF team.is_using_backlog() %]
@@ -209,7 +209,7 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
         }, renderBacklog, 'json');
     [% ELSE %]
         $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-	    action: "other_items_than_in_active_sprint",
+            action: "other_items_than_in_active_sprint",
             team_id: [% team.id() %]
         }, renderBacklog, 'json');
     [% END %]
@@ -219,9 +219,9 @@ function refresh_sprint_capacity(estimatedcapacity, bug_list) {
     get_sprint();
 
     $(window).unload(
-    	function() 
-    	{
-	    detect_unsaved_change(); 
+        function() 
+        {
+            detect_unsaved_change(); 
         } 
     );
 
@@ -251,13 +251,13 @@ function check_receive_status()
 {
     if(initialised) 
     {
-	render_all();
+        render_all();
     }
     else if(backlog_rendered && sprint_rendered && sprint_info_showed)
     {
-	render_all();
-	initialised = true;
-	toggle_scroll();
+        render_all();
+        initialised = true;
+        toggle_scroll();
     }
 }
 

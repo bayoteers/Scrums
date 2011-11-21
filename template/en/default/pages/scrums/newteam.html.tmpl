@@ -95,10 +95,10 @@
     <tr>
       <td><b>Team uses backlog:</b></td>
       <td>
-	<select name="usesbacklog"/>
-	  <option value="1" [% IF team && team.is_using_backlog() %]selected="true"[% END %]>Yes</option>
-	  <option value="0" [% IF team && !team.is_using_backlog() %]selected="true"[% END %]>No</option>
-	</select>
+        <select name="usesbacklog"/>
+          <option value="1" [% IF team && team.is_using_backlog() %]selected="true"[% END %]>Yes</option>
+          <option value="0" [% IF team && !team.is_using_backlog() %]selected="true"[% END %]>No</option>
+        </select>
       </td>
       <td>&nbsp;</td>
     </tr>

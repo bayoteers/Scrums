@@ -60,7 +60,7 @@
   {
       var saved_lists = [];
       saved_lists.push(all_lists[0]);
-      saved_lists.push(backlog);	// Idle list
+      saved_lists.push(backlog);        // Idle list
       saved_lists.push(all_lists[1]);
       do_save(saved_lists);
   }
@@ -78,7 +78,7 @@
         }, renderSprint, 'json');
     [% ELSE %]
         bind_items_to_list(sprint, []); // Bug list is empty since there is even no sprint
-        sprint_rendered = true; 	// There is no point in waiting for sprint to arrive, that does not even exist.
+        sprint_rendered = true;         // There is no point in waiting for sprint to arrive, that does not even exist.
     [% END %]
 
     $.post('page.cgi?id=scrums/ajaxbuglist.html', {
@@ -86,14 +86,14 @@
     }, receiveBacklog, 'json');
 
     $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-	action: "unprioritised_bugs",
+        action: "unprioritised_bugs",
         team_id: [% team.id() %]
     }, renderItems, 'json');
 
     $(window).unload(
-    	function() 
-    	{
-	    detect_unsaved_change(); 
+        function() 
+        {
+            detect_unsaved_change(); 
         } 
     );
   });
@@ -132,13 +132,13 @@ function check_receive_status()
 {
     if(initialised) 
     {
-	render_all();
+        render_all();
     }
     else if(unordered_items_rendered && sprint_rendered && backlog_received)
     {
-	render_all();
-	initialised = true;
-	toggle_scroll();
+        render_all();
+        initialised = true;
+        toggle_scroll();
     }
 }
 

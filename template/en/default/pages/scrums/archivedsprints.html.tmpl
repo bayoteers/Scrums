@@ -50,11 +50,11 @@ var sprint_list_data = {[% FOREACH team_sprint IN team_sprints_array %] [% team_
 
         // Static list instead of sortable
 
-	html = create_list_html(list);
-	html += '<a href="page.cgi?id=scrums/sprintburndown.html&#038;sprintid=' + list.id + '">Burndown Chart</a>';
+        html = create_list_html(list);
+        html += '<a href="page.cgi?id=scrums/sprintburndown.html&#038;sprintid=' + list.id + '">Burndown Chart</a>';
 
         $(html).appendTo($('#sprints'));
-	bind_items_to_list(list, sprint_list_data[id][1]);
+        bind_items_to_list(list, sprint_list_data[id][1]);
         update_lists(list, 0);
 
         // expand collapse

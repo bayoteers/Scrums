@@ -240,7 +240,12 @@ function switch_lists(ui, lists) {
     var changed = check_if_changed();
 
     var elem = $("#save_button");
+    var disabled_before = elem[0].disabled;
     elem[0].disabled = !changed;
+    if(disabled_before && changed)
+    {
+        elem[0].focus();
+    }
 
     $('#'+bug_id).children().each(function ()
     {
@@ -417,7 +422,9 @@ function saveResponse(response, status, xhr)
 	}
 	else
 	{
-    	    var elem = $("#save_button");
+            var elem = $("input.toggle_scroll");
+            elem[0].focus();
+            elem = $("#save_button");
             elem[0].disabled = true;
 	}
         if(retObj.warnings)
