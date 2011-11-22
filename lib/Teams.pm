@@ -401,7 +401,6 @@ sub edit_team {
     $vars->{'scrummasterloginname'} = $cgi->param('scrummasterloginname');
 }
 
-
 # Show team bugs is a whole, which consists of team, sprints of team and
 # list of bugs (ids) that belong to sprints
 sub show_team_bugs {
@@ -495,13 +494,12 @@ sub update_team_bugs {
     }
 }
 
-
 sub _update_team {
     my ($team, $name, $owner, $scrum_master, $is_using_backlog) = @_;
 
     my $error = "";
     if ($name =~ /^([-\ \w]+)$/) {
-        $name = $1;            # $data now untainted
+        $name = $1;    # $data now untainted
     }
     else {
         $error = " Illegal name";
@@ -509,7 +507,7 @@ sub _update_team {
     }
 
     if ($owner =~ /^([0-9]+)$/) {
-        $owner = $1;           # $data now untainted
+        $owner = $1;    # $data now untainted
     }
     else {
         $error .= " Illegal owner";

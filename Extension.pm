@@ -587,19 +587,19 @@ sub page_before_template {
         my $schema = "";
         $schema = $cgi->param('schema');
         if ($cgi->param("deletesprint")) {
-            Bugzilla::Extension::Scrums::Teams::delete_sprint();
+            Bugzilla::Extension::Scrums::Sprinthandle::delete_sprint();
+            # Page is re-loaded after deleting active sprint
         }
         elsif ($schema && $schema eq "newsprint") {
-            my $sprintid = new_sprint($vars);
-            $cgi->param(-name => 'sprintid', -value => $sprintid);
-            Bugzilla::Extension::Scrums::Teams::show_sprint($vars);
+            my $sprintid = Bugzilla::Extension::Scrums::Sprinthandle::new_sprint($vars);
+            # Page is re-loaded after creating new sprint
         }
         elsif ($schema && $schema eq "editsprint") {
-            Bugzilla::Extension::Scrums::Teams::update_sprint($vars);
-            Bugzilla::Extension::Scrums::Teams::show_sprint($vars);
+            Bugzilla::Extension::Scrums::Sprinthandle::update_sprint($vars);
+            Bugzilla::Extension::Scrums::Sprinthandle::show_sprint($vars);
         }
         else {
-            Bugzilla::Extension::Scrums::Teams::show_sprint($vars);
+            Bugzilla::Extension::Scrums::Sprinthandle::show_sprint($vars);
         }
     }
     elsif ($page eq 'scrums/ajaxbuglist.html') {
@@ -629,7 +629,7 @@ sub page_before_template {
         Bugzilla::Extension::Scrums::Teams::show_team_bugs($vars);
     }
     elsif ($page eq 'scrums/archivedsprints.html') {
-        Bugzilla::Extension::Scrums::Teams::show_archived_sprints($vars);
+        Bugzilla::Extension::Scrums::Sprinthandle::show_archived_sprints($vars);
     }
     elsif ($page eq "scrums/ajax.html") {
         my $cgi    = Bugzilla->cgi;

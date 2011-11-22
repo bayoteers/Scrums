@@ -19,7 +19,7 @@
 # Contributor(s):
 #   Visa Korhonen <visa.korhonen@symbio.com>
 
-package Bugzilla::Extension::Scrums::Teams;
+package Bugzilla::Extension::Scrums::Sprinthandle;
 
 use Bugzilla::Extension::Scrums::Team;
 use Bugzilla::Extension::Scrums::Sprint;
@@ -39,7 +39,6 @@ our @EXPORT = qw(
   show_sprint
   show_archived_sprints
   );
-
 
 sub show_sprint {
     my ($vars) = @_;
@@ -117,6 +116,7 @@ sub new_sprint {
     my $start_date   = $cgi->param('start_date');
     my $end_date     = $cgi->param('end_date');
     my $est_capacity = $cgi->param('estimatedcapacity');
+    my $take_bugs    = $cgi->param('takebugs');
 
     ($error, $teamid, $name, $description, $start_date, $end_date, $est_capacity) =
       _sanitise_sprint_data($teamid, $name, $description, $start_date, $end_date, $est_capacity);
@@ -128,20 +128,44 @@ sub new_sprint {
 
         if ($err) {
             $vars->{errors} = $err;
+            return;
         }
         else {
+
+            my $team           = Bugzilla::Extension::Scrums::Team->new($teamid);
+            my $current_sprint = $team->get_team_current_sprint();
+
+            # It looks like this transaction would not work at all because method Bugzilla::Object::Unpdate
+            # does not allow database handle to be given as parameter. That would mean, that
+            # new transaction will be started in update method although another transaction already started.
+            # This might not however have effect. According to Bugzilla documentation transaction
+            # can be started inside another transaction, but commit will not be done unless
+            # commit method is called as many times as transaction has been started. If this holds,
+            # it would have exactly wanted result.
             $sprint = Bugzilla::Extension::Scrums::Sprint->create(
-                                                                     {
-                                                                       team_id            => $teamid,
-                                                                       status             => "NEW",
-                                                                       name               => $name,
-                                                                       description        => $description,
-                                                                       item_type          => 1,
-                                                                       start_date         => $start_date,
-                                                                       end_date           => $end_date,
-                                                                       estimated_capacity => $est_capacity
-                                                                     }
-                                                                    );
+                                                                  {
+                                                                    team_id            => $teamid,
+                                                                    status             => "NEW",
+                                                                    name               => $name,
+                                                                    description        => $description,
+                                                                    item_type          => 1,
+                                                                    start_date         => $start_date,
+                                                                    end_date           => $end_date,
+                                                                    estimated_capacity => $est_capacity
+                                                                  }
+                                                                 );
+
+            if ($take_bugs) {
+                my $bug_id_array = $current_sprint->get_remaining_item_array();
+                my $bug_array    = Bugzilla::Bug->new_from_list($bug_id_array);
+
+                my $dbh = Bugzilla->dbh;
+                $dbh->bz_start_transaction();
+
+                $sprint->initialise_with_old_bugs($bug_array);
+
+                $dbh->bz_commit_transaction();
+            }
         }
     }
     else {
@@ -170,7 +194,6 @@ sub update_sprint {
         ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => " Invalid Sprint ID" });
     }
 
-
     ($error, $teamid, $name, $description, $start_date, $end_date, $est_capacity) =
       _sanitise_sprint_data($teamid, $name, $description, $start_date, $end_date, $est_capacity);
 
@@ -196,10 +219,10 @@ sub update_sprint {
 }
 
 sub delete_sprint {
-    my $cgi          = Bugzilla->cgi;
+    my $cgi       = Bugzilla->cgi;
     my $sprint_id = $cgi->param('sprintid');
     if ($sprint_id =~ /^([0-9]+)$/) {
-        $sprint_id = $1;        # $data now untainted
+        $sprint_id = $1;    # $data now untainted
     }
     else {
         ThrowUserError('scrums_team_can_not_be_updated', { invalid_data => " Invalid Sprint ID" });

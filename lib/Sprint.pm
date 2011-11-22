@@ -645,6 +645,31 @@ sub set_start_date         { $_[0]->set('start_date',         $_[1]); }
 sub set_end_date           { $_[0]->set('end_date',           $_[1]); }
 sub set_estimated_capacity { $_[0]->set('estimated_capacity', $_[1]); }
 
+sub initialise_with_old_bugs {
+    my $self                 = shift;
+    my ($bug_array)          = @_;
+    my $dbh                  = Bugzilla->dbh;
+    my $number_of_added_bugs = scalar @{$bug_array};
+
+    my $team    = $self->get_team();
+    my $orders  = $team->get_active_sprints_bug_orders();
+    my $counter = 1;
+    for my $item_order (@{$orders}) {
+        $item_order->set_team_order($counter + $number_of_added_bugs);
+        $item_order->update();
+        $counter = $counter + 1;
+    }
+    $counter = 1;
+    for my $bug (@{$bug_array}) {
+        my $bug_id = $bug->id();
+        $dbh->do('INSERT INTO scrums_sprint_bug_map (bug_id, sprint_id) values (?, ?)', undef, $bug_id, $self->{'id'});
+        my $item_order = Bugzilla::Extension::Scrums::Bugorder->new($bug_id);
+        $item_order->set_team_order($counter);
+        $item_order->update();
+        $counter = $counter + 1;
+    }
+}
+
 ###############################
 ### Testing utility methods ###
 ###############################

@@ -19,11 +19,28 @@ function create_sprint_form_html(sprint, sprintid, edit)
     } 
     else 
     {
+        buttons_str += '<input type="hidden" id="takebugs" name="takebugs" value="" />';
         buttons_str += '<input type="hidden" name="schema" value="newsprint" />';
-        buttons_str += '<input type="submit" name="newsprint" value="Create" onclick="return checkvalues();"/>';
+        buttons_str += '<input type="submit" name="newsprint" value="Create" onclick="return checknewsprint();"/>';
     }
     template = template.replace('<buttonssection>', buttons_str);
     return template;
+}
+
+function checknewsprint()
+{
+    if(checkvalues()) 
+    {
+        if(confirm('Do you want to move open bugs from previous sprint into new sprint?'))
+        {
+            $('#takebugs').attr({"value": "true"});
+        }
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 function show_sprint(result)
@@ -165,7 +182,6 @@ function create_sprint(result)
 	alert(result.errormsg);
 	return;
     }
-
     window.location.reload();
 }
 
