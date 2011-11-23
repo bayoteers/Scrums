@@ -155,17 +155,16 @@ sub new_sprint {
                                                                   }
                                                                  );
 
+            my $bug_array = [];
             if ($take_bugs) {
                 my $bug_id_array = $current_sprint->get_remaining_item_array();
-                my $bug_array    = Bugzilla::Bug->new_from_list($bug_id_array);
-
-                my $dbh = Bugzilla->dbh;
-                $dbh->bz_start_transaction();
-
-                $sprint->initialise_with_old_bugs($bug_array);
-
-                $dbh->bz_commit_transaction();
+                $bug_array    = Bugzilla::Bug->new_from_list($bug_id_array);
             }
+
+            my $dbh = Bugzilla->dbh;
+            $dbh->bz_start_transaction();
+            $sprint->initialise_with_old_bugs($bug_array);
+            $dbh->bz_commit_transaction();
         }
     }
     else {
