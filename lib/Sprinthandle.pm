@@ -158,7 +158,7 @@ sub new_sprint {
             my $bug_array = [];
             if ($take_bugs) {
                 my $bug_id_array = $current_sprint->get_remaining_item_array();
-                $bug_array    = Bugzilla::Bug->new_from_list($bug_id_array);
+                $bug_array = Bugzilla::Bug->new_from_list($bug_id_array);
             }
 
             my $dbh = Bugzilla->dbh;
@@ -196,7 +196,7 @@ sub update_sprint {
     ($error, $teamid, $name, $description, $start_date, $end_date, $est_capacity) =
       _sanitise_sprint_data($teamid, $name, $description, $start_date, $end_date, $est_capacity);
 
-    if ($teamid and $name) {
+    if ($sprint_id and $name) {
         my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
 
         my $err = Bugzilla::Extension::Scrums::Sprint->validate_span($sprint_id, $teamid, $start_date, $end_date);
@@ -302,11 +302,13 @@ Uses Scrums::Sprint
 
     Bugzilla::Extension::Scrums::Teams::show_sprint($vars);
     Bugzilla::Extension::Scrums::Teams::show_archived_sprints($vars);
-    Bugzilla::Extension::Scrums::Teams::edit_sprint($vars);
+    Bugzilla::Extension::Scrums::Teams::new_sprint($vars);
+    Bugzilla::Extension::Scrums::Teams::update_sprint($vars);
+    Bugzilla::Extension::Scrums::Teams::delete_sprint($vars);
 
 =head1 DESCRIPTION
 
-???????Teams.pm is a library, that contains all teams related functionalities. It is interface to server and its functions must be called with CGI-variables in hash-map.
+Sprinthandle.pm is a library, that contains all functionalities related manipulating sprint object. It is interface to server and its functions must be called with CGI-variables in hash-map.
 
 =head1 METHODS
 
@@ -339,32 +341,43 @@ Uses Scrums::Sprint
               team_sprints_array   - Array of Bugzilla::Extension::Scrums::Sprint objects
 
 
-=item C<edit_sprint($vars)>
+=item C<new_sprint($vars)>
 
- Description: Returns name of the team.
+ Description: Creates new Sprint object and moves open bugs from old sprint to new, if requested.
 
- cgi:         The hashref must have the following keys: 
-              sprintid             - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
+ Params:      teamid               - Id (integer) of Bugzilla::Extension::Scrums::Team object
+              sprintname           - Name of sprint
+              description          - Description of sprint
+              start_date           - Startind day of sprint
+              end_date             - Ending day of sprint
+              estimatedcapacity    - Estimated capacity of the sprint in hours
+              takebugs             - Indicates, that old open bugs are to be moved into created sprint
 
- Returns:     The vars-hashref is added the following keys:
-              sprintname           - Name of given sprint (string)
-              description          - Description of given sprint (string)
-              start_date           - Starting date (string in format 'yyyy-mm-dd').
-              end_date             - Ending date (string in format 'yyyy-mm-dd')
-              estimatedcapacity    - Estimate of capacity, that is availabe for implementing sprint.
-              personcapacity       - Number of people, who have been allocated to sprint weighted with estimated effort in sprint of each person. 
-              prediction           - Number of hours as history based prediction
-              history              - Sprint history data
+ Returns:     Id (integer) of Bugzilla::Extension::Scrums::Sprint object.
 
 
-=item C<create_sprint($vars)>
+=item C<update_sprint($vars)>
 
- Description: Returns name of the team.
+ Description: 
 
- Params:      none.
+ Params:      sprintid             - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
+              teamid               - Id (integer) of Bugzilla::Extension::Scrums::Team object
+              sprintname           - Name of sprint
+              description          - Description of sprint
+              start_date           - Startind day of sprint
+              end_date             - Ending day of sprint
+              estimatedcapacity    - Estimated capacity of the sprint in hours
 
- Returns:     String.
+ Returns:     Nothing.
 
+
+=item C<delete_sprint($vars)>
+
+ Description: Deletes sprint from database
+
+ Params:      sprintid             - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
+
+ Returns:     Nothing.
 
 =back
 

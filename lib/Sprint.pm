@@ -1033,6 +1033,7 @@ Bugzilla::Extension::Scrums::Sprint - Scrums sprint class.
     $sprint->get_remaining_item_array();
     $sprint->get_biggest_team_order();
     $sprint->is_item_in_sprint($bug_id);
+    $sprint->initialise_with_old_bugs($bug_array);
 
     $sprint->add_bug_into_sprint($added_bug_id, $insert_after_bug_id, $vars);
     $sprint->add_bug_into_team_order($dbh, $added_bug_id, $new_bug_team_order_number, $previous_team_order_for_bug, $vars);
@@ -1327,7 +1328,17 @@ start and end dates. Item type separates these two applications of this same cla
  Params:      $user_id  - Id (integer) of a Bugzilla::User object.
               $capacity - Decimal number with two fractional digits
 
- Returns:     nothing.
+ Returns:     Nothing.
+
+
+=item C<initialise_with_old_bugs()>
+
+ Description: Puts open bugs from previous sprint into newly created sprint as starting point.
+
+ Params:      $bug_array - Reference to array of Bugzilla::Bug objects.
+
+ Returns:     Nothing.
+
 
 =item C<add_bug_into_sprint($added_bug_id, $insert_after_bug_id, $vars)>
 

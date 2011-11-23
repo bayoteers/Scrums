@@ -401,8 +401,7 @@ sub edit_team {
     $vars->{'scrummasterloginname'} = $cgi->param('scrummasterloginname');
 }
 
-# Show team bugs is a whole, which consists of team, sprints of team and
-# list of bugs (ids) that belong to sprints
+# Show team bugs is a whole, which consists of team and active sprints of team
 sub show_team_bugs {
     my ($vars) = @_;
 
@@ -566,21 +565,6 @@ Teams.pm is a library, that contains all teams related functionalities. It is in
 
 =over
 
-=item C<show_sprint($vars)>
-
- Description: Fetches data of given sprint to be formatted as Json-sprint.
-
- vars:        The hashref must have the following keys:
-              sprint_id       - id of a Bugzilla::Extension::Scrums::Sprint object of team owner.
-
- Returns:     The vars-hashref is added the following keys:
-	      sprint		 - Sprint object including its items
-              prediction         - Predictive estimate, that is based on history data
-              history		 - History data of previous sprints
-              estimatedcapacity  - Estimated capacity of the sprint in hours
-              personcapacity     - Estimated effort of the sprint as allocated persons
-
-
 =item C<show_all_teams($vars)>
 
  Description: Returns name of the team.
@@ -608,8 +592,6 @@ Teams.pm is a library, that contains all teams related functionalities. It is in
               userid             - Updated owner of the team, Id (integer) of a Bugzilla::User object
               scrummasterid      - Updated scrum master of the team, Id (integer) of a Bugzilla::User object
               usesbacklog        - Whether team uses backlog or not (when team information is updated)
-              userid             - User, who is either added or removed from team, id (integer) of a Bugzilla::User object
-              addintoteam        - Indicates, that user is added to team. This variable is either defined or not.
 
 
  Returns:     The vars-hashref is added the following keys:
@@ -621,7 +603,7 @@ Teams.pm is a library, that contains all teams related functionalities. It is in
 
 =item C<add_into_team($vars)>
 
- Description: Puts given user information into template variable.
+ Description: Puts given user information into template variables.
 
  Returns:     The vars-hashref is added the following keys, that are all read from cgi-hashref:
               userid             - Id (integer) of a Bugzilla::User object
@@ -666,16 +648,12 @@ Teams.pm is a library, that contains all teams related functionalities. It is in
               scrummasterrealname  - Real name from Bugzilla::User object
               scrummasterloginname - Login name from Bugzilla::User object
 
-=item C<show_team_and_sprints($vars)>
+=item C<show_team_bugs($vars)>
 
- Description: Either creates a new sprint or updates or deletes an old one. 
-              Also puts all needed information of team into template variables.
+ Description: Fetches all information of a team into template variables.
 
  cgi:         The hashref must have the following keys: 
-              newsprint            - Indicates, that new sprint is created. This variable is either defined or not.
-              editsprint           - Indicates, that sprint is edited. This variable is either defined or not.
-              sprintid             - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
-              deletesprint         - Indicates, that sprint is deleted. This variable is either defined or not.
+              teamid               - Id (integer) of Bugzilla::Extension::Scrums::Team object
 
  Returns:     The vars-hashref is added the following keys:
               team                 - Bugzilla::Extension::Scrums::Team object
@@ -685,44 +663,11 @@ Teams.pm is a library, that contains all teams related functionalities. It is in
               history              - Sprint history information
               active_sprint_id     - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
               backlog_id           - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
+              bug_status_open      - List of all bug states, that are open
+              components           - List of all components of team
+              products             - List of products, that team's components belong
+              classifications      - List of classifications, that team's components belong
 
-=item C<show_archived_sprints($vars)>
-
- Description: Puts information of archived sprints into template variables.
-
- cgi:         The hashref must have the following keys: 
-              teamid               - Id (integer) of Bugzilla::Extension::Scrums::Team object
-
- Returns:     The vars-hashref is added the following keys:
-              team                 - Bugzilla::Extension::Scrums::Team object
-              team_sprints_array   - Array of Bugzilla::Extension::Scrums::Sprint objects
-
-
-=item C<edit_sprint($vars)>
-
- Description: Returns name of the team.
-
- cgi:         The hashref must have the following keys: 
-              sprintid             - Id (integer) of Bugzilla::Extension::Scrums::Sprint object
-
- Returns:     The vars-hashref is added the following keys:
-              sprintname           - Name of given sprint (string)
-              description          - Description of given sprint (string)
-              start_date           - Starting date (string in format 'yyyy-mm-dd').
-              end_date             - Ending date (string in format 'yyyy-mm-dd')
-              estimatedcapacity    - Estimate of capacity, that is availabe for implementing sprint.
-              personcapacity       - Number of people, who have been allocated to sprint weighted with estimated effort in sprint of each person. 
-              prediction           - Number of hours as history based prediction
-              history              - Sprint history data
-
-
-=item C<create_sprint($vars)>
-
- Description: Returns name of the team.
-
- Params:      none.
-
- Returns:     String.
 
 
 =item C<update_team_bugs($vars, $list_is_backlog)>
