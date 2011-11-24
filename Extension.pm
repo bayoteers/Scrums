@@ -568,13 +568,6 @@ sub page_before_template {
     elsif ($page eq 'scrums/createteam.html') {
         Bugzilla::Extension::Scrums::Teams::show_create_team($vars);
     }
-    elsif ($page eq 'scrums/addintoteam.html') {
-        if (not Bugzilla->user->in_group('scrums_editteams')) {
-            ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
-        }
-
-        Bugzilla::Extension::Scrums::Teams::add_into_team($vars);
-    }
     elsif ($page eq 'scrums/searchperson.html') {
         Bugzilla::Extension::Scrums::Teams::search_person($vars);
     }

@@ -259,13 +259,13 @@
   [% END %]
 
   <form name="addmember" method="post" action="page.cgi" onsubmit="alert('submit');">
-    <input type="hidden" name="id" value="scrums/addintoteam.html"/>
+    <input type="hidden" name="id" value="scrums/createteam.html"/>
     <input type="hidden" name="teamid" value="[% team.id %]"/>
-    <input type="hidden" name="teamname" value="[% team.name %]"/>
     <input type="hidden" name="userid" />
-    <input type="hidden" name="userrealname" />
-    <input type="hidden" name="userlogin" />
-  </form>
+    <input type="hidden" name="userrealname" /> <!-- Field is not used. It exists because of compatibility -->
+    <input type="hidden" name="userlogin" />    <!-- Field is not used. It exists because of compatibility -->
+    <input type="hidden" name="addintoteam" value="true"/>
+ </form>
 
   <hr />
 
