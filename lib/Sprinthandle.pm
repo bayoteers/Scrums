@@ -174,7 +174,7 @@ sub new_sprint {
 }
 
 sub update_sprint {
-    my ($vars, $sprint_id) = @_;
+    my ($vars) = @_;
 
     my $cgi          = Bugzilla->cgi;
     my $error        = "";
@@ -300,11 +300,11 @@ Uses Scrums::Sprint
 
     use Bugzilla::Extension::Scrums::Sprinthandle;
 
-    Bugzilla::Extension::Scrums::Teams::show_sprint($vars);
-    Bugzilla::Extension::Scrums::Teams::show_archived_sprints($vars);
-    Bugzilla::Extension::Scrums::Teams::new_sprint($vars);
-    Bugzilla::Extension::Scrums::Teams::update_sprint($vars);
-    Bugzilla::Extension::Scrums::Teams::delete_sprint($vars);
+    Bugzilla::Extension::Scrums::Sprinthandle::show_sprint($vars);
+    Bugzilla::Extension::Scrums::Sprinthandle::show_archived_sprints($vars);
+    Bugzilla::Extension::Scrums::Sprinthandle::new_sprint($vars);
+    Bugzilla::Extension::Scrums::Sprinthandle::update_sprint($vars);
+    Bugzilla::Extension::Scrums::Sprinthandle::delete_sprint($vars);
 
 =head1 DESCRIPTION
 
