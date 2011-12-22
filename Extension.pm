@@ -553,7 +553,7 @@ sub page_before_template {
     elsif ($page eq 'scrums/scrums.html') {
         my $teams = Bugzilla::Extension::Scrums::Team->user_teams(Bugzilla->user->id());
         $vars->{'teams'} = $teams;
-
+        Bugzilla::Extension::Scrums::Teams::show_products($vars, $teams);
         my @sprints;
         for my $team (@{$teams}) {
             my $sprint = $team->get_team_current_sprint();

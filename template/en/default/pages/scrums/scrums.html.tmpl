@@ -23,6 +23,8 @@
     title = title 
 %]
 
+<script type="text/javascript" src="extensions/Scrums/web/js/CreateBug.js"></script>
+
 <style type="text/css">
   <!--
   .linklist img
@@ -36,6 +38,12 @@
   -->
 </style>
 
+<script type="text/javascript">
+var product_list = [
+  [% FOREACH product IN user_products %]
+   ['[% product.0 %]', '[% product.1 %]'][%- "," IF NOT loop.last %]
+  [% END %] ];
+</script>
 
 [% IF teams.size() < 1 %]
   <h1>Scrums</h1>
@@ -50,6 +58,14 @@
   [% ELSE %]
     [% large = 1 %]
   [% END %]
+  <span id="createbug">
+    <br>
+    <a href="" onclick="select_component(); return false;">
+      New bug
+    </a>
+  </span>
+  <br>
+  <hr>
 
   [% index = 0 %]
 

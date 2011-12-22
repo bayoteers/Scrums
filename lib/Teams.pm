@@ -41,6 +41,7 @@ our @EXPORT = qw(
   search_person
   edit_team
   show_team_bugs
+  show_products
   update_team_bugs
   );
 
@@ -460,6 +461,28 @@ sub show_team_bugs {
     $vars->{'products'}        = \@prod_names;
     $vars->{'classifications'} = \@class_names;
 }
+
+
+sub show_products {
+    my ($vars, $teams) = @_;
+
+    my @user_products;
+    for my $team (@{$teams}) {
+        my $components = $team->components();
+        for my $component (@{$components}) {
+
+            my $product = $component->product();
+            my $class_id = $product->classification_id();
+            my $class = Bugzilla::Classification->new($class_id);
+            my $complete_name = "\"" . $team->name() . "\" - " . $class->name() . " - " . $product->name()  . "/" . $component->name();
+            my $product_name = $product->name();
+            my @item = ($product_name, $complete_name);
+            push (@user_products, \@item);
+        }
+    }
+    $vars->{'user_products'} = \@user_products;
+}
+
 
 sub update_team_bugs {
     my ($vars, $list_is_backlog) = @_;
