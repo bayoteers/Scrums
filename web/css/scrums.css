@@ -46,6 +46,10 @@ table.dataTable td {
     border-top: 1px solid #999999;
     padding: 2px 3px 3px 4px;
 }
+table.dataTable tr:last-child td {
+    padding-top: 5px;
+    padding-bottom: 25px;
+}
 div.container {
     margin: 15px 0 0 0; 
 }
