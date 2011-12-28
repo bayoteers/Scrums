@@ -618,6 +618,15 @@ sub page_before_template {
             $vars->{'buglist'} = $sprint->get_bugs();
         }
     }
+    elsif ($page eq "scrums/ajaxblockinglist.html") {
+        my $cgi    = Bugzilla->cgi;
+        my $action    = $cgi->param('action');
+        if ($action && $action eq "blocking_items") {
+            my $bug_id   = $cgi->param('bug_id');
+            my $blocking_list = Bugzilla::Extension::Scrums::Sprint->get_blocking_item_list($bug_id);
+            $vars->{'blockinglist'} = $blocking_list;
+        }
+    }
     elsif ($page eq 'scrums/teambugs.html' || $page eq 'scrums/dailysprint.html' || $page eq 'scrums/backlogplanning.html') {
         Bugzilla::Extension::Scrums::Teams::show_team_bugs($vars);
     }

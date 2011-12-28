@@ -638,6 +638,24 @@ sub is_item_in_sprint {
     return ((scalar @matches) > 0);
 }
 
+sub get_blocking_item_list {
+    # Method is class method. Self is null.
+    my ($self, $bug_id) = @_;
+    my @blocking_list;
+    my @items_to_be_checked;
+    push (@items_to_be_checked, $bug_id);
+    while (scalar @items_to_be_checked > 0) {
+        my $temp_id = shift (@items_to_be_checked);
+        my $bug = Bugzilla::Bug->new($temp_id);
+        my $bug_blocking = $bug->dependson();
+        for my $blocking (@{$bug_blocking}) {
+            push (@items_to_be_checked, $blocking);
+            push (@blocking_list, $blocking);
+        }
+    }
+    return \@blocking_list;
+}
+
 sub set_name               { $_[0]->set('name',               $_[1]); }
 sub set_status             { $_[0]->set('status',             $_[1]); }
 sub set_description        { $_[0]->set('description',        $_[1]); }

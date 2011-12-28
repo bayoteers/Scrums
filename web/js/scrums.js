@@ -21,6 +21,8 @@
 
 // Global variable in page
 var show_scrollbars = false;
+var scrollbar_1_visible = false;
+var scrollbar_2_visible = false;
 
 function toggle_scroll()
 {
@@ -28,12 +30,10 @@ function toggle_scroll()
     render_all();
 }
 
-function render_all()
+function render_all(already_rendered)
 {
     var frame_height = 435;    
-    var scrollbar_1_visible = false;
-    var scrollbar_2_visible = false;
-    if(initialised && show_scrollbars) {
+    if(initialised && show_scrollbars && !already_rendered) {
 	var table_1_height = 0;
         $('#sprint .container').each(function (i, item)
         {
@@ -173,6 +173,7 @@ function switch_lists(ui, lists) {
 
     var skip_rows = 0;
     var prev_bug_id = -1;
+
     $("#" + lists[to_i].ul_id).children('tr').each(function(position, elem)
     {
         if ($(elem).attr('id') == '')
@@ -188,7 +189,16 @@ function switch_lists(ui, lists) {
             {
                 position = bug_positions[to_i][prev_bug_id] + 1;
             }
-            //lists[to_i].list.splice(position, 0, lists[from_i].list.splice(old_position, 1)[0]);
+
+            if(lists[to_i].id != -1)
+            {
+                var cancel = check_blocking_items(bug_id, to_i, position);
+                if(cancel) 
+                {
+                    render_all(true /* already_rendered */);
+                    return;
+                }
+            }
             var temp = lists[from_i].list.splice(old_position, 1);
 	    if(to_i == from_i && old_position < position) 
             {
@@ -198,7 +208,6 @@ function switch_lists(ui, lists) {
 	    {
             	lists[to_i].list.splice(position, 0, temp[0]);
 	    }
-
             update_positions(lists, to_i);
             update_positions(lists, from_i);
 
@@ -274,7 +283,6 @@ function bind_sortable_lists(lists) {
         },
         stop: function(event, ui) {
             switch_lists(ui, lists);
-//	    save_all();
         },
         items: 'tr:not(.ignoresortable)',
         helper: function(event , item)
@@ -572,3 +580,76 @@ function save(lists, schema, obj_id, data_lists) {
     }, saveResponse        , 'text');
 }
 
+var bugs = null;
+
+function check_blocking_items(moved_bug_id, to_i, position) {
+    all_lists[to_i]
+    bugs = "";
+    $.ajax({
+      async: false,
+      url: 'page.cgi?id=scrums/ajaxblockinglist.html',
+      data: {
+        action: 'blocking_items',
+        bug_id: moved_bug_id
+      },
+      success: blockingResponse
+    });
+
+    if(bugs.length > 0)
+    {
+        bugs = check_preceding_items(bugs, to_i, position);
+        if(bugs.length > 0)
+        {
+            var qstr = 'Item ' + moved_bug_id + ' depends on bug ' + bugs + '. Do you want to move ' + moved_bug_id + ' anyway?';
+            return !confirm(qstr); // true = cancel move
+        }
+    }
+    return false; // false = do not cancel
+}
+
+  function check_preceding_items(blocking_bugs, to_i, position)
+  {
+      var list_processed = false;
+      while(!list_processed)
+      {
+          var list_i = 0;
+          for (list_i = 0; list_i < all_lists.length; list_i++) 
+          {
+              var list = all_lists[list_i];
+	      if(list.id != -1)
+              {
+                  for (var i = 0; i < list.list.length; i++) 
+                  {
+                      if(list_i == to_i && i == position)
+                      {
+                          list_processed = true;
+                          break;
+                      }
+                      list_bug_id = list.list[i][0][0];
+                      for(var b = 0; b < blocking_bugs.length; b++)
+                      {
+		          if(blocking_bugs[b] == list_bug_id)
+                          {
+                              for(var x = b; x < (blocking_bugs.length - 1); x++)
+                              {
+                                  blocking_bugs[x] = blocking_bugs[x+1];
+                              }
+			      blocking_bugs.length = blocking_bugs.length - 1;
+                          }
+                      }
+                  }
+              }
+          }
+      }
+      return blocking_bugs;
+  }
+
+  function blockingResponse(response, status, xhr) {
+    var retObj = eval("(" + response + ")");
+
+    if (retObj.errors) {
+      alert("There are errors: " + retObj.errormsg);
+    } else {
+       bugs = retObj.data.bugs;
+    }
+  }
