@@ -613,6 +613,23 @@ sub get_remaining_item_array {
     return \@array;
 }
 
+# TODO FIX THIS! This method does not work correctly if sprint is empty. It gives the correct result (which is 0), but result is useless.
+sub get_smallest_team_order {
+    my $self = shift;
+
+    my $item_array      = $self->get_item_array();
+    my $number_of_items = (scalar @{$item_array});
+    if ($number_of_items > 0) {
+        my $first               = @{$item_array}[0];
+        my $smallest_order_item = Bugzilla::Extension::Scrums::Bugorder->new($first);
+        return $smallest_order_item->team_order();
+    }
+    else {
+        return 0;    # No items in sprint
+    }
+}
+
+# TODO FIX THIS! This method does not work correctly if sprint is empty. It gives the correct result (which is 0), but result is useless.
 sub get_biggest_team_order {
     my $self = shift;
 
@@ -643,14 +660,14 @@ sub get_blocking_item_list {
     my ($self, $bug_id) = @_;
     my @blocking_list;
     my @items_to_be_checked;
-    push (@items_to_be_checked, $bug_id);
+    push(@items_to_be_checked, $bug_id);
     while (scalar @items_to_be_checked > 0) {
-        my $temp_id = shift (@items_to_be_checked);
-        my $bug = Bugzilla::Bug->new($temp_id);
+        my $temp_id      = shift(@items_to_be_checked);
+        my $bug          = Bugzilla::Bug->new($temp_id);
         my $bug_blocking = $bug->dependson();
         for my $blocking (@{$bug_blocking}) {
-            push (@items_to_be_checked, $blocking);
-            push (@blocking_list, $blocking);
+            push(@items_to_be_checked, $blocking);
+            push(@blocking_list,       $blocking);
         }
     }
     return \@blocking_list;
@@ -692,25 +709,40 @@ sub initialise_with_old_bugs {
 ### Testing utility methods ###
 ###############################
 
-# Method updates team order only in those items, that are in current (this) sprint or
-# in product backlog. Any other sprints are considered inactive.
 sub add_bug_into_sprint {
     my $self = shift;
     my ($added_bug_id, $insert_after_bug_id, $vars) = @_;
+
+    my $dbh = Bugzilla->dbh;
+    $dbh->bz_start_transaction();
+
+    insert_into_sprint($dbh, $added_bug_id, $insert_after_bug_id, 0, $vars);
+
+    $dbh->bz_commit_transaction();
+}
+
+# Method updates team order only in those items, that are in current (this) sprint or
+# in product backlog. Any other sprints are considered inactive.
+sub insert_into_sprint {
+    my $self = shift;
+    my ($dbh, $added_bug_id, $insert_after_bug_id, $put_first, $vars) = @_;
     if ($vars) { $vars->{'output'} .= "add_bug_into_sprint - added_bug_id:" . $added_bug_id . " insert_after_bug_id:" . $insert_after_bug_id . "<br />"; }
 
     # Possible values of 'insert_after_bug_team_order_number' are between -1 and team order of last item
     # If value is -1, 'new_bug_team_order_number' will become 0, which means, that added item will become first in list.
     my $new_bug_team_order_number = 1;
-    if ($insert_after_bug_id && $self->is_item_in_sprint($insert_after_bug_id)) {
+    if ($put_first) {
+        $new_bug_team_order_number = $self->get_smallest_team_order();    # TODO fix get_smallest_team_order
+    }
+    elsif ($insert_after_bug_id && $self->is_item_in_sprint($insert_after_bug_id)) {
         my $item_order = Bugzilla::Extension::Scrums::Bugorder->new($insert_after_bug_id);
         $new_bug_team_order_number = $item_order->team_order() + 1;
     }
     else {
-        $new_bug_team_order_number = $self->get_biggest_team_order() + 1;
+        $new_bug_team_order_number = $self->get_biggest_team_order() + 1;    # TODO fix get_biggest_team_order
     }
 
-    # TODO REFACTOR! CREATE NEW METHOD IS_BUG_MOVING_INTO_BIGGER_ORDER
+    # TODO REFACTOR! Create new method is_bug_moving_into_bigger_order
     my $previous_team_order_for_bug = $self->_is_bug_in_team_order($added_bug_id, $vars);
     # Preceding bug 'insert_after_bug' moved one position. That is why added bug can be put into it's old position.
     # Index of insert_after_bug was searched by bug id after all.
@@ -718,12 +750,7 @@ sub add_bug_into_sprint {
         $new_bug_team_order_number = $new_bug_team_order_number - 1;
     }
 
-    my $dbh = Bugzilla->dbh;
-    $dbh->bz_start_transaction();
-
     $self->add_bug_into_team_order($dbh, $added_bug_id, $new_bug_team_order_number, $previous_team_order_for_bug, $vars);
-
-    $dbh->bz_commit_transaction();
 }
 
 sub add_bug_into_team_order {

@@ -620,9 +620,9 @@ sub page_before_template {
     }
     elsif ($page eq "scrums/ajaxblockinglist.html") {
         my $cgi    = Bugzilla->cgi;
-        my $action    = $cgi->param('action');
+        my $action = $cgi->param('action');
         if ($action && $action eq "blocking_items") {
-            my $bug_id   = $cgi->param('bug_id');
+            my $bug_id        = $cgi->param('bug_id');
             my $blocking_list = Bugzilla::Extension::Scrums::Sprint->get_blocking_item_list($bug_id);
             $vars->{'blockinglist'} = $blocking_list;
         }
@@ -637,7 +637,19 @@ sub page_before_template {
         my $cgi    = Bugzilla->cgi;
         my $schema = $cgi->param('schema');
 
-        if ($schema eq "personcapacity") {
+        my $action = $cgi->param('action');
+        if ($action && $action eq "move_pending_items") {
+            # TODO database locking for this feature
+            my $data    = $cgi->param('data');
+            my $team_id = $cgi->param('obj_id');
+            if ($schema eq "backlog") {
+                Bugzilla::Extension::Scrums::Teams::move_pending_items($data, 1, $team_id);
+            }
+            else {
+                Bugzilla::Extension::Scrums::Teams::move_pending_items($data, 0, $team_id);
+            }
+        }
+        elsif ($schema eq "personcapacity") {
             my $data = $cgi->param('data');
             Bugzilla::Extension::Scrums::Sprintslib::handle_person_capacity($data, $vars);
         }
@@ -648,7 +660,7 @@ sub page_before_template {
             Bugzilla::Extension::Scrums::Teams::update_team_bugs($vars, 1);
         }
         else {
-            Bugzilla::Extension::Scrums::Teams::update_team_bugs($vars, 1);
+            Bugzilla::Extension::Scrums::Teams::update_team_bugs($vars, 0);
         }
     }
     elsif ($page eq 'scrums/newsprint.html') {

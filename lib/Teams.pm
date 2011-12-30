@@ -43,6 +43,7 @@ our @EXPORT = qw(
   show_team_bugs
   show_products
   update_team_bugs
+  move_pending_items
   );
 
 # This file can be loaded by your extension via
@@ -512,6 +513,28 @@ sub update_team_bugs {
     else {
         update_bug_order_from_json($team_id, $data, $vars);
     }
+}
+
+sub move_pending_items {
+    my ($data, $list_is_backlog, $team_id, $vars) = @_;
+
+    my $user  = Bugzilla->user();
+    my $team  = Bugzilla::Extension::Scrums::Team->new($team_id);
+    my $error = "";
+
+    if ($list_is_backlog) {
+        if (($team->owner() != $user->id()) && (not Bugzilla->user->in_group('scrums_editteams'))) {
+            # User error can not be used, because this is ajax-call
+            $error = 'You must be the owner of the team to edit the backlog.';
+        }
+    }
+    else {
+        if ((not $team->is_user_team_member($user)) && (not Bugzilla->user->in_group('scrums_editteams'))) {
+            # User error can not be used, because this is ajax-call
+            $error = 'You must be a member of the team to edit the sprint.';
+        }
+    }
+    insert_item_list_into_sprint($data, $vars);
 }
 
 sub _update_team {

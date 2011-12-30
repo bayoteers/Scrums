@@ -17,12 +17,15 @@
   *
   * Contributor(s):
   *   Eero Heino <eero.heino@nokia.com>
+  *   Visa Korhonen <visa.korhonen@symbio.com>
   */
 
 // Global variable in page
 var show_scrollbars = false;
 var scrollbar_1_visible = false;
 var scrollbar_2_visible = false;
+var bugs = null;
+var ignore_changes = false;
 
 function toggle_scroll()
 {
@@ -60,7 +63,7 @@ function listObject(ul_id, h_id, id, name, li_tmpl_function, link_url, offset_st
     this.h_id = h_id;
     this.link_url = link_url;
     this.list = [];
-    this.orginal_list = [];
+    this.original_list = [];
     this.visible = -1;
     this.offset = 0;
     if(offset_step)
@@ -476,6 +479,11 @@ function check_if_changed()
 
 function detect_unsaved_change()
 {
+    if(ignore_changes == true)
+    {
+        ignore_changes = false;
+        return false; // Did not save
+    }
     if(check_if_changed())
     {
 	if(confirm('There are unsaved changes. Changes would be lost. Save before continuing to exit?'))
@@ -516,6 +524,7 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id)
 
     if(unordered_list)
     {
+        // This finds all new items in unordered_list by comparint to original
         var list_id = String(-1);
         data_lists[list_id] = [];
         for (var i = 0; i < unordered_list.list.length; i++)
@@ -538,10 +547,12 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id)
     }
     save(ordered_lists, schema, obj_id, data_lists);
 
+    // Original data is updated for unordered list
     if(unordered_list)
     {
         unordered_list.original_list = $.extend(true, [], unordered_list.list);
     }
+    // Original data is updated for ordered lists
     for (var i = 0; i < ordered_lists.length; i++)
     {
 	var list = ordered_lists[i];
@@ -562,15 +573,7 @@ function save(lists, schema, obj_id, data_lists) {
         }
     }
 
-    var original_lists = new Object();
-    for (var i = 0; i < lists.length; i++) {
-        var list = lists[i];
-        var list_id = list.id;
-        original_lists[list_id] = [];
-        for (var k = 0; k < list.original_list.length; k++) {
-            original_lists[list_id].push(list.original_list[k][0][0]);
-        }
-    }
+    var original_lists = get_original_lists(lists);
 
     $.post('page.cgi?id=scrums/ajax.html', {
         schema: schema,
@@ -580,10 +583,21 @@ function save(lists, schema, obj_id, data_lists) {
     }, saveResponse        , 'text');
 }
 
-var bugs = null;
+function get_original_lists(lists) {
+    var original_lists = new Object();
+    for (var i = 0; i < lists.length; i++) {
+        var list = lists[i];
+        var list_id = list.id;
+        original_lists[list_id] = [];
+        for (var k = 0; k < list.original_list.length; k++) {
+            original_lists[list_id].push(list.original_list[k][0][0]);
+        }
+    }
+    return original_lists;
+}
 
 function check_blocking_items(moved_bug_id, to_i, position) {
-     bugs = "";
+    bugs = "";
     $.ajax({
       async: false,
       url: 'page.cgi?id=scrums/ajaxblockinglist.html',
@@ -599,8 +613,33 @@ function check_blocking_items(moved_bug_id, to_i, position) {
         bugs = check_preceding_items(bugs, to_i, position);
         if(bugs.length > 0)
         {
-            var qstr = 'Item ' + moved_bug_id + ' depends on bug ' + bugs + '. Do you want to move ' + moved_bug_id + ' anyway?';
-            return !confirm(qstr); // true = cancel move
+            var bugs_str = "";
+            for(var i = 0; i < bugs.length; i++)
+            {
+                if(bugs_str != "")
+                {
+                    bugs_str += ", ";
+                }
+		bugs_str += bugs[i];
+            }
+            var qstr = 'Item ' + moved_bug_id + ' depends on items ' + bugs_str + ', that are pending relative to ' + moved_bug_id + '. Do you want to move pending blocking items to ' + 
+		moved_bug_id + ' together with ' + moved_bug_id + '?';
+
+            if(confirm(qstr))
+            {
+                var changed = check_if_changed();
+                if(changed)
+                {
+                    alert('Error! There are unsaved changes. Can not execute move of several items. Save unsaved changes and try again.');
+		    return true;
+                }
+                movePendingItems(moved_bug_id, bugs /* pending items */, all_lists[to_i], position);
+            }
+            else
+            {
+                var qstr = 'Do you still want to move ' + moved_bug_id + ' anyway?';
+                return !confirm(qstr); // returing true = cancel move
+            }
         }
     }
     return false; // false = do not cancel
@@ -651,4 +690,42 @@ function check_blocking_items(moved_bug_id, to_i, position) {
     } else {
        bugs = retObj.data.bugs;
     }
+  }
+
+  function moveResponse(response, status, xhr) {
+    var retObj = eval("(" + response + ")");
+
+    if (retObj.errors) {
+      alert("There are errors: " + retObj.errormsg);
+    } else {
+      ignore_changes = true;
+      window.location.reload();
+    }
+  }
+
+  function movePendingItems(moved_bug_id, pending_items, to_list, position)
+  {
+      // TODO database locking for this feature. To_list would be possible to check alone, but not very practical
+      var list_id = to_list.id;
+      var lists = [to_list];
+      var original_lists = get_original_lists(lists); // Contains original of 'to_list' only
+
+      var insert_after_id = 0;
+      if(position > 0)
+      {
+          insert_after_id = to_list.list[position-1][0][0];
+      }
+
+      var obj = new Object();
+      obj.pending_items = pending_items;
+      obj.bug_id = moved_bug_id;
+      obj.list_id = list_id;
+      obj.insert_after_id = insert_after_id;
+
+    $.post('page.cgi?id=scrums/ajax.html', {
+        action: 'move_pending_items',
+        obj_id: object_id, /* object_id (team id) is global variable in page */
+        schema: schema,    
+        data: JSON.stringify(obj)
+    }, moveResponse        , 'text');
   }

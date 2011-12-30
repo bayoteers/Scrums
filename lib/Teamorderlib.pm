@@ -41,6 +41,7 @@ use base qw(Exporter);
 # @EXPORT.)
 our @EXPORT = qw(
   update_bug_order_from_json
+  insert_item_list_into_sprint
   );
 
 #
@@ -256,6 +257,36 @@ sub process_team_orders() {
             }
         }
     }
+}
+
+sub insert_item_list_into_sprint {
+    my ($data, $vars) = @_;
+
+    my $json = new JSON::XS;
+    if ($data =~ /(.*)/) {
+        $data = $1;    # $data now untainted
+    }
+    my $content         = $json->allow_nonref->utf8->relaxed->decode($data);
+    my $pending_items   = $content->{"pending_items"};
+    my $moved_bug_id    = $content->{"bug_id"};
+    my $sprint_id       = $content->{"list_id"};
+    my $insert_after_id = $content->{"insert_after_id"};
+
+    my $sprint    = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+    my $put_first = 0;
+    if ($insert_after_id == 0) {
+        $put_first = 1;
+    }
+
+    my $dbh = Bugzilla->dbh;
+    $dbh->bz_start_transaction();
+
+    $sprint->insert_into_sprint($dbh, $moved_bug_id, $insert_after_id, $put_first, $vars);
+    for my $added_bug_id (@{$pending_items}) {
+        $sprint->insert_into_sprint($dbh, $added_bug_id, $insert_after_id, $put_first, $vars);
+    }
+
+    $dbh->bz_commit_transaction();
 }
 
 sub _compare_to_original_values {
