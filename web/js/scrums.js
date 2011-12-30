@@ -583,8 +583,7 @@ function save(lists, schema, obj_id, data_lists) {
 var bugs = null;
 
 function check_blocking_items(moved_bug_id, to_i, position) {
-    all_lists[to_i]
-    bugs = "";
+     bugs = "";
     $.ajax({
       async: false,
       url: 'page.cgi?id=scrums/ajaxblockinglist.html',
