@@ -23,22 +23,20 @@ function create_sprint_form_html(sprint, sprintid, edit)
 {
     var template = $("#NewSprintTmpl").html();
     var sprint_id_str = "";
-    if (sprintid != 0) 
-    { 
+    if (sprintid != 0)
+    {
         sprint_id_str = "<input type='hidden' name='sprintid' value='"+sprintid+"' />";
     }
     template = template.replace('<sprintid>', sprint_id_str);
 
     var buttons_str = "";
-    if (edit) { 
+    if (edit) {
         buttons_str += '<input type="hidden" name="schema" value="editsprint" />';
         buttons_str += '<input type="submit" value="Delete" name="deletesprint" />';
         buttons_str += '&nbsp; | &nbsp';
         buttons_str += '<input type="button" value="Cancel" onclick="get_sprint();"/>&nbsp';
         buttons_str += '<input type="submit" name="editsprint" value="Save" onclick="return checkvalues();"/>';
-    } 
-    else 
-    {
+    } else {
         buttons_str += '<input type="hidden" id="takebugs" name="takebugs" value="" />';
         buttons_str += '<input type="hidden" name="schema" value="newsprint" />';
         buttons_str += '<input type="submit" name="newsprint" value="Create" onclick="return checknewsprint();"/>';
@@ -49,16 +47,13 @@ function create_sprint_form_html(sprint, sprintid, edit)
 
 function checknewsprint()
 {
-    if(checkvalues()) 
-    {
+    if(checkvalues()) {
         if(confirm('Do you want to move open bugs from previous sprint into new sprint?'))
         {
             $('#takebugs').attr({"value": "true"});
         }
         return true;
-    }
-    else
-    {
+    } else {
         return false;
     }
 }
@@ -66,10 +61,9 @@ function checknewsprint()
 function show_sprint(result)
 {
     data = result.data;
-    if(result.errormsg != "")
-    {
-	alert(result.errormsg);
-	return;
+    if(result.errormsg != "") {
+        alert(result.errormsg);
+        return;
     }
     data = result.data;
 
@@ -105,77 +99,71 @@ function edit_sprint()
     $("input[name=estimatedcapacity]").val(sprint.estimatedcapacity);
     $('#estimate').html(sprint.pred_estimate);
     $('#history').html(sprint.history);
-    // prepare Options Object 
-    var options = { 
+    // prepare Options Object
+    var options = {
         success:   create_sprint,
         dataType: 'json'
-        } 
+    }
     $('#new_sprint_form').ajaxForm(options);
-        var range_begin = "";
-        var range_end = "";
+    var range_begin = "";
+    var range_end = "";
 
-        var today = new Date();
-        $("#datepicker_min").datepicker({ maxDate: today, dateFormat: 'yy-mm-dd' });
-        $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
+    var today = new Date();
+    $("#datepicker_min").datepicker({ maxDate: today, dateFormat: 'yy-mm-dd' });
+    $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
 }
 
-        function cancel()
-        {
-          window.location = "page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]";  
-        }
+function cancel()
+{
+    window.location = "page.cgi?id=scrums/teambugs.html&teamid=[% teamid %]";
+}
 
-        function checkvalues()
-        {
-        gettime();
+function checkvalues()
+{
+    gettime();
 
-        //var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
-        var sprintname = $('input[name=sprintname]').val();
+    //var sprintname = window.document.forms['newsprint'].elements['sprintname'].value;
+    var sprintname = $('input[name=sprintname]').val();
 
-        if(sprintname == '')
-        {
-          alert("Sprint must have name.");
-          return false;
-        }
+    if(sprintname == '') {
+        alert("Sprint must have name.");
+        return false;
+    }
 
-        if(sprintname.match(/^\S/) == null)
-        {
-          alert("Sprint name can not start with whitespace");
-          return false;
-        }
+    if(sprintname.match(/^\S/) == null) {
+        alert("Sprint name can not start with whitespace");
+        return false;
+    }
 
-        if(range_begin == "")
-        {
-            alert("Sprint must have start date");
-            return false;
-        }
+    if(range_begin == "") {
+        alert("Sprint must have start date");
+        return false;
+    }
 
-        return true;
-        }
+    return true;
+}
 
-        function askconfirm()
-        {
-        return confirm("Are you sure you want to delete sprint '[% sprintname %]'?");
-        }
+function askconfirm()
+{
+    return confirm("Are you sure you want to delete sprint '[% sprintname %]'?");
+}
 
-        function gettime() 
-        {
-            range_begin = $('#datepicker_min').val();
-            range_end = $('#datepicker_max').val();
-        }
-
-
+function gettime()
+{
+    range_begin = $('#datepicker_min').val();
+    range_end = $('#datepicker_max').val();
+}
 
 function get_sprint()
 {
-    if ($('#selected_sprint').val() == 'new_sprint')
-    {
+    if ($('#selected_sprint').val() == 'new_sprint') {
         $('#sprint').html(create_sprint_form_html(sprint, 0 /* sprintid */, false /* edit */));
         $('#sprint_action').html('<h3>Create Sprint</h3>');
-        
-        var options = { 
+
+        var options = {
             success:   create_sprint,
             dataType: 'json'
-            } 
+        }
         $('#new_sprint_form').ajaxForm(options);
 
         var range_begin = "";
@@ -185,23 +173,20 @@ function get_sprint()
         $("#datepicker_min").datepicker({ maxDate: today, dateFormat: 'yy-mm-dd' });
         $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
         $('#history').html(sprint.history);
-    } else
-    {
-            $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
+    } else {
+        $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
             teamid: team_id,
             sprintid: $('#selected_sprint').val(),
         }, show_sprint, 'json');
-   }
+    }
 }
 
 function create_sprint(result)
 {
     data = result.data;
-    if(result.errormsg != "")
-    {
-	alert(result.errormsg);
-	return;
+    if(result.errormsg != "") {
+        alert(result.errormsg);
+        return;
     }
     window.location.reload();
 }
-
