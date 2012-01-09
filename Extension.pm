@@ -39,6 +39,9 @@ use Bugzilla::Extension::Scrums::DebugLibrary;
 
 use Bugzilla::Util qw(trick_taint);
 
+use JSON::PP;
+
+
 our $VERSION = '1.0';
 
 use constant CONST_FEATURE => "feature";
@@ -515,6 +518,22 @@ sub install_before_final_checks {
     }
 }
 
+
+sub fix_json {
+    my $vars = shift;
+    return if $vars->{json_text};
+    $vars->{json_text} = JSON->new->utf8->pretty->encode({
+        errors => int($vars->{errors} || ''),
+        errormsg => $vars->{errors} || '',
+        ret_value => $vars->{ret_value} || '',
+        debug_text => $vars->{debug_text} || '',
+        warnings => int($vars->{warnings} || ''),
+        warningmsg => $vars->{warnings} || '',
+        output => $vars->{output} || ''
+    });
+}
+
+
 sub page_before_template {
     my ($self, $args) = @_;
 
@@ -662,6 +681,8 @@ sub page_before_template {
         else {
             Bugzilla::Extension::Scrums::Teams::update_team_bugs($vars, 0);
         }
+
+        fix_json($vars);
     }
     elsif ($page eq 'scrums/newsprint.html') {
         Bugzilla::Extension::Scrums::Teams::edit_sprint($vars);
