@@ -125,14 +125,25 @@ function makeUrl(path, params)
 }
 
 
+var SCRUMS_SEARCH_COLUMN_LIST = [
+    'bug_severity', 'priority', 'assigned_to', 'bug_status', 'short_desc',
+    'estimated_time', 'actual_time', 'remaining_time', 'scrums_team_order',
+    'scrums_blocked', 'sprint_name'
+];
+
+
 function search_link_sprint_items(sprint_id)
 {
-    var link_url = "buglist.cgi?query_format=advanced&";
-    link_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
-    link_url += "order=scrums_team_order&";
-    link_url += "field0-0-0=scrums_sprint_bug_map.sprint_id&type0-0-0=equals&value0-0-0=" + sprint_id;
-    return link_url;
+    return makeUrl('buglist.cgi', {
+        query_format: 'advanced',
+        columnlist: SCRUMS_SEARCH_COLUMN_LIST.join(','),
+        order: 'scrums_team_order',
+        'field0-0-0': 'scrums_sprint_bug_map.sprint_id',
+        'type0-0-0': 'equals',
+        'value0-0-0': sprint_id
+    });
 }
+
 
 function select_step(list_id)
 {
