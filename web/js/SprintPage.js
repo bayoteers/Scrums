@@ -193,7 +193,8 @@ function makeNewSprintForm()
     var range_end = "";
 
     var startDate = getNextBusinessDay();
-    var endDate = addDate(startDate, 7 * 86400 * 1000);
+    var days = SCRUMS_CONFIG.scrums_default_sprint_days;
+    var endDate = addDate(startDate, days * 86400 * 1000);
 
     $("#datepicker_min").datepicker({
         maxDate: new Date(),

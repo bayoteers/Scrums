@@ -42,7 +42,13 @@ sub get_param_list {
                          type    => 'm',
                          choices => [ 'task', 'feature' ],
                          default => [ 'task', 'feature' ]
-                      }
+                      },
+                     {
+                         name   => 'scrums_default_sprint_days',
+                         desc   => 'Default length of a sprint for JS datepicker.',
+                         type   => 't',
+                         default => '7'
+                     },
                      );
     return @param_list;
 }
