@@ -101,7 +101,7 @@ function edit_sprint()
     $('#history').html(sprint.history);
     // prepare Options Object
     var options = {
-        success:   create_sprint,
+        success:   onCreateSprintDone,
         dataType: 'json'
     }
     $('#new_sprint_form').ajaxForm(options);
@@ -154,25 +154,66 @@ function gettime()
     range_end = $('#datepicker_max').val();
 }
 
+
+/**
+ * Return a Date object representing the current time on the next business day
+ * (e.g. on 3:41pm on a Friday, return 3:41pm on the following Monday).
+ */
+function getNextBusinessDay()
+{
+    var now = (new Date()).getTime();
+    do {
+        now += 86400 * 1000;
+        var cur = new Date(now);
+    } while(! (cur.getDay() >= 1 && cur.getDay() <= 5));
+    return cur;
+}
+
+
+/**
+ * Add some milliseconds to a Date object.
+ */
+function addDate(dt, ms)
+{
+    return new Date(dt.getTime() + ms);
+}
+
+
+function makeNewSprintForm()
+{
+    $('#sprint').html(create_sprint_form_html(sprint, 0 /* sprintid */, false /* edit */));
+    $('#sprint_action').html('<h3>Create Sprint</h3>');
+
+    $('#new_sprint_form').ajaxForm({
+        success: onCreateSprintDone,
+        dataType: 'json'
+    });
+
+    var range_begin = "";
+    var range_end = "";
+
+    var startDate = getNextBusinessDay();
+    var endDate = addDate(startDate, 7 * 86400 * 1000);
+
+    $("#datepicker_min").datepicker({
+        maxDate: new Date(),
+        dateFormat: 'yy-mm-dd'
+    });
+    $('#datepicker_min').datepicker('setDate', startDate);
+
+    $("#datepicker_max").datepicker({
+        defaultDate: endDate,
+        dateFormat: 'yy-mm-dd'
+    });
+    $('#datepicker_max').datepicker('setDate', endDate);
+
+    $('#history').html(sprint.history);
+}
+
 function get_sprint()
 {
     if ($('#selected_sprint').val() == 'new_sprint') {
-        $('#sprint').html(create_sprint_form_html(sprint, 0 /* sprintid */, false /* edit */));
-        $('#sprint_action').html('<h3>Create Sprint</h3>');
-
-        var options = {
-            success:   create_sprint,
-            dataType: 'json'
-        }
-        $('#new_sprint_form').ajaxForm(options);
-
-        var range_begin = "";
-        var range_end = "";
-
-        var today = new Date();
-        $("#datepicker_min").datepicker({ maxDate: today, dateFormat: 'yy-mm-dd' });
-        $("#datepicker_max").datepicker({ dateFormat: 'yy-mm-dd' });
-        $('#history').html(sprint.history);
+        makeNewSprintForm();
     } else {
         $.post('page.cgi?id=scrums/ajaxsprintbugs.html', {
             teamid: team_id,
@@ -181,7 +222,7 @@ function get_sprint()
     }
 }
 
-function create_sprint(result)
+function onCreateSprintDone(result)
 {
     data = result.data;
     if(result.errormsg != "") {
