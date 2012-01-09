@@ -103,6 +103,28 @@ var from_list_ul_id = '';
 
 var sprint_callback = null;
 
+
+/**
+ * Make a GET URL from a dictionary of parameters.
+ *
+ * @param path
+ *      Base URL (e.g. "buglist.cgi").
+ * @param params
+ *      Object whose property names and values become URL parameters.
+ *      List-valued properties are repeated in the query string
+ *      (e.g. {a: [1,2,3]} becomes "a=1&a=2&a=3".
+ */
+function makeUrl(path, params)
+{
+    var s = $.param(params, true);
+    if(s) {
+        path += (path.indexOf('?') == -1) ? '?' : '&';
+        path += s;
+    }
+    return path;
+}
+
+
 function search_link_sprint_items(sprint_id)
 {
     var link_url = "buglist.cgi?query_format=advanced&";
