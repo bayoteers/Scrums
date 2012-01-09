@@ -37,7 +37,7 @@ function render_all(already_rendered)
 {
     var frame_height = 435;    
     if(initialised && show_scrollbars && !already_rendered) {
-	var table_1_height = 0;
+        var table_1_height = 0;
         $('#sprint .container').each(function (i, item)
         {
             table_1_height = $(item).height();
@@ -46,8 +46,8 @@ function render_all(already_rendered)
         {
             table_2_height = $(item).height();
         });
-	scrollbar_1_visible = (table_1_height > frame_height);
-	scrollbar_2_visible = (table_2_height > frame_height);
+        scrollbar_1_visible = (table_1_height > frame_height);
+        scrollbar_2_visible = (table_2_height > frame_height);
     }
     $('#sprint').html(create_list_html(all_lists[0],    scrollbar_1_visible));
     $('#unordered').html(create_list_html(all_lists[1], scrollbar_2_visible));
@@ -88,14 +88,14 @@ function listObject(ul_id, h_id, id, name, li_tmpl_function, link_url, offset_st
 
     this.originally_contains_item = function (ref_item_id)
     {
-	for(var i = 0; i < this.original_list.length; i++)
-	{
-	    if(this.original_list[i][0][0] == ref_item_id)
-	    {
-		return true;
-	    }
-	}
-	return false;
+        for(var i = 0; i < this.original_list.length; i++)
+        {
+            if(this.original_list[i][0][0] == ref_item_id)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -154,14 +154,14 @@ function select_step(list_id)
     {
         if (all_lists[i].id == list_id)
         {
-	    if(sel.value == "All")
-	    {
-	    	val = all_lists[i].list.length;
-		all_lists[i].offset = 0;
-	    }
-	    all_lists[i].offset_step = val;
-	    all_lists[i].visible = -1;
-	    update_lists(all_lists[i]);
+            if(sel.value == "All")
+            {
+                val = all_lists[i].list.length;
+                all_lists[i].offset = 0;
+            }
+            all_lists[i].offset_step = val;
+            all_lists[i].visible = -1;
+            update_lists(all_lists[i]);
             break;
         }
     }
@@ -202,7 +202,7 @@ function switch_lists(ui, lists) {
         if (list.ul_id == to_list_ul_id) {
             to_i = l;
         }
-        if (list.ul_id == from_list_ul_id) {	
+        if (list.ul_id == from_list_ul_id) {
             from_i = l;
         }
     }
@@ -236,20 +236,20 @@ function switch_lists(ui, lists) {
                 }
             }
             var temp = lists[from_i].list.splice(old_position, 1);
-	    if(to_i == from_i && old_position < position) 
+            if(to_i == from_i && old_position < position) 
             {
-            	lists[to_i].list.splice(position-1, 0, temp[0]);
-	    }
-	    else
-	    {
-            	lists[to_i].list.splice(position, 0, temp[0]);
-	    }
+                lists[to_i].list.splice(position-1, 0, temp[0]);
+            }
+            else
+            {
+                lists[to_i].list.splice(position, 0, temp[0]);
+            }
             update_positions(lists, to_i);
             update_positions(lists, from_i);
 
-	    if(sprint_callback) {
+            if(sprint_callback) {
                 sprint_callback(lists[0].estimatedcapacity, lists[0].list, lists[1].list);
-	    }
+            }
         }
         prev_bug_id = $(elem).attr('id');
     });
@@ -270,8 +270,8 @@ function switch_lists(ui, lists) {
         $("#" + lists[from_i].ul_id).children('tr').each(function(position, elem)
         {
             index = bug_positions[from_i][$(elem).attr('id')];
-	    bug = lists[from_i].list[index];
-	    counter = index + 1;
+            bug = lists[from_i].list[index];
+            counter = index + 1;
             var li_html = lists[from_i].line_template_function(bug, counter, lists[from_i].show_columns);
             $(elem).replaceWith(li_html);
         });
@@ -352,7 +352,7 @@ function update_lists(bugs_list, move_pos)
     }
     bugs_list.offset += move_pos;
     if (bugs_list.offset < 0) {
-	var remainder = bugs_list.visible.length % bugs_list.offset_step;
+        var remainder = bugs_list.visible.length % bugs_list.offset_step;
         var list_length = bugs_list.visible.length;
         bugs_list.offset = list_length - remainder;
     }
@@ -444,13 +444,13 @@ function move_list(list_id, left)
     {
         if (all_lists[i].id == list_id)
         {
-	    if(left)
+            if(left)
             {
                 update_lists(all_lists[i], -all_lists[i].offset_step);
-	    }
+            }
             else
             {
-	        update_lists(all_lists[i], all_lists[i].offset_step);
+                update_lists(all_lists[i], all_lists[i].offset_step);
             }
             break;
         }
@@ -459,22 +459,22 @@ function move_list(list_id, left)
 
 function saveResponse(response, status, xhr) 
 { 
-	var retObj = eval("("+ response+")");
-	if(retObj.errors)
-	{
-		alert(retObj.errormsg);
-	}
-	else
-	{
+        var retObj = eval("("+ response+")");
+        if(retObj.errors)
+        {
+                alert(retObj.errormsg);
+        }
+        else
+        {
             var elem = $("input.toggle_scroll");
             elem[0].focus();
             elem = $("#save_button");
             elem[0].disabled = true;
-	}
+        }
         if(retObj.warnings)
-	{
-	    alert(retObj.warningmsg);
-	}
+        {
+            alert(retObj.warningmsg);
+        }
 }
 
 
@@ -484,26 +484,26 @@ function check_if_changed()
     for (var z = 0; z < all_lists.length; z++) 
     {
         var list = all_lists[z];
-	if(list.list.length != list.original_list.length)
-	{
-	    return true;
-	}
+        if(list.list.length != list.original_list.length)
+        {
+            return true;
+        }
         for (var i = 0; i < list.list.length; i++) 
         {
-	    if(list.id == -1)
+            if(list.id == -1)
             {
-		if (list.originally_contains_item(list.list[i][0][0]) == false)
-		{
-		    return true;
-		}
-	    }
-	    else
-	    {
-	    	if(list.list[i][0][0] != list.original_list[i][0][0])
-	    	{
-		    return true;
-	 	}
-	    }
+                if (list.originally_contains_item(list.list[i][0][0]) == false)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                if(list.list[i][0][0] != list.original_list[i][0][0])
+                {
+                    return true;
+                }
+            }
 
         }
     }
@@ -519,15 +519,15 @@ function detect_unsaved_change()
     }
     if(check_if_changed())
     {
-	if(confirm('There are unsaved changes. Changes would be lost. Save before continuing to exit?'))
-	{
-	    save_all();
-	    return true; // Content changed permanently
-	}
-	else
-	{
-	    return false;
-	}
+        if(confirm('There are unsaved changes. Changes would be lost. Save before continuing to exit?'))
+        {
+            save_all();
+            return true; // Content changed permanently
+        }
+        else
+        {
+            return false;
+        }
     }
 }
 
@@ -538,14 +538,14 @@ function do_save(saved_lists)
     var ordered_lists = new Array();
     for (var i = 0; i < saved_lists.length; i++)
     {
-	if(saved_lists[i].id == -1)
+        if(saved_lists[i].id == -1)
         {
-	    unordered_list = saved_lists[i];
-	}
-	else
-	{
-	    ordered_lists.push(saved_lists[i]);
-	}
+            unordered_list = saved_lists[i];
+        }
+        else
+        {
+            ordered_lists.push(saved_lists[i]);
+        }
     }
     save_lists(ordered_lists, unordered_list, schema, object_id);
 }
@@ -576,7 +576,7 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id)
                 // this bug is new in unordered list
                 data_lists[list_id].push(unordered_list.list[i][0][0])
             }
-	}
+        }
     }
     save(ordered_lists, schema, obj_id, data_lists);
 
@@ -588,7 +588,7 @@ function save_lists(ordered_lists, unordered_list, schema, obj_id)
     // Original data is updated for ordered lists
     for (var i = 0; i < ordered_lists.length; i++)
     {
-	var list = ordered_lists[i];
+        var list = ordered_lists[i];
         list.original_list = $.extend(true, [], list.list);
     }
 }
@@ -653,10 +653,10 @@ function check_blocking_items(moved_bug_id, to_i, position) {
                 {
                     bugs_str += ", ";
                 }
-		bugs_str += bugs[i];
+                bugs_str += bugs[i];
             }
             var qstr = 'Item ' + moved_bug_id + ' depends on items ' + bugs_str + ', that are pending relative to ' + moved_bug_id + '. Do you want to move pending blocking items to ' + 
-		moved_bug_id + ' together with ' + moved_bug_id + '?';
+                moved_bug_id + ' together with ' + moved_bug_id + '?';
 
             if(confirm(qstr))
             {
@@ -664,7 +664,7 @@ function check_blocking_items(moved_bug_id, to_i, position) {
                 if(changed)
                 {
                     alert('Error! There are unsaved changes. Can not execute move of several items. Save unsaved changes and try again.');
-		    return true;
+                    return true;
                 }
                 movePendingItems(moved_bug_id, bugs /* pending items */, all_lists[to_i], position);
             }
@@ -687,7 +687,7 @@ function check_blocking_items(moved_bug_id, to_i, position) {
           for (list_i = 0; list_i < all_lists.length; list_i++) 
           {
               var list = all_lists[list_i];
-	      if(list.id != -1)
+              if(list.id != -1)
               {
                   for (var i = 0; i < list.list.length; i++) 
                   {
@@ -699,13 +699,13 @@ function check_blocking_items(moved_bug_id, to_i, position) {
                       list_bug_id = list.list[i][0][0];
                       for(var b = 0; b < blocking_bugs.length; b++)
                       {
-		          if(blocking_bugs[b] == list_bug_id)
+                          if(blocking_bugs[b] == list_bug_id)
                           {
                               for(var x = b; x < (blocking_bugs.length - 1); x++)
                               {
                                   blocking_bugs[x] = blocking_bugs[x+1];
                               }
-			      blocking_bugs.length = blocking_bugs.length - 1;
+                              blocking_bugs.length = blocking_bugs.length - 1;
                           }
                       }
                   }
