@@ -21,13 +21,14 @@
   */
 
 // Global variable in page
-var show_scrollbars = false;
-var scrollbar_1_visible = false;
-var scrollbar_2_visible = false;
+var all_lists = [];
+var bug_positions = [];
 var bugs = null;
 var ignore_changes = false;
-var bug_positions = [];
 var initialised = false;
+var scrollbar_1_visible = false;
+var scrollbar_2_visible = false;
+var show_scrollbars = false;
 
 function toggle_scroll()
 {
