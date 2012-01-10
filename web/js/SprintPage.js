@@ -695,8 +695,10 @@ function onDocumentReady()
     SprintView.init();
 
     SprintView.refreshSprint();
-    SprintView.refreshSprintBugs();
-    SprintView.refreshBacklog();
+    if(SCRUMS_CONFIG.active_sprint) {
+        SprintView.refreshSprintBugs();
+        SprintView.refreshBacklog();
+    }
 
     // TODO: this doesn't even work.
     $(window).unload(detect_unsaved_change);
