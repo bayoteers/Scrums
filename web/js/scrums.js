@@ -30,6 +30,57 @@ var scrollbar_1_visible = false;
 var scrollbar_2_visible = false;
 var show_scrollbars = false;
 
+
+/**
+ * Display a small progress indicator at the top of the document while any
+ * jQuery XMLHttpRequest is in progress.
+ */
+var RpcProgressView = {
+    _CSS_PROPS: {
+        background: '#7f0000',
+        color: 'white',
+        padding: '0.5ex',
+        position: 'fixed',
+        top: 0,
+        right: 0,
+        'z-index': 9999999,
+        'text-decoration': 'blink'
+    },
+
+    init: function()
+    {
+        this._active = 0;
+        this._progress = $('<div>Working..</div>');
+        this._progress.css(this._CSS_PROPS);
+        this._progress.hide();
+        this._progress.appendTo('body');
+        $(document).ajaxSend(this._onAjaxSend.bind(this));
+        $(document).ajaxComplete(this._onAjaxComplete.bind(this));
+    },
+
+    /**
+     * Handle request start by incrementing the active count.
+     */
+    _onAjaxSend: function()
+    {
+        this._active++;
+        this._progress.show();
+    },
+
+    /**
+     * Handle request completion by decrementing the active count, and hiding
+     * the progress indicator if there are no more active requests.
+     */
+    _onAjaxComplete: function()
+    {
+        this._active--;
+        if(! this._active) {
+            this._progress.hide();
+        }
+    }
+};
+
+
 function toggle_scroll()
 {
     show_scrollbars = !show_scrollbars;
@@ -111,7 +162,7 @@ function listObject(ul_id, h_id, id, name, line_tmpl_function, link_url,
 
     this.estimatedcapacity = null;
     this.personcapacity = null;
-    this.pred_estimate = "-";
+    this.prediction = "-";
     this.history = "";
 
     this.originally_contains_item = function (ref_item_id)
