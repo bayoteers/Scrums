@@ -31,6 +31,8 @@ use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::Component;
 
+use JSON::PP;
+
 use strict;
 use base qw(Exporter);
 our @EXPORT = qw(
@@ -407,8 +409,7 @@ sub edit_team {
 sub show_team_bugs {
     my ($vars) = @_;
 
-    my $cgi     = Bugzilla->cgi;
-    my $team_id = $cgi->param('teamid');
+    my $team_id = Bugzilla->cgi->param('teamid');
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
     $vars->{'team'}               = $team;
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
@@ -455,12 +456,38 @@ sub show_team_bugs {
             push @class_names, $class_name;
         }
     }
-    my @bug_status_open = Bugzilla::Status::BUG_STATE_OPEN();
-    $vars->{'bug_status_open'} = \@bug_status_open;
 
-    $vars->{'components'}      = \@comp_names;
-    $vars->{'products'}        = \@prod_names;
-    $vars->{'classifications'} = \@class_names;
+    my $scrums_config = {
+        default_sprint_days => Bugzilla->params->{'scrums_default_sprint_days'},
+        team => {
+            id => $team->id(),
+            is_using_backlog => 0+$team->is_using_backlog(),
+            backlog_id => $team_backlog->id(),
+        },
+        bug_status_open => [ Bugzilla::Status::BUG_STATE_OPEN() ],
+        classifications => \@class_names,
+        products => \@prod_names,
+        components => \@comp_names,
+    };
+
+    if($sprint) {
+        $scrums_config->{active_sprint} = {
+            name => $sprint->name(),
+            id => $sprint->id(),
+            status => $sprint->status(),
+            description => $sprint->description()
+        };
+    }
+
+    if($vars->{sprint_history}) {
+        $scrums_config->{sprint_history} = [ map { {
+            name => $_->[0],
+            total_work => $_->[1],
+            total_persons => $_->[2]
+        } } @{$vars->{history} ? $vars->{history} : []} ];
+    }
+
+    $vars->{scrums_config} = JSON->new->utf8->pretty->encode($scrums_config);
 }
 
 sub show_products {

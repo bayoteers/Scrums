@@ -23,416 +23,78 @@
     style_urls = ['skins/standard/admin.css']
 %]
 
-<script type="text/javascript" src="extensions/Scrums/web/js/SprintPage.js"></script>
+<script>var SCRUMS_CONFIG = ([% scrums_config %]);</script>
+<script src="extensions/Scrums/web/js/SprintPage.js"></script>
 
-<script>
-    var SCRUMS_CONFIG = {
-        scrums_default_sprint_days: [% Bugzilla.params.scrums_default_sprint_days %]
-    };
-</script>
+<style>
+    th { text-align: right; }
+    [name=sprintname] { width: 100%; }
+    [name=description] { width: 100%; }
+    [name=start_date] { width: 14ex; }
+    [name=end_date] { width: 14ex; }
+</style>
 
-<script id="NewSprintTmpl" type="text/html">
-    <form id='new_sprint_form' action='page.cgi' method="post">
-      <input type='hidden' name='teamid' value='[% team.id %]' />
-      <sprintid>
+
+<div style="display: none;"> <!-- templates -->
+    <form id="sprint_editor_template" action='page.cgi' method="post">
       <input type='hidden' name='id' value='scrums/ajaxsprintbugs.html' />
-
-      <div id='sprint_action'>
-      </div>
+      <h3></h3>
 
       <table width="100%">
         <tr>
           <th>Sprint Name:</th>
-          <td colspan="2"><input type="text" name="sprintname" value="[% sprintname %]"></td>
+          <td colspan="2"><input name="sprintname"></td>
         </tr>
         <tr>
           <th>Description:</th>
-          <td colspan="2"><input size="40" type="text" name="description" value="[% description %]"></td>
+          <td colspan="2"><input size="40" name="description"></td>
         </tr>
         <tr>
-          <th>Actual Duration:</th>
-          <td colspan=3">
-             <input onchange="gettime();" type="text" value="[% start_date %]" name="start_date" id="datepicker_min" size="08">-
-             <input onchange="gettime();" type="text" value="[% end_date %]" name="end_date" id="datepicker_max" size="08">
+          <th>Duration:</th>
+          <td colspan="3">
+             <input onchange="gettime();" name="start_date" size="9"> -
+             <input onchange="gettime();" name="end_date" size="9">
           </td>
-        </tr>
         <tr>
           <th>Person Capacity:</th>
-          <td colspan=3" id="personcapacity">
-            &nbsp;
-          </td>
+          <td colspan="3" class="personcapacity">&nbsp;</td>
         </tr>
         <tr>
           <th>Estimated Capacity:</th>
-          <td colspan=3" id="estimatedcapacity">
-            <input type="text" name="estimatedcapacity" value="[% estimatedcapacity %]">
+          <td colspan="3">
+            <input name="estimatedcapacity">
           </td>
         </tr>
         <tr>
           <th>Predictive Estimate:</th>
-          <td colspan=3" id="estimate">
+          <td colspan="3" class="sprint-estimate">
             &nbsp;
           </td>
         </tr>
         <tr>
           <th>Previous Sprint Summary:</th>
-          <td colspan=3" id="history">
+          <td colspan="3" class="sprint-history">
             &nbsp;
           </td>
         </tr>
         <tr><td colspan="4"></td></tr>
         <tr>
           <td colspan="4" align="right">
-          <buttonssection>
+            <div class="edit-buttons">
+                <input type="submit" value="Delete" name="deletesprint" />
+                |
+                <input type="button" value="Cancel" class="cancelEdit" />
+                <input type="submit" name="editsprint" value="Save" />
+            </div>
+            <div class="save-buttons">
+                <input type="hidden" name="takebugs" />
+                <input type="submit" name="newsprint" value="Create" />
+            </div>
           </td>
         </tr>
       </table>
     </form>
-</script>
-
-<script type="text/javascript">
-function demark_sprint_capacity(capacity, handled_list, following_list) {
-    var cum = 0;
-    var i = 0;
-    for(i = 0; i < handled_list.length; i++) {
-        cum = cum + handled_list[i][9];
-       if(cum > capacity) {
-           handled_list[i][10] = 0;
-       }
-       else {
-           handled_list[i][10] = 1;        
-       }        
-    }
-
-    for(i = 0; i < following_list.length; i++) {
-        cum = cum + following_list[i][9];
-       if(cum > capacity) {
-           following_list[i][10] = 0;
-       }
-       else {
-           following_list[i][10] = 1;      
-       }        
-    }
-
-    refresh_sprint_capacity(capacity, handled_list); 
-}
-
-function refresh_sprint_capacity(estimatedcapacity, bug_list) {
-    var sprint_total_work = 0;
-    var sprint_done_work = 0;
-    var sprint_remaining_work = 0;
-    var i = 0;
-    for(i = 0; i < bug_list.length; i++) {
-        sprint_remaining_work += bug_list[i][1];
-        sprint_done_work += bug_list[i][8];
-        sprint_total_work += bug_list[i][9];
-    }
-
-    $('#capa').html(estimatedcapacity);
-    var free = estimatedcapacity - sprint_total_work;
-    $('#free').html(free);
-    $('#done').html(sprint_done_work);
-    $('#remaining').html(sprint_remaining_work);
-}
-</script>
-
-<script type="text/javascript">
-  var team_id = [% team.id %];
-
-  [% IF team.is_using_backlog() %]
-    var backlog_search_url = search_link_sprint_items([% backlog_id %]);
-    var backlog = new listObject("sortable2", "headers2", "[% backlog_id %]", 'Backlog', create_item_line_html, backlog_search_url);
-  [% ELSE %]
-    var other_than_active_sprint_search_url = "buglist.cgi?query_format=advanced&";
-    other_than_active_sprint_search_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2C";
-    other_than_active_sprint_search_url += "actual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
-    other_than_active_sprint_search_url += "[% FOREACH status IN bug_status_open %]bug_status=[% status %]&[% END %]";
-    other_than_active_sprint_search_url += "[% FOREACH class IN classifications %]classification=[% class %]&[% END %]";
-    other_than_active_sprint_search_url += "[% FOREACH product IN products %]product=[% product %]&[% END %]";
-    other_than_active_sprint_search_url += "[% FOREACH component IN components %]component=[% component %]&[% END %]";
-
-    // When all items are shown as 'backlog' to user, backlog must have sprint id of unprioritised items.
-    // This is important because all its items are saved as actual backlog otherwise.
-    var backlog = new listObject("sortable2", "headers2", '-1', 'Backlog (all items)', create_item_line_html, other_than_active_sprint_search_url);
-  [% END %]
-
-  var sprint_search_url = search_link_sprint_items([% active_sprint.id() %]);
-
-  var sprint = new listObject("sortable", "headers", "[% active_sprint.id() %]", 'Sprint [% active_sprint.name() %]', create_item_line_html, sprint_search_url);
-
-  // *** Global variables ***
-  sprint_callback = demark_sprint_capacity;
-  schema = 'sprint';
-  object_id = [% team.id %];
-
-  var all_lists = [];
-  var bug_positions = [];
-
-  var sprint_rendered = false;
-  var backlog_rendered = false;
-  var sprint_info_showed = false;
-  var initialised = false;
-
-  function save_all()
-  {
-    // ! Notice! Lists need to be pushed into 'saved_lists' array in this order. They are also saved in that order. 
-    //           Mixing them spoils team order values.
-    var saved_lists = [];
-    saved_lists.push(all_lists[0]); // Sprint
-    saved_lists.push(all_lists[1]); // Backlog
-    do_save(saved_lists);
-  }
-
-  // data from backend
-
- var foo = "[% active_sprint.name() %]";
-
- var sprint_lists = [];
-
- $(document).ready(function() {
-    var html = '';
-
-    sprint._status = "[% active_sprint.sprint.status() %]";
-    sprint.description = "[% active_sprint.sprint.description() | replace( '"', '\"' ) %]";
-
-    var historyStr = "[% IF history %]<table>[% FOREACH sprint IN history %]<tr><th>[% sprint.0 %]</th><td style='min-width: 110px;'>Total Work: [% sprint.1 %]</td><td>Total Persons: [% sprint.2 %]</td></tr>[% END %]</table>[% END %]";
-    sprint.history = historyStr;
-
-    all_lists.push(sprint);
-
-    [% IF active_sprint.id() %]
-        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-            sprint_id: [% active_sprint.id() %]
-        }, renderSprint        , 'json');
-    [% ELSE %]
-        bind_items_to_list(sprint, []); // Bug list is empty since there is even no sprint
-        sprint_rendered = true;         // There is no point in waiting for sprint to arrive, that does not even exist.
-    [% END %]
-
-    [% IF team.is_using_backlog() %]
-        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-            sprint_id: [% backlog_id %]
-        }, renderBacklog, 'json');
-    [% ELSE %]
-        $.post('page.cgi?id=scrums/ajaxbuglist.html', {
-            action: "other_items_than_in_active_sprint",
-            team_id: [% team.id() %]
-        }, renderBacklog, 'json');
-    [% END %]
-
-    all_lists.push(backlog);
-
-    get_sprint();
-
-    $(window).unload(
-        function() 
-        {
-            detect_unsaved_change(); 
-        } 
-    );
-
-  });
-
-function renderSprint(result)
-{
-    data = result.data;
-    var sprint_bugs = data.bugs;
-
-    bind_items_to_list(sprint, sprint_bugs);
-    sprint_rendered = true;
-    check_receive_status();
-}
-
-function renderBacklog(result)
-{
-    data = result.data;
-    var backlog_bugs = data.bugs;
-
-    bind_items_to_list(backlog, backlog_bugs);
-    backlog_rendered = true;
-    check_receive_status();
-}
-
-function check_receive_status()
-{
-    if(initialised) 
-    {
-        render_all();
-    }
-    else if(backlog_rendered && sprint_rendered && sprint_info_showed)
-    {
-        render_all();
-        initialised = true;
-        toggle_scroll();
-    }
-}
-
-function update_tables()
-{
-    demark_sprint_capacity(sprint.estimatedcapacity, sprint.list, backlog.list);
-    update_lists(sprint, 0);
-    update_lists(backlog, 0);
-    bind_sortable_lists(all_lists); // Does not initialise tablesorter
-}
-
-</script>
-
-<script type="text/javascript">
-
-    // Id of that field, which is currently in editable state
-    var editedFieldid = "";
-  
-    // Value (index) of select-element, which was selected when field became to editable state
-    var originalSelectedIndex = "";
-
-    function checkIfEditedFieldChanged(mustsave, mustask) {
-        var newValue = "";
-        var userId = editedFieldid.match(/^\d{1,6}/);
-        editableEl = document.getElementById(editedFieldid + "_editable");
-        var selectEl = editableEl.getElementsByTagName("select")[0];
-        var selectedIndex = selectEl.selectedIndex;
-
-        if (originalSelectedIndex != selectedIndex) {
-            // If value is not saved (or it has not changed), original value is restored
-            newValue = selectEl.options[selectedIndex].value;
-            if (decidetosave(editedFieldid, mustsave, mustask)) {
-                savefield(editedFieldid, newValue);
-                makeSelectStatic(editedFieldid, selectEl.value);
-            } else {
-                makeSelectStatic(editedFieldid, originalValue);
-            }
-        } 
-        else {
-            makeSelectStatic(editedFieldid, originalValue);
-        }
-        editedFieldid = "";
-        originalValue = "";
-    }
-  
-    /**
-     * Function solves whether changed value of field will be saved or not.
-     */
-    function decidetosave(fieldid, mustsave, mustask) {
-        var decission = false;
-  
-        // If mustsave is false, this function does nothing, but this is really for clarity of code.
-        if (mustsave) {
-            if (mustask) {
-                if (confirm("Do you want to save changes")) {
-                    decission = true;
-                } 
-                else {
-                    decission = false;
-                }
-            } else {
-                decission = true;
-            }
-        } 
-        else {
-            decission = false;
-        }
-        return decission;
-    }
-  
-    /**
-     * Function saves value.
-     */
-    function savefield(fieldid, newValue, mustask) {
-        var userId = fieldid.match(/^\d{1,6}/);
-  
-        savePersonCapacity(userId, newValue); 
-    }
-
-    /**
-     * Function is call-back function, that is called after succesfull ajax call returns.
-     * Ajax call if succesfull, if server responds without throwing exception. Ordered
-     * errors are shown in error message. Function shows status of saving to user.
-     */
-    function savedPersoncap(response, status, xhr) {
-        var retObj = eval("(" + response + ")");
-
-        if (retObj.errors) {
-            alert(retObj.errormsg);
-        } 
-        else {
-            //alert("Success");
-        } 
-    }
-  
-    /**
-     * Function saves value of one bug field into database by doing ajax-call.
-     */
-    function savePersonCapacity(personId, capacityValue) {
-        var json_params = '{ "method": "personcapacity.update", "params": { "sprint_id" : [% active_sprint.id() %], "person_id" : '+personId+', "capacity": '+capacityValue+' } }';
-  
-        $.post('page.cgi?id=scrums/ajax.html', {
-            schema: 'personcapacity',
-            action: 'update',
-            data: json_params
-        }, savedPersoncap, 'text');
-    }
-  
-    function makeeditable(fieldid) {
-        var status = false;
-        var staticId = fieldid + "_static";
-        var editableId = fieldid + "_editable";
-        var staticEl = document.getElementById(staticId);
-        var editableEl = document.getElementById(editableId);
-  
-        if (editedFieldid != "" && editedFieldid != fieldid) {
-            status = checkIfEditedFieldChanged(true /* must save */ , true /* must ask first */ );
-        }
-
-        editedFieldid = fieldid;
-        // Visibility is changed by changing CSS-style of TR-elements.
-        staticEl.style.visibility = 'collapse';
-        editableEl.style.visibility = 'visible';
-  
-        var spanEl = staticEl.getElementsByTagName("span")[0];
-        // Title of element equals actual value in every field
-        var textVal = spanEl.title;
-        var selectEl = editableEl.getElementsByTagName("select")[0];
-        var allOptions = selectEl.options;
-        var selectedIndex = 0;
-        var i = 0;
-        for (i = 0; i < allOptions.length; i++) {
-            if (allOptions[i].value == textVal) {
-                selectedIndex = i;
-                break;
-            }
-        }
-        var selectedItem = selectEl.options[selectedIndex];
-        originalSelectedIndex = selectedIndex;
-        originalValue = selectedItem.value;
-        selectEl.value = selectedItem.value;
-    }
-  
-    /**
-     * Function makes static field visible and makes editable field hidden
-     */
-    function makeSelectStatic(fieldid, currentValue) {
-        var staticId = fieldid + "_static";
-        var editableId = fieldid + "_editable";
-        var staticEl = document.getElementById(staticId);
-        var editableEl = document.getElementById(editableId);
-  
-        // Value is set to select-element once more. This has meaning, if original value is restored.
-        var selectEl = editableEl.getElementsByTagName("select")[0];
-        selectEl.value = currentValue;
-  
-        var newText = '<span title="' + currentValue + '">' +
-                '<table><tr><td>' + 
-                currentValue + 
-                '</td><td><span class="ui-icon ui-icon-triangle-1-s" title="edit"></span></td></tr></table>' +
-                '</span>';
-  
-        var td = staticEl.getElementsByTagName("td")[0];
-        td.innerHTML = newText;
-  
-        staticEl.style.visibility = 'visible';
-        editableEl.style.visibility = 'collapse';
-    }
-</script>
+</div> <!-- templates -->
 
 [% PROCESS pages/scrums/listcolumns.html.tmpl %]
 
@@ -442,7 +104,7 @@ function update_tables()
 
 [% PROCESS pages/scrums/navi.html.tmpl %]
 
-<table>
+<table width="100%">
   <tr>
     <td valign="top" id="sprint" width="50%">
     </td>
@@ -469,11 +131,11 @@ function update_tables()
             <form action="">
               <input type="hidden" value="scrums/teambugs.html" name="id" />
               <input type="hidden" value="[% team.id %]" name="teamid" />
- 
+
          Sprint:
           </th>
           <td align="right">
-        <select name="sprintid" onchange="get_sprint();" id="selected_sprint">
+        <select name="sprintid" onchange="SprintView.refreshSprint();" id="selected_sprint">
         [% IF active_sprint %]
           <option value="[% active_sprint.id() %]" selected="selected">
           *[% active_sprint.name() %]</option>
@@ -524,6 +186,7 @@ function update_tables()
     </tr>
     <tr>
       <td id="sprint_button" colspan="2" align="right">
+      <input type="button" value="Edit Sprint" id="editSprintButton" />
       </td>
     </tr>
   </table>
@@ -550,11 +213,11 @@ function update_tables()
       <td>
         <table>
           <tr id="[% teammember.userid %]_static">
-            <td ondblclick="makeeditable('[% teammember.userid %]');">
-              <span title='[% active_sprint.get_member_capacity(teammember.userid) %]'> 
+            <td ondblclick="MemberCapacityEditor.open([% teammember.userid %]);">
+              <span>
                 <table>
                   <tr>
-                    <td>
+                    <td class="value">
                       [% active_sprint.get_member_capacity(teammember.userid) %]
                     </td>
                     <td>
@@ -572,18 +235,22 @@ function update_tables()
                 <tr>
                   <td>
                     <select>
-                      <option>0.00</option>
-                      <option>0.25</option>
-                      <option>0.50</option>
-                      <option>0.75</option>
-                      <option>1.00</option>
+                      <option value=0.00>0.00</option>
+                      <option value=0.25>0.25</option>
+                      <option value=0.50>0.50</option>
+                      <option value=0.75>0.75</option>
+                      <option value=1.00>1.00</option>
                     </select>
                   </td>
                   <td>
-                    <span class="ui-icon ui-icon-arrowreturnthick-1-w" title="cancel"" onclick="checkIfEditedFieldChanged(false);"></span>
+                    <span class="ui-icon ui-icon-arrowreturnthick-1-w"
+                        title="cancel"
+                        onclick="MemberCapacityEditor.close();"></span>
                   </td>
                   <td>
-                    <span class="ui-icon ui-icon-check" title="save" onclick="checkIfEditedFieldChanged(true);"></span>
+                    <span class="ui-icon ui-icon-check"
+                        title="save"
+                        onclick="MemberCapacityEditor.save();"></span>
                   </td>
                 </tr>
               </table>
