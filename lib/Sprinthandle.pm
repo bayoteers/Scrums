@@ -156,7 +156,7 @@ sub new_sprint {
                                                                  );
 
             my $bug_array = [];
-            if ($take_bugs) {
+            if ($take_bugs && $current_sprint) {
                 my $bug_id_array = $current_sprint->get_remaining_item_array();
                 $bug_array = Bugzilla::Bug->new_from_list($bug_id_array);
             }
