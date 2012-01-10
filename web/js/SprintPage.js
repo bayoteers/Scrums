@@ -141,6 +141,7 @@ var SprintEditor = {
         });
 
         this._child('.cancelEdit').click(this._onCancelClick.bind(this));
+        this._child('.cancelEdit').toggle(!!SCRUMS_CONFIG.active_sprint);
         $('#sprint').html(form);
     },
 
@@ -160,6 +161,7 @@ var SprintEditor = {
      */
     _onCancelClick: function()
     {
+        $('select[name=sprintid]').get(0).selectedIndex = 0;
         this.close();
         SprintView.refreshSprint();
     },
