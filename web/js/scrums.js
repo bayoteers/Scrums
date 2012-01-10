@@ -28,7 +28,7 @@ var ignore_changes = false;
 var initialised = false;
 var scrollbar_1_visible = false;
 var scrollbar_2_visible = false;
-var show_scrollbars = false;
+var show_scrollbars = true;
 
 
 /**
