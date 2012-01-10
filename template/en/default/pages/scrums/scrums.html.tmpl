@@ -88,6 +88,16 @@ var product_list = [
 
     <table class="linklist">
       [% IF active_sprint.id %]
+          <tr>
+            <td>
+              <a href="page.cgi?id=scrums/teambugs.html&teamid=[% team.id %]&sprint_id=[% active_sprint.id %]"
+                ><img src="extensions/Scrums/web/img/icon4.png"></a>
+            </td>
+            <td>
+            <a href="page.cgi?id=scrums/teambugs.html&teamid=[% team.id %]&sprint_id=[% active_sprint.id %]"
+                >Edit This Sprint</a>
+            </td>
+          </tr>
         [% IF treeviewurl %]
           <tr>
             [% remaining_items = active_sprint.get_remaining_item_array() %]

@@ -410,13 +410,22 @@ sub show_team_bugs {
     my ($vars) = @_;
 
     my $team_id = Bugzilla->cgi->param('teamid');
+    my $sprint_id = Bugzilla->cgi->param('sprint_id');
+
     my $team    = Bugzilla::Extension::Scrums::Team->new($team_id);
     $vars->{'team'}               = $team;
     $vars->{'unprioritised_bugs'} = $team->unprioritised_bugs();
 
     my @team_sprints_array;
     my $capacity;
-    my $sprint = $team->get_team_current_sprint();
+
+    my $sprint;
+    if($sprint_id) {
+        $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+        ThrowUserError('scrums_sprint_not_found') unless $sprint->{id};
+    } else {
+        $sprint = $team->get_team_current_sprint();
+    }
 
     $vars->{'active_sprint'} = $sprint;
 
