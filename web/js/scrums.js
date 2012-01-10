@@ -57,24 +57,44 @@ function render_all(already_rendered)
     $("#table"+all_lists[1].ul_id).tablesorter();
 }
 
-function listObject(ul_id, h_id, id, name, li_tmpl_function, link_url, offset_step) 
+
+/**
+ * Create a listObject.
+ * @constructor
+ *
+ * @param ul_id
+ *      ID of the <ul> element created by ListsHtmlTempl.js::create_list_html()
+ *      to contain the items in this list.
+ * @param h_id
+ *      ID of the <h3> element created by
+ *      ListsHtmlTempl.js::create_release_item_list_html() to contain the list
+ *      title.
+ * @param id
+ *      ID of the <select> element created by create_release_item_list_html()
+ *      to contain the pagination options for the list (i.e. items per page).
+ * @param name
+ *      Human readable list name.
+ * @param li_tmpl_function
+ *      Callback passed a "bug row" (see below), index, and array of column
+ *      names to render, and is expected to return a string containing the
+ *      rendered row as a string. Despite the name, the expected element type,
+ *      at least for ListsHtmlTempl.js::create_item_line_html() is <tr>.
+ * @param link_url
+ *      Optional; if given, a URL to link the <h3> element to.
+ * @param offset_step
+ *      TODO document me.
+ */
+function listObject(ul_id, h_id, id, name, li_tmpl_function, link_url, offset_step)
 {
     this.ul_id = ul_id;
-    this.id = id;
     this.h_id = h_id;
+    this.id = id;
     this.link_url = link_url;
     this.list = [];
     this.original_list = [];
     this.visible = -1;
     this.offset = 0;
-    if(offset_step)
-    {
-        this.offset_step = offset_step;
-    }
-    else
-    {
-        this.offset_step = 99999; // default value
-    }
+    this.offset_step = offset_step || 99999; // default value
     this.name = name;
     this.line_template_function = li_tmpl_function;
     this.show_columns = ['order', 'bug_id', 'points', 'summary'];
