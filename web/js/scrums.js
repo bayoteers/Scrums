@@ -49,6 +49,10 @@ var RpcProgressView = {
 
     init: function()
     {
+        if(this._progress) {
+            return;
+        }
+
         this._active = 0;
         this._progress = $('<div>Working..</div>');
         this._progress.css(this._CSS_PROPS);
@@ -79,6 +83,9 @@ var RpcProgressView = {
         }
     }
 };
+
+// TODO: this should be moved to somewhere sensible.
+$(document).ready(RpcProgressView.init.bind(RpcProgressView));
 
 
 function toggle_scroll()
