@@ -26,6 +26,7 @@ var scrollbar_1_visible = false;
 var scrollbar_2_visible = false;
 var bugs = null;
 var ignore_changes = false;
+var bug_positions = [];
 
 function toggle_scroll()
 {
