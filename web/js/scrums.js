@@ -74,7 +74,7 @@ function render_all(already_rendered)
  *      to contain the pagination options for the list (i.e. items per page).
  * @param name
  *      Human readable list name.
- * @param li_tmpl_function
+ * @param line_tmpl_function
  *      Callback passed a "bug row" (see below), index, and array of column
  *      names to render, and is expected to return a string containing the
  *      rendered row as a string. Despite the name, the expected element type,
@@ -84,19 +84,24 @@ function render_all(already_rendered)
  * @param offset_step
  *      TODO document me.
  */
-function listObject(ul_id, h_id, id, name, li_tmpl_function, link_url, offset_step)
+function listObject(ul_id, h_id, id, name, line_tmpl_function, link_url,
+    offset_step)
 {
     this.ul_id = ul_id;
     this.h_id = h_id;
     this.id = id;
+    this.name = name;
+    this.line_template_function = line_tmpl_function;
     this.link_url = link_url;
+    this.offset_step = offset_step || 99999;
+
+    /** Possibly mutated copy of list items. */
     this.list = [];
+    /** Original items as passed to bind_items_to_list(). */
     this.original_list = [];
+    /** Either integer -1, or an array of something. */
     this.visible = -1;
     this.offset = 0;
-    this.offset_step = offset_step || 99999; // default value
-    this.name = name;
-    this.line_template_function = li_tmpl_function;
     this.show_columns = ['order', 'bug_id', 'points', 'summary'];
     this.show_priority = true;
     this.show_creation_date = false;
