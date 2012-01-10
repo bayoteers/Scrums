@@ -92,16 +92,22 @@ var SprintEditor = {
      * Reinitialize the object, recreating the editor form using the associated
      * template.
      *
-     * @param sprintId
-     *      If nonzero, indicates we're editing an existing sprint. Otherwise,
-     *      render the "Create Sprint" form instead.
+     * @param sprint
+     *      If given, the sprint object we're editing. Otherwise, render the
+     *      "Create Sprint" form instead.
      */
-    _init: function(sprintId)
+    _init: function(sprint)
     {
         var form = $("#sprint_editor_template").clone();
         this.state = {
-            form: form
+            form: form,
+            sprint: sprint
         };
+
+        form.ajaxForm({
+            success: this._onCreateDone.bind(this),
+            dataType: 'json'
+        });
 
         function append(name, value) {
             $('<input>').attr({
@@ -113,9 +119,9 @@ var SprintEditor = {
 
         append('teamid', SCRUMS_CONFIG.team.id);
 
-        if(sprintId) {
+        if(sprint) {
             append('schema', 'editsprint');
-            append('sprintid', sprintId);
+            append('sprintid', sprint.id);
             $('.save-buttons', form).remove();
             $('h3', form).text('Edit Sprint');
         } else {
@@ -124,18 +130,29 @@ var SprintEditor = {
             $('h3', form).text('Create Sprint');
         }
 
-        $('[name=start_date]', form).datepicker({
+        this._field('start_date').datepicker({
             minDate: new Date(),
             dateFormat: 'yy-mm-dd'
         });
+        this._field('start_date').change(this._onStartDateChange.bind(this));
 
-        $('[name=end_date]', form).datepicker({
+        this._field('end_date').datepicker({
             dateFormat: 'yy-mm-dd'
         });
 
-        form.attr('id', 'new_sprint_form');
-        $('.cancelEdit', form).click(this._onCancelClick.bind(this));
-        return form;
+        this._child('.cancelEdit').click(this._onCancelClick.bind(this));
+        $('#sprint').html(form);
+    },
+
+    /**
+     * Handle the start date changing by updating the end date automatically.
+     */
+    _onStartDateChange: function()
+    {
+        var days = SCRUMS_CONFIG.default_sprint_days;
+        var startDate = this._field('start_date').datepicker('getDate');
+        var endDate = DateUtil.add(startDate, days * 86400 * 1000);
+        this._field('end_date').val(DateUtil.isoFormat(endDate));
     },
 
     /**
@@ -185,14 +202,8 @@ var SprintEditor = {
      */
     openEdit: function(sprint)
     {
-        this._init(sprint.id);
-        this.state.sprint = sprint;
-
-        this.state.form.ajaxForm({
-            success: this._onCreateDone.bind(this),
-            dataType: 'json'
-        });
-        $('#sprint').html(this.state.form);
+        this.close();
+        this._init(sprint);
 
         this._field('sprintname').val(sprint.name.replace('Sprint ', ''));
         this._field('description').val(sprint.description);
@@ -267,12 +278,6 @@ var SprintEditor = {
     {
         this.close();
         this._init();
-
-        this.state.form.ajaxForm({
-            success: this._onCreateDone.bind(this),
-            dataType: 'json'
-        });
-        $('#sprint').html(this.state.form);
 
         var startDate = DateUtil.getNextBusinessDay();
         var days = SCRUMS_CONFIG.default_sprint_days;
