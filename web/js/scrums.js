@@ -27,6 +27,7 @@ var scrollbar_2_visible = false;
 var bugs = null;
 var ignore_changes = false;
 var bug_positions = [];
+var initialised = false;
 
 function toggle_scroll()
 {
