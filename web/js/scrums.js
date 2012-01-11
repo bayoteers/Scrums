@@ -28,7 +28,7 @@ var ignore_changes = false;
 var initialised = false;
 var scrollbar_1_visible = false;
 var scrollbar_2_visible = false;
-var show_scrollbars = true;
+var show_scrollbars = false;
 
 
 /**
@@ -97,20 +97,18 @@ function toggle_scroll()
 function render_all(already_rendered)
 {
     var frame_height = 435;    
+
     if(initialised && show_scrollbars && !already_rendered) {
-        var table_1_height = 0;
-        $('#sprint .container').each(function (i, item)
-        {
-            table_1_height = $(item).height();
-        });
-        $('#unordered .container').each(function (i, item)
-        {
-            table_2_height = $(item).height();
-        });
+        var table_1_height = $('#sprint .container').last().height();
+        var table_2_height = $('#unordered .container').last().height();
         scrollbar_1_visible = (table_1_height > frame_height);
         scrollbar_2_visible = (table_2_height > frame_height);
+    } else {
+        scrollbar_1_visible = false;
+        scrollbar_2_visible = false;
     }
-    $('#sprint').html(create_list_html(all_lists[0],    scrollbar_1_visible));
+
+    $('#sprint').html(create_list_html(all_lists[0], scrollbar_1_visible));
     $('#unordered').html(create_list_html(all_lists[1], scrollbar_2_visible));
     update_tables();
     $("#table"+all_lists[0].ul_id).tablesorter();
