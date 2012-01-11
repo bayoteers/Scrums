@@ -232,3 +232,170 @@ sub unprioritised_bugs {
 
 __END__
 
+=head1 NAME
+
+Bugzilla::Extension::Scrums::Release - Scrums release class.
+
+=head1 SYNOPSIS
+
+    use Bugzilla::Extension::Scrums::Release;
+    my $release = Bugzilla::Extension::Scrums::Release->new($release_id);
+    my $release = Bugzilla::Extension::Scrums::Release->new({ name => $name });
+
+    my $name               = $release->name();
+    my $milestone_begin    = $release->target_milestone_begin();
+    my $milestone_end      = $release->target_milestone_end();
+    my $flagtypes          = $release->flag_types();
+    my $scheduled_bugs     = $release->scheduled_bugs();
+    my $unprioritised_bugs = $release->unprioritised_bugs();
+
+    my $release = Bugzilla::Extension::Scrums::Release->create({ name             => $name });
+
+    $release->set_name($name); 
+    $release->set_target_milestone_begin($milestone_begin);
+    $release->set_target_milestone_end($milestone_end);
+    $release->set_flag_type($flag_type_id);
+    $release->remove_flag_type($flag_type_id);
+
+    $release->update();
+
+    $release->remove_from_db;
+
+=head1 DESCRIPTION
+
+Release.pm represents a release, that Scrums extension is used as an aid for planning.
+
+=head1 METHODS
+
+=over
+
+=item C<new($release_id)>
+
+ Description: The constructor is used to load an existing release
+              by passing a release ID .
+
+ Params:      $release_id - Release ID (integer) from the database that we want to
+                       read in.
+
+ Returns:     A Bugzilla::Extension::Scrums::Release object.
+
+=item C<name()>
+
+ Description: Returns name of release.
+
+ Params:      none.
+
+ Returns:     String.
+
+=item C<target_milestone_begin()>
+
+ Description: Returns starting limit of targe milestone.
+
+ Params:      none.
+
+ Returns:     Starting week (string in format 'yyyy-ww').
+
+=item C<target_milestone_end()>
+
+ Description: Returns ending limit of targe milestone.
+
+ Params:      none.
+
+ Returns:     Ending week (string in format 'yyyy-ww').
+
+=item C<flag_types()>
+
+ Description: Returns all flag types, that are part of the release.
+
+ Params:      none.
+
+ Returns:     Reference to an array of Bugzilla::FlagType objects.
+
+=item C<scheduled_bugs()>
+
+ Description: Returns all items, that are part of release and that are prioritised in release.
+
+ Params:      none.
+
+ Returns:     Reference to a table of data, that represents list of bugs.
+
+=item C<unprioritised_bugs()>
+
+ Description: Returns all items, that are part of release and that are not prioritised in release.
+
+ Params:      none.
+
+ Returns:     Reference to a table of data, that represents list of bugs.
+
+=item C<_check_name($name)>
+
+ Description: Checks name of release for its length and content.
+
+ Params:      $name
+
+ Returns:     Nothing. Throws exception if given name is not valid
+
+=item C<set_name($name)>
+
+ Description: Sets name of release.
+
+ Params:      $name    - Name of release
+
+ Returns:     Nothing.
+
+=item C<set_target_milestone_begin($milestone_begin)>
+
+ Description: Sets starting limit of targe milestone.
+
+ Params:      none.
+
+ Returns:     String.
+
+=item C<set_target_milestone_end($milestone_end)>
+
+ Description: Sets ending limit of targe milestone.
+
+ Params:      none.
+
+ Returns:     String.
+
+=item C<set_flag_type($flag_type_id)>
+
+ Description: Sets flag type to release.
+
+ Params:      Id (integer) of flag type.
+
+ Returns:     Nothing.
+
+=item C<remove_flag_type($flag_type_id)>
+
+ Description: Removes flag type from release.
+
+ Params:      Id (integer) of flag type.
+
+ Returns:     Nothing.
+
+=back
+
+=head1 CLASS METHODS
+
+=over
+
+=item C<create(\%params)>
+
+ Description: Creates a new release.
+
+ Params:      The hashref must have the following keys:
+              team_id
+              name                   - Name of the release (string). 
+              The following keys are optional:
+              target_milestone_begin - Starting limit of targe milestone
+              target_milestone_end   - Ending limit of targe milestone
+
+ Returns:     A Bugzilla::Extension::Scrums::Release object.
+
+=back
+
+=cut
+
+

@@ -72,6 +72,9 @@
 [% ELSIF error == "scrums_team_not_found" %]
     [% title = "Team Not Found" %]
     The requested team does not exist
+[% ELSIF error == "scrums_sprint_not_found" %]
+    [% title = "Sprint Not Found" %]
+    The requested sprint does not exist.
 [% ELSIF error == "scrums_overlapping_sprint" %]
     [% title = "Sprint is overlapping another sprint" %]
     Sprint is overlapping another sprint '[% name %]', start: [% start %], end: [% end %]

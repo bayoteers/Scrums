@@ -30,6 +30,7 @@ use Bugzilla::Error;
 use Bugzilla::Group;
 use Bugzilla::User;
 
+use Bugzilla::Extension::Scrums::Sprinthandle;
 use Bugzilla::Extension::Scrums::Teams;
 use Bugzilla::Extension::Scrums::Releases;
 use Bugzilla::Extension::Scrums::Sprintslib;
@@ -37,6 +38,9 @@ use Bugzilla::Extension::Scrums::LoadTestData;
 use Bugzilla::Extension::Scrums::DebugLibrary;
 
 use Bugzilla::Util qw(trick_taint);
+
+use JSON::PP;
+
 
 our $VERSION = '1.0';
 
@@ -511,6 +515,22 @@ sub install_before_final_checks {
     }
 }
 
+
+sub fix_json {
+    my $vars = shift;
+    return if $vars->{json_text};
+    $vars->{json_text} = JSON->new->utf8->pretty->encode({
+        errors => int($vars->{errors} || ''),
+        errormsg => $vars->{errors} || '',
+        ret_value => $vars->{ret_value} || '',
+        debug_text => $vars->{debug_text} || '',
+        warnings => int($vars->{warnings} || ''),
+        warningmsg => $vars->{warnings} || '',
+        output => $vars->{output} || ''
+    });
+}
+
+
 sub page_before_template {
     my ($self, $args) = @_;
 
@@ -549,7 +569,7 @@ sub page_before_template {
     elsif ($page eq 'scrums/scrums.html') {
         my $teams = Bugzilla::Extension::Scrums::Team->user_teams(Bugzilla->user->id());
         $vars->{'teams'} = $teams;
-
+        Bugzilla::Extension::Scrums::Teams::show_products($vars, $teams);
         my @sprints;
         for my $team (@{$teams}) {
             my $sprint = $team->get_team_current_sprint();
@@ -559,82 +579,110 @@ sub page_before_template {
         $vars->{'sprints'} = \@sprints;
     }
     elsif ($page eq 'scrums/allteams.html') {
-        show_all_teams($vars);
+        Bugzilla::Extension::Scrums::Teams::show_all_teams($vars);
     }
     elsif ($page eq 'scrums/createteam.html') {
-        show_create_team($vars);
-    }
-    elsif ($page eq 'scrums/addintoteam.html') {
-        if (not Bugzilla->user->in_group('scrums_editteams')) {
-            ThrowUserError('auth_failure', { group => "scrums_editteams", action => "edit", object => "team" });
-        }
-
-        add_into_team($vars);
+        Bugzilla::Extension::Scrums::Teams::show_create_team($vars);
     }
     elsif ($page eq 'scrums/searchperson.html') {
-        search_person($vars);
+        Bugzilla::Extension::Scrums::Teams::search_person($vars);
     }
     elsif ($page eq 'scrums/newteam.html') {
-        edit_team($vars);
+        Bugzilla::Extension::Scrums::Teams::edit_team($vars);
     }
     elsif ($page eq 'scrums/ajaxsprintbugs.html') {
 
         my $cgi    = Bugzilla->cgi;
-        my $schema = $cgi->param('schema');
-        if ($schema eq "newsprint") {
-            $vars->{'editsprint'} = 1;
-            #$cgi->param('editsprint') = 1;
-            $cgi->param(-name => 'editsprint', -value => 'true');
-            my $sprintid = _new_sprint($vars);
-            #my $sprintid = edit_sprint($vars);
-            $cgi->param(-name => 'sprintid', -value => $sprintid);
-            #$vars->{'sprintid'} = $sprintid;
-            #$cgi->param('sprintid') = 1;
-            ajax_sprint_bugs($vars);
-            #show_team_and_sprints($vars);
+        my $schema = "";
+        $schema = $cgi->param('schema');
+        if ($cgi->param("deletesprint")) {
+            Bugzilla::Extension::Scrums::Sprinthandle::delete_sprint();
+            # Page is re-loaded after deleting active sprint
         }
-        elsif ($schema eq "editsprint") {
-            $vars->{'editsprint'} = 1;
-            show_team_and_sprints($vars);
-            ajax_sprint_bugs($vars);
-
+        elsif ($schema && $schema eq "newsprint") {
+            my $sprintid = Bugzilla::Extension::Scrums::Sprinthandle::new_sprint($vars);
+            # Page is re-loaded after creating new sprint
+        }
+        elsif ($schema && $schema eq "editsprint") {
+            Bugzilla::Extension::Scrums::Sprinthandle::update_sprint($vars);
+            Bugzilla::Extension::Scrums::Sprinthandle::show_sprint($vars);
         }
         else {
-            ajax_sprint_bugs($vars);
+            Bugzilla::Extension::Scrums::Sprinthandle::show_sprint($vars);
         }
     }
-    elsif ($page eq 'scrums/teambugs.html') {
-        show_team_and_sprints($vars);
+    elsif ($page eq 'scrums/ajaxbuglist.html') {
+        my $cgi       = Bugzilla->cgi;
+        my $action    = $cgi->param('action');
+        my $team_id   = $cgi->param('team_id');
+        my $sprint_id = $cgi->param('sprint_id');
+        if ($action && $action eq "unprioritised_items") {
+            my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+            $vars->{'buglist'} = $team->unprioritised_items();
+        }
+        elsif ($action && $action eq "unprioritised_bugs") {
+            my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+            $vars->{'buglist'} = $team->unprioritised_bugs();
+        }
+        elsif ($action && $action eq "other_items_than_in_active_sprint") {
+            # This includes also items in backlog (which is disabled)
+            my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+            $vars->{'buglist'} = $team->all_items_not_in_sprint();
+        }
+        else {
+            my $sprint = Bugzilla::Extension::Scrums::Sprint->new($sprint_id);
+            $vars->{'buglist'} = $sprint->get_bugs();
+        }
     }
-    elsif ($page eq 'scrums/teambugs.html' || $page eq 'scrums/dailysprint.html') {
-        show_team_and_sprints($vars);
+    elsif ($page eq "scrums/ajaxblockinglist.html") {
+        my $cgi    = Bugzilla->cgi;
+        my $action = $cgi->param('action');
+        if ($action && $action eq "blocking_items") {
+            my $bug_id        = $cgi->param('bug_id');
+            my $blocking_list = Bugzilla::Extension::Scrums::Sprint->get_blocking_item_list($bug_id);
+            $vars->{'blockinglist'} = $blocking_list;
+        }
     }
-    elsif ($page eq 'scrums/backlogplanning.html') {
-        show_backlog_and_items($vars);
+    elsif ($page eq 'scrums/teambugs.html' || $page eq 'scrums/dailysprint.html' || $page eq 'scrums/backlogplanning.html') {
+        Bugzilla::Extension::Scrums::Teams::show_team_bugs($vars);
     }
     elsif ($page eq 'scrums/archivedsprints.html') {
-        show_archived_sprints($vars);
+        Bugzilla::Extension::Scrums::Sprinthandle::show_archived_sprints($vars);
     }
     elsif ($page eq "scrums/ajax.html") {
         my $cgi    = Bugzilla->cgi;
         my $schema = $cgi->param('schema');
 
-        if ($schema eq "personcapacity") {
+        my $action = $cgi->param('action');
+        if ($action && $action eq "move_pending_items") {
+            # TODO database locking for this feature
+            my $data    = $cgi->param('data');
+            my $team_id = $cgi->param('obj_id');
+            if ($schema eq "backlog") {
+                Bugzilla::Extension::Scrums::Teams::move_pending_items($data, 1, $team_id);
+            }
+            else {
+                Bugzilla::Extension::Scrums::Teams::move_pending_items($data, 0, $team_id);
+            }
+        }
+        elsif ($schema eq "personcapacity") {
             my $data = $cgi->param('data');
-            handle_person_capacity($data, $vars);
+            Bugzilla::Extension::Scrums::Sprintslib::handle_person_capacity($data, $vars);
         }
         elsif ($schema eq "release") {
             handle_release_bug_data($vars);
         }
         elsif ($schema eq "backlog") {
-            update_team_bugs($vars, 1);
+            Bugzilla::Extension::Scrums::Teams::update_team_bugs($vars, 1);
         }
         else {
-            update_team_bugs($vars, 1);
+            Bugzilla::Extension::Scrums::Teams::update_team_bugs($vars, 0);
         }
+
+        fix_json($vars);
     }
     elsif ($page eq 'scrums/newsprint.html') {
-        edit_sprint($vars);
+        Bugzilla::Extension::Scrums::Teams::edit_sprint($vars);
     }
 
     # Releases
@@ -687,7 +735,7 @@ sub page_before_template {
         my $cgi       = Bugzilla->cgi;
         my $sprint_id = $cgi->param('sprintid');
 
-        sprint_summary($vars, $sprint_id);
+        Bugzilla::Extension::Scrums::Sprintslib::sprint_summary($vars, $sprint_id);
     }
 
     return;

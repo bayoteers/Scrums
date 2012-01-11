@@ -46,9 +46,11 @@
         ];
 
   var max_ts, min_ts, max_date, min_date;
+  max_ts = [% end %]; // Sprint end (or current moment if sprint end is not fixed)
 
   var options = {
     xaxis: { mode: "time", tickLength: 5 },
+    yaxis: { min: 0 },
     selection: { mode: "x" }
   };
 
@@ -113,11 +115,6 @@
         items_work[i][0] = items_work[i][0] + tzo;
     }
 
-    max_ts = hours_rem[0][0];
-    if(items_rem[0][0] > hours_rem[0][0])
-    {
-        max_ts = items_rem[0][0];
-    }
     min_ts = hours_rem[hours_rem.length-1][0];
     if(items_rem[items_rem.length-1][0] < hours_rem[hours_rem.length-1][0])
     {
@@ -226,11 +223,14 @@
         if(y < 1970 || y > 2030 || m < 1 || m > 12 || d < 1 || d > 31)
             return null;
         if(is_upper_limit)
-            d++;
+           d++;
         var date = new Date(y, m-1, d, 0, 0, 0, 0);
         date.setUTCHours(0);
-        date.setUTCDate(d);
         date.setUTCMonth(m-1);
+        // If one day was added to day field, day field might have passed the end of month.
+        // In that case Date obejct itself adjusts month and day of month accordingly.
+        // This has however pre-requisite, that month has already been set before day is set.
+        date.setUTCDate(d); 
         // Upper limit is end of day, which is 1 day - 1 second bigger than beginning of day
         if(is_upper_limit)
             return date.getTime() - 1000; 

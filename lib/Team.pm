@@ -162,14 +162,6 @@ sub remove_member {
     Bugzilla->dbh->do('DELETE FROM scrums_teammember WHERE userid = ? AND teamid = ?', undef, $member_id, $team_id);
 }
 
-sub team_memberships_of_user {
-    my ($self, $user_id) = @_;
-
-    my $user_team_ids = Bugzilla->dbh->selectall_arrayref('SELECT teamid FROM scrums_teammember WHERE userid = ?', undef, $user_id);
-
-    return $user_team_ids;
-}
-
 sub team_of_component {
     my ($self, $component_id) = @_;
 
@@ -281,10 +273,10 @@ sub all_teams {
         @{$team_list} = sort { lc($b->owner_user->name) cmp lc($a->owner_user->name) } @{$team_list};
     }
     elsif ($sort == 5) {
-        @{$team_list} = sort { lc($a->owner_user->login) cmp lc($b->owner_user->login) } @{$team_list};
+        @{$team_list} = sort { lc($a->scrum_master_user->name) cmp lc($b->scrum_master_user->name) } @{$team_list};
     }
     elsif ($sort == 6) {
-        @{$team_list} = sort { lc($b->owner_user->login) cmp lc($a->owner_user->login) } @{$team_list};
+        @{$team_list} = sort { lc($b->scrum_master_user->name) cmp lc($a->scrum_master_user->name) } @{$team_list};
     }
     else {
         @{$team_list} = sort { lc($a->id) cmp lc($b->id) } @{$team_list};
@@ -370,7 +362,11 @@ sub unprioritised_bugs {
         left(b.short_desc, 40),
         b.short_desc,
         b.creation_ts,
-        b.bug_severity
+        b.bug_severity,
+        0,
+        0,
+        0,
+        0
     from 
 	scrums_componentteam sct
     inner join
@@ -418,7 +414,11 @@ sub unprioritised_items {
         left(b.short_desc, 40),
         b.short_desc,
         b.creation_ts,
-        b.bug_severity
+        b.bug_severity,
+        0,
+        0,
+        0,
+        0
     from 
 	scrums_componentteam sct
     inner join
@@ -563,11 +563,323 @@ sub _is_bug_in_active_sprint {
     return undef;
 }
 
-sub mysort {
-    lc($a->owner_user->name) cmp lc($b->owner_user->name);
-}
-
 1;
 
 __END__
+
+=head1 NAME
+
+Bugzilla::Extension::Scrums::Team - Scrums team class.
+
+=head1 SYNOPSIS
+
+    use Bugzilla::Extension::Scrums::Team;
+    my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
+    my $team = Bugzilla::Extension::Scrums::Team->new({ name => $name });
+
+    my $name               = $team->name();
+    my $owner_id           = $team->owner();
+    my $scrum_master_id    = $team->scrum_master();
+    my $owner_user         = $team->owner_user();
+    my $scrum_master_user  = $team->scrum_master_user();
+    my $members_user_array = $team->members();
+    my $components_array   = $team->components();
+    my $backlog_enabled    = $team->is_using_backlog();
+    my $team_current_sprint= $team->get_team_current_sprint();
+    my $bug_data_table     = $team->unprioritised_bugs();
+    my $bug_data_table     = $team->unprioritised_items();
+    my $bug_data_table     = $team->all_items_not_in_sprint();
+    my $bug_order_array    = $team->get_active_sprints_bug_orders();
+    my $is_priviledged     = $team->is_team_super_user($user);
+    my $is_member          = $team->is_user_team_member($user);
+    my $backlog            = $team->get_team_backlog();
+    my $is_responsible     = $team->is_team_responsible_for_component_id($component_id);
+
+    my $team_of_component  = Bugzilla::Extension::Scrums::Team->team_of_component($component_id);
+    my $user_team_array    = Bugzilla::Extension::Scrums::Team->user_teams($user_id);
+    my $all_teams_array    = Bugzilla::Extension::Scrums::Team->all_teams($sort);
+
+    my $team = Bugzilla::Extension::Scrums::Team->create({ name             => $name,
+                                                           owner            => $owner_id });
+    $team->set_name($name);
+    $team->set_owner($owner_id);
+    $team->set_scrum_master($scrum_master_id);
+    $team->set_component($component_id);
+    $team->remove_component($component_id);
+    $team->set_member($member_id);
+    $team->remove_member($member_id);
+    $team->set_is_using_backlog($backlog_enabled);
+
+    $team->update();
+
+    $team->remove_from_db;
+
+=head1 DESCRIPTION
+
+Team.pm represents a work team, that uses Scrums extension for planning it's work.
+
+=head1 METHODS
+
+=over
+
+=item C<new($param)>
+
+ Description: The constructor is used to load an existing team
+              by passing a team ID or a hash with the team name.
+
+ Params:      $param - If you pass an integer, the integer is the
+                       team ID from the database that we want to
+                       read in. If you pass in a hash with the 'name',
+                       then the value of the name key is 
+                       the name of the given team.
+
+ Returns:     A Bugzilla::Extension::Scrums::Team object.
+
+=item C<name()>
+
+ Description: Returns name of the team.
+
+ Params:      none.
+
+ Returns:     String.
+
+=item C<owner()>
+
+ Description: Returns id of owner of the team.
+
+ Params:      none.
+
+ Returns:     Id (integer) of a Bugzilla::User object.
+
+=item C<scrum_master()>
+
+ Description: Returns id of scrums master of the team.
+
+ Params:      none.
+
+ Returns:     Id (integer) of a Bugzilla::User object.
+
+=item C<owner_user()>
+
+ Description: Returns user object that represents owner of the team.
+
+ Params:      none.
+
+ Returns:     A Bugzilla::User object.
+
+=item C<scrum_master_user()>
+
+ Description: Returns user object that represents scrum master of the team.
+
+ Params:      none.
+
+ Returns:     A Bugzilla::User object.
+
+=item C<members()>
+
+ Description: Returns all members, that team has. This does not include team owner and scrum master.
+
+ Params:      none.
+
+ Returns:     Reference to an array of Bugzilla::User objects.
+
+=item C<components()>
+
+ Description: Returns all components, that team is responsible.
+
+ Params:      none.
+
+ Returns:     Reference to an array of Bugzilla::Component objects.
+
+=item C<is_using_backlog() >
+
+ Description: Returns status, whether team uses backlog or not.
+
+ Params:      none.
+
+ Returns:     One if true and zero if false.
+
+=item C<get_team_current_sprint()>
+
+ Description: Returns current sprint of the team. Returns undef, if current sprint does not exist.
+
+ Params:      none.
+
+ Returns:     A Bugzilla::Extension::Scrums::Sprint.
+
+=item C<unprioritised_bugs()>
+
+ Description: Returns all bugs, that match these conditions: They are assigned to team. They are open. They have not been prioritised. Their severity is not 'task' or 'fearture' ie. they are bugs.
+
+ Params:      none.
+
+ Returns:     Reference to a table of data, that represents list of bugs.
+
+=item C<unprioritised_items()>
+
+ Description: Returns all items, that match these conditions: They are assigned to team. They are open. They have not been prioritised.
+
+ Params:      none.
+
+ Returns:     Reference to a table of data, that represents list of bugs.
+
+=item C<all_items_not_in_sprint()>
+
+ Description: Returns all items, that match these conditions: They are assigned to team. They are open. They are not in active sprint.
+
+ Params:      none.
+
+ Returns:     Reference to a table of data, that represents list of bugs.
+
+=item C<get_active_sprints_bug_orders()>
+
+ Description: Returns ordered list of bugs in active sprint of the team.
+
+ Params:      none.
+
+ Returns:     Reference to an array of Bugzilla::Extension::Scrums::Bugorder objects.
+
+=item C<is_team_super_user($user)>
+
+ Description: Returns whether given user is priviledged user in team or not.
+
+ Params:      A Bugzilla::User object.
+
+ Returns:     One if true and zero if false.
+
+=item C<is_user_team_member($user)>
+
+ Description: Returns whether given user is ordinary member of the team or not. This does not include that user is priviledged user in team like team owner or scrum master.
+
+ Params:      A Bugzilla::User object.
+
+ Returns:     One if true and zefo if false.
+
+=item C<get_team_backlog()>
+
+ Description: Returns the backlog of the team.
+
+ Params:      none.
+
+ Returns:     A Bugzilla::Extension::Scrums::Sprint object.
+
+=item C<is_team_responsible_for_component_id($component_id)>
+
+ Description: Returns whether team is responsible for given component or not.
+
+ Params:      Id (integer) of A Bugzilla::Component object.
+
+ Returns:     One if true and zero if false.
+
+=item C<set_name($name)>
+
+ Description: Sets name of team.
+
+ Params:      Name (string).
+
+ Returns:     Nothing.
+
+=item C<set_owner($owner_id)>
+
+ Description: Set owner user of the team.
+
+ Params:      Id (integer) of a Bugzilla::User object, that represents the owner of the team .
+
+ Returns:     Nothing.
+
+=item C<set_scrum_master($scrum_master_id)>
+
+ Description: Set scrum master user of the team.
+
+ Params:      Id (integer) of a Bugzilla::User object, that represents the scrum master of the team.
+
+ Returns:     Nothing.
+
+=item C<set_component($component_id)>
+
+ Description: Adds new component, that team is responsible.
+
+ Params:      Id (integer) of A Bugzilla::Component object.
+
+ Returns:     Nothing.
+
+=item C<remove_component($component_id)>
+
+ Description: Removes component from the list of components, that team is responsible.
+
+ Params:      Id (integer) of A Bugzilla::Component object.
+
+ Returns:     Nothing.
+
+=item C<set_member($member_id)>
+
+ Description: Adds new member user to the team.
+
+ Params:      Id (integer) of a Bugzilla::User object, that represents new team member.
+
+ Returns:     Nothing.
+
+=item C<remove_member($member_id)>
+
+ Description: Removes given team member from team.
+
+ Params:      Id (integer) of a Bugzilla::User object, that represents removed team member.
+
+ Returns:     Nothing.
+
+=item C<set_is_using_backlog($backlog_enabled)>
+
+ Description: Sets status, whether team uses backlog or not.
+
+ Params:      One, if team is to use backlog, and zero if not.
+
+ Returns:     Nothing.
+
+=back
+
+=head1 CLASS METHODS
+
+=over
+
+=item C<create(\%params)>
+
+ Description: Create a new team.
+
+ Params:      The hashref must have the following keys:
+              name            - name of the new team (string). This name
+                                must be unique.
+              owner           - id of a Bugzilla::User object of team owner.
+              The following keys are optional:
+              scrum_master    - id of a Bugzilla::User object of scrum master.
+
+ Returns:     A Bugzilla::Extension::Scrums::Team object.
+
+
+=item C<team_of_component($component_id)>
+
+ Description: Return responsible team for component, if there is one.
+
+ Params:      Id (integer) of A Bugzilla::Component object.
+
+ Returns:     A Bugzilla::Extension::Scrums::Team object.
+
+=item C<user_teams($user_id)>
+
+ Description: Returns all teams, where user is member. In here membership includes also owner and scrum master roles in team.
+
+ Params:      Id (integer) of a Bugzilla::User object.
+
+ Returns:     Reference to an array of Bugzilla::Extension::Scrums::Team objects.
+
+=item C<all_teams($sort)>
+
+ Description: Returns all teams in system.
+
+ Params:      none.
+
+ Returns:     Reference to an array of Bugzilla::Extension::Scrums::Team objects.
+
+=back
+
+=cut
 

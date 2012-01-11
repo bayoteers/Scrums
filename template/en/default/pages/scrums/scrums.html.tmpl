@@ -23,6 +23,28 @@
     title = title 
 %]
 
+<script type="text/javascript" src="extensions/Scrums/web/js/CreateBug.js"></script>
+
+<style type="text/css">
+  <!--
+  .linklist img
+  {
+    width:         30px;
+    margin-bottom: 5px;
+    margin-top:    5px;
+    margin-left:   30px;
+    border: 1px    solid;
+  }
+  -->
+</style>
+
+<script type="text/javascript">
+var product_list = [
+  [% FOREACH product IN user_products %]
+   ['[% product.0 %]', '[% product.1 %]'][%- "," IF NOT loop.last %]
+  [% END %] ];
+</script>
+
 [% IF teams.size() < 1 %]
   <h1>Scrums</h1>
 
@@ -36,8 +58,17 @@
   [% ELSE %]
     [% large = 1 %]
   [% END %]
+  <span id="createbug">
+    <br>
+    <a href="" onclick="select_component(); return false;">
+      New bug
+    </a>
+  </span>
+  <br>
+  <hr>
 
   [% index = 0 %]
+
   [% FOREACH team IN teams %]
     <h1>
       Team '[% team.name %]'
@@ -55,9 +86,47 @@
 
     <h2>My Sprint View</h2>
 
-    <table>
+    <table class="linklist">
       [% IF active_sprint.id %]
+          <tr>
+            <td>
+              <a href="page.cgi?id=scrums/teambugs.html&teamid=[% team.id %]&sprint_id=[% active_sprint.id %]"
+                ><img src="extensions/Scrums/web/img/icon4.png"></a>
+            </td>
+            <td>
+            <a href="page.cgi?id=scrums/teambugs.html&teamid=[% team.id %]&sprint_id=[% active_sprint.id %]"
+                >Edit This Sprint</a>
+            </td>
+          </tr>
+        [% IF treeviewurl %]
+          <tr>
+            [% remaining_items = active_sprint.get_remaining_item_array() %]
+            <td>
+              <a href="[% treeviewurl %]&bug_id=[% FOREACH bug_id IN remaining_items %][% bug_id %],[% END %]">
+                <img src="extensions/Scrums/web/img/icon4.png">
+              </a>
+            </td>
+            <td>
+              <a href="[% treeviewurl %]&bug_id=[% FOREACH bug_id IN remaining_items %][% bug_id %],[% END %]">
+                Remaining Items in Tree View
+              </a>
+            </td>
+          </tr>
+        [% END %]
         <tr>
+          <td>
+            <img src="extensions/Scrums/web/img/icon5.png">
+          </td>
+          <td>
+            <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&search_deps=on&query_format=advanced&field0-0-0=scrums_sprint_bug_map.sprint_id&value0-0-0=[% active_sprint.id %]&type0-0-0=substring&order=scrums_team_order%2Cbug_severity&daily">
+              Remaining Items and Dependencies
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="extensions/Scrums/web/img/icon3.png">
+          </td>
           <td>
             <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&field0-0-0=scrums_sprint_bug_map.sprint_id&value0-0-0=[% active_sprint.id %]&type0-0-0=substring&order=scrums_team_order%2Cbug_severity&daily">
               Remaining Items
@@ -66,11 +135,17 @@
         </tr>
         <tr>
           <td>
+            <img src="extensions/Scrums/web/img/icon1_b.png">
+          </td>
+          <td>
             <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint.id %]">Team Burndown Chart</a>
           </td>
         </tr>
       [% END %]
       <tr>
+        <td>
+          <img src="extensions/Scrums/web/img/bug-item3.png">
+        </td>
         <td>
           <a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">New Bugs</a>
         </td>
@@ -87,7 +162,7 @@
   <p>
     <a href="page.cgi?id=scrums/allteams.html">Manage Teams</a>
     | <a href="page.cgi?id=scrums/allreleases.html">Manage Releases</a>
-    | <a href="page.cgi?id=scrums/scrumsguide.html#teamviewpoint">User Guide</a>
+    | <a href="page.cgi?id=scrums/guide/scrumsguide.html#teamviewpoint">User Guide</a>
   </p>
 [% END %]
 

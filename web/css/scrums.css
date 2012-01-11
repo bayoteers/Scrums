@@ -11,13 +11,20 @@
   .disabled { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; background: #ffffff; padding: 5px; width: 700px; text-align: left; }
   .disabled li { background: #eeeeee; margin: 3px; padding: 5px; font-size: 1em; width: 680px; }
   .number { background: #eee; color: #000000; border: 1px solid #dddddd;  }
-  .content { text-align: center; }
+
+  div.content { 
+    text-align: center; 
+  }
+
   h3 { text-align: center; }
+
+/* Setting the attributes of helper size does not work very well */
 
 .helper td {
     border: 1px;
     background-color: #404d6c;
 }
+
 
 table.dataTable {
     margin: 0;
@@ -25,68 +32,53 @@ table.dataTable {
     border-collapse:separate;
     border-spacing:0px 0px;
 }
-
-
+table.dataTable th {
+    background: none repeat scroll 0 0 #CCCCCC;
+    border-top: 1px solid #999999;
+    font-weight: bold;
+    margin: 0;
+    padding: 4px 3px 3px 4px;
+}
 table.dataTable td {
     position: relative;
-    margin: 0;
     height: 35px;
-    border-top: 1px solid #999;
+    margin: 0;
+    border-top: 1px solid #999999;
     padding: 2px 3px 3px 4px;
 }
-
-/* This makes the scrolling table work */
-
+table.dataTable tr:last-child td {
+    padding-top: 5px;
+    padding-bottom: 25px;
+}
+div.container {
+    margin: 15px 0 0 0; 
+}
 div.scrollTableContainer {
-    height: 445px;  
+    border: 1px solid #cccccc;
+    height: 435px; 
+    padding: 0;
+    overflow-x: hidden;
     overflow-y: auto;
+} 
+div.autoheightContainer {
+    border: 1px solid #cccccc;
+}
+
+html > body div.scrollTableContainer table > thead {
+    height: 20px;
+} 
+html > body div.scrollTableContainer table > tbody {
+    height: 410px;
     overflow-x: hidden;
-    margin: 15px 0 0 0;
-    border: 1px solid #ddd;
+    overflow-y: auto;
 }
 
-div.autoheight {
-    height: auto;
+div.scrollTableContainer thead tr {
+    position: relative;
 }
-
-/*http://rcs-comp.com/blog/scrolling_table/*/
-
-/* The different widths below are due to the way the scroll bar is implamented
-we are keeping these here instead of putting them in the IE css file b/c it 
-is easier to change the width if both numbers are in the same place. */
-
-/* All browsers accept this, but we are targeting IE with this rule */
-div.scrollTableContainer table {
-  width: 100%;  /*100% of container produces horiz. scroll in Mozilla*/
-  border: none;
-  border-spacing: 0px;
-  background-color: transparent;
-
+div.scrollTableContainer td:last-child {
+    padding-right: 20px;
 }
-
-/* Modern browsers accept this (not IE) and we are targetting firefox */
-html>/**/body div.scrollTableContainer table {
-}
-
-/* Modern browsers accept this (not IE) and we are targetting firefox */
-html>/**/body div.scrollTableContainer table>tbody  {  
-    overflow: auto; 
-    max-height: 410px;
-   /* height: 410px; */
-    overflow-x: hidden;
-}
-
-table>tbody tr {
-  height: auto;
-}
-
-div.scrollTableContainer thead tr   {
-    top: 0px;/*expression(offsetParent.scrollTop); IE5+ only*/
-    position:relative;
-}
-
-/*prevent Mozilla scrollbar from hiding cell content*/
-div.scrollTableContainer td:last-child {padding-right: 2px;}
 
 .bz_title_container 
 {
@@ -105,6 +97,15 @@ div.scrollTableContainer td:last-child {padding-right: 2px;}
 
 .scrums_limited_area td.first {
     border-left: 2px solid green;
+}
+
+table.linklist-big-icons img
+{
+    margin-bottom: 5px;
+    margin-top:    5px;
+    margin-left:   30px;
+    border: 6px    solid;
+    -moz-border-radius: 1.0em; 
 }
 
 input.scrums_wide_button { min-width:130px; }
