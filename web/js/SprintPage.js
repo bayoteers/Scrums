@@ -394,20 +394,20 @@ var SprintView = {
      */
     init: function()
     {
-        /** These flags must all be true before something important happens. */
-        this.sprint_rendered = false;
-        this.backlog_rendered = false;
-        this.sprint_info_showed = false;
+        /** These must be true before _updateReady will render bug lists. */
+        this._sprintReady = false;
+        this._backlogReady = false;
+        this._sprintInfoReady = false;
+
+        /* scrums.js */ sprint_callback = this._updateBugCapacity.bind(this);
+        /* scrums.js */ update_tables = this._updateTables.bind(this);
+        /* scrums.js */ schema = 'sprint';
+        /* scrums.js */ object_id = SCRUMS_CONFIG.team.id;
 
         /** listObject containing bugs assigned to the current sprint. */
         this.sprint = this._makeSprintList();
         /** listObject containing bugs in the team's backlog. */
         this.backlog = this._makeBacklogList();
-
-        /* scrums.js */ sprint_callback = this.demarcateSprintCapacity.bind(this);
-        /* scrums.js */ update_tables = this._updateTables.bind(this);
-        /* scrums.js */ schema = 'sprint';
-        /* scrums.js */ object_id = SCRUMS_CONFIG.team.id;
 
         // Notice! Lists must be in this order. They are also saved in that
         // order. Mixing them spoils team order values.
@@ -415,9 +415,8 @@ var SprintView = {
     },
 
     /**
-     * Start refreshing metadata for the currently selected sprint, or, if "new
-     * sprint" is selected in the combo box, display the Create Sprint form
-     * instead.
+     * Start refreshing metadata for the selected sprint, or, if "new sprint"
+     * is selected, display the Create Sprint form instead.
      */
     refreshSprint: function()
     {
@@ -433,9 +432,8 @@ var SprintView = {
     },
 
     /**
-     * Respond to completion of metadata refresh request by updating the global
-     * sprint object and triggering _checkReady(), which will ultimately cause
-     * the sprint object to be re-rendered on screen.
+     * Respond to completion of metadata refresh by updating the sprint
+     * listObject and triggering _checkReady().
      *
      * @param result
      *      JSON result object.
@@ -457,7 +455,7 @@ var SprintView = {
             this.sprint.end_date);
         $('#editSprintButton').click(this._onEditSprintClick.bind(this));
 
-        this.sprint_info_showed = true;
+        this._sprintInfoReady = true;
         this._checkReady();
     },
 
@@ -469,50 +467,52 @@ var SprintView = {
         SprintEditor.openEdit(this.sprint);
     },
 
-    demarcateSprintCapacity: function(capacity, handled_list, following_list)
+    /**
+     * Invoked by scrums.js::switch_lists() to indicate a bug has been moved
+     * from one listObject to another listObject.
+     *
+     * Walk the bugs in priority order that are scheduled for this sprint, then
+     * the bugs still in the backlog, flagging each according to whether its
+     * work estimate fits within the resource limits of the sprint.
+     *
+     * The updated flag ("row[10]") is later used by ListHtmlTempl.js to paint
+     * bug rows a different colour to indicate those that are overcapacity.
+     */
+    _updateBugCapacity: function()
     {
+        var that = this;
         var cum = 0;
-        var i = 0;
-        for(i = 0; i < handled_list.length; i++) {
-            cum = cum + handled_list[i][9];
-           if(cum > capacity) {
-               handled_list[i][10] = 0;
-           }
-           else {
-               handled_list[i][10] = 1;
-           }
+
+        function update(_, row)
+        {
+            cum += row[9];
+            row[10] = +(cum <= that.sprint.capacity);
         }
 
-        for(i = 0; i < following_list.length; i++) {
-            cum = cum + following_list[i][9];
-           if(cum > capacity) {
-               following_list[i][10] = 0;
-           }
-           else {
-               following_list[i][10] = 1;
-           }
-        }
-
-        this._refreshSprintCapacity(capacity, handled_list);
+        $.each(this.sprint.list, update);
+        $.each(this.backlog.list, update);
+        this._updateSprintStats();
     },
 
     /**
-     * Repopulate the sprint capacity totals using the provided estimates.
+     * Update the UI total/done/remaining work totals using the sprint
+     * listObject's bugs list.
      */
-    _refreshSprintCapacity: function(estimatedcapacity, bug_list)
+    _updateSprintStats: function()
     {
         var sprint_total_work = 0;
         var sprint_done_work = 0;
         var sprint_remaining_work = 0;
 
-        for(var i = 0; i < bug_list.length; i++) {
-            sprint_remaining_work += bug_list[i][1];
-            sprint_done_work += bug_list[i][8];
-            sprint_total_work += bug_list[i][9];
-        }
+        $.each(this.sprint.list, function(_, row)
+        {
+            sprint_remaining_work += row[1];
+            sprint_done_work += row[8];
+            sprint_total_work += row[9];
+        });
 
-        $('#capa').html(estimatedcapacity);
-        $('#free').html(estimatedcapacity - sprint_total_work);
+        $('#capa').html(this.sprint.capacity);
+        $('#free').html(this.sprint.capacity - sprint_total_work);
         $('#done').html(sprint_done_work);
         $('#remaining').html(sprint_remaining_work);
     },
@@ -559,6 +559,9 @@ var SprintView = {
             create_item_line_html, url);
 
         lst._status = id ? SCRUMS_CONFIG.active_sprint.status : '';
+        lst.estimatedcapacity = null;
+        lst.personcapacity = null;
+        lst.prediction = "-";
         lst.description = id ? SCRUMS_CONFIG.active_sprint.description : '';
         lst.history = this.makeSprintHistory();
         return lst;
@@ -577,18 +580,18 @@ var SprintView = {
             }, this._onRefreshSprintBugsDone.bind(this), 'json');
         } else {
             bind_items_to_list(this.sprint, []);
-            this.sprint_rendered = true;
+            this._sprintReady = true;
         }
     },
 
     /**
-     * Respond to completion of refreshSprintBugs() request by binding the
-     * received list to the sprint listObject.
+     * Respond to completion of refreshSprintBugs() by binding the received
+     * list to the sprint listObject and triggering _checkReady().
      */
     _onRefreshSprintBugsDone: function(result)
     {
         bind_items_to_list(this.sprint, result.data.bugs);
-        this.sprint_rendered = true;
+        this._sprintReady = true;
         this._checkReady();
     },
 
@@ -654,12 +657,12 @@ var SprintView = {
     _onRefreshBacklogDone: function(result)
     {
         bind_items_to_list(this.backlog, result.data.bugs);
-        this.backlog_rendered = true;
+        this._backlogReady = true;
         this._checkReady();
     },
 
     /**
-     * Delay rendering of the bug list tables until both the sprint bug list,
+     * Delay rendering of the bug list tables until all of the sprint bug list,
      * sprint metadata, and backlog bug list data is available.
      *
      * If there is no active sprint, then render_all() is never called. This
@@ -669,8 +672,8 @@ var SprintView = {
     {
         if(/* scrums.js */ initialised) {
             /* scrums.js */ render_all();
-        } else if(this.backlog_rendered && this.sprint_rendered &&
-                this.sprint_info_showed) {
+        } else if(this._backlogReady && this._sprintReady &&
+                this._sprintInfoReady) {
             /* scrums.js */ render_all();
             /* scrums.js */ initialised = true;
             /* scrums.js */ toggle_scroll();
@@ -682,8 +685,7 @@ var SprintView = {
      */
     _updateTables: function()
     {
-        this.demarcateSprintCapacity(this.sprint.estimatedcapacity,
-            this.sprint.list, this.backlog.list);
+        this._updateBugCapacity();
         /* scrums.js */ update_lists(this.sprint, 0);
         /* scrums.js */ update_lists(this.backlog, 0);
         // Does not initialise tablesorter
