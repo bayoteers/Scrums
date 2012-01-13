@@ -31,6 +31,37 @@ var scrollbar_2_visible = false;
 var show_scrollbars = false;
 
 
+// Check if browser is too old to have built-in bind(); if so, install a JS
+// version.
+if (! Function.prototype.bind) {
+    // From https://github.com/kriskowal/es5-shim/blob/master/es5-shim.js
+    Function.prototype.bind = function bind(that) {
+        var target = this;
+        if (typeof target != "function") {
+            throw new TypeError();
+        }
+        var args = Array.prototype.slice.call(arguments, 1);
+        var bound = function () {
+            if (this instanceof bound) {
+                var F = function(){};
+                F.prototype = target.prototype;
+                var self = new F;
+                var result = target.apply(self,
+                    args.concat(Array.prototype.slice.call(arguments)));
+                if(Object(result) === result) {
+                    return result;
+                }
+                return self;
+            } else {
+                return target.apply(that,
+                    args.concat(Array.prototype.slice.call(arguments)));
+            }
+        };
+        return bound;
+    };
+}
+
+
 /**
  * Display a small progress indicator at the top of the document while any
  * jQuery XMLHttpRequest is in progress.
