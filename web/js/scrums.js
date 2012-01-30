@@ -25,11 +25,8 @@ var all_lists = [];
 var bug_positions = [];
 var bugs = null;
 var ignore_changes = false;
-var initialised = false;
-var scrollbar_1_visible = false;
-var scrollbar_2_visible = false;
 var show_scrollbars = false;
-
+var MIN_LIST_HEIGHT = 435;
 
 // Check if browser is too old to have built-in bind(); if so, install a JS
 // version.
@@ -125,25 +122,20 @@ function toggle_scroll()
     render_all();
 }
 
-function render_all(already_rendered)
+function render_all()
 {
-    var frame_height = 435;    
-
-    if(initialised && show_scrollbars && !already_rendered) {
-        var table_1_height = $('#sprint .container').last().height();
-        var table_2_height = $('#unordered .container').last().height();
-        scrollbar_1_visible = (table_1_height > frame_height);
-        scrollbar_2_visible = (table_2_height > frame_height);
-    } else {
-        scrollbar_1_visible = false;
-        scrollbar_2_visible = false;
-    }
-
-    $('#sprint').html(create_list_html(all_lists[0], scrollbar_1_visible));
-    $('#unordered').html(create_list_html(all_lists[1], scrollbar_2_visible));
+    $('#sprint').html(create_list_html(all_lists[0], show_scrollbars));
+    $('#unordered').html(create_list_html(all_lists[1], show_scrollbars));
     update_tables();
-    $("#table"+all_lists[0].ul_id).tablesorter();
-    $("#table"+all_lists[1].ul_id).tablesorter();
+    if (show_scrollbars) {
+        // Fit the scrollable lists to window size if possible
+        $("#sprint .container, #unordered .container").each(function() {
+            var container = $(this);
+            var height = $(window).height() - container.position().top;
+            height = height > MIN_LIST_HEIGHT ? height : MIN_LIST_HEIGHT;
+            container.height(height);
+        });
+    }
 }
 
 
@@ -215,6 +207,7 @@ function listObject(ul_id, h_id, id, name, line_tmpl_function, link_url,
 }
 
 var from_list_ul_id = '';
+var over_list_ul_id = '';
 
 var sprint_callback = null;
 
@@ -346,7 +339,7 @@ function switch_lists(ui, lists) {
                 var cancel = check_blocking_items(bug_id, to_i, position);
                 if(cancel) 
                 {
-                    render_all(true /* already_rendered */);
+                    render_all();
                     return;
                 }
             }
@@ -416,29 +409,72 @@ function switch_lists(ui, lists) {
 function bind_sortable_lists(lists) {
     for (var l = 0; l < lists.length; l++)
     {
-        list = lists[l];
+        var list = lists[l];
         update_positions(lists, l, true);
     }
 
-    ids = [];
+    var ids = [];
     for (var i = 0; i < lists.length; i++) {
         ids.push("#" + lists[i].ul_id);
         // enable live search
         list_filter($("#" + lists[i].h_id), $("#" + lists[i].ul_id), lists[i]);
     }
-    ids_str = ids.join(", ")
-    $(ids_str).sortable({
+
+    $(ids.join(", ")).sortable({
         connectWith: ".connectedSortable",
-        start: function(event, ui) {
-            from_list_ul_id = ui.item.parent().attr('id');
-        },
-        stop: function(event, ui) {
-            switch_lists(ui, lists);
-        },
+        containment: "table.dragcontainment",
         items: 'tr:not(.ignoresortable)',
         helper: function(event , item)
         {
-            return item.clone().attr('class', 'helper');
+            var helper = item.clone().attr("class", "helper");
+            helper.width(item.width());
+            return helper;
+        },
+        // Dragging starts
+        start: function(event, ui) {
+            from_list_ul_id = ui.item.parent().attr('id');
+            over_list_ul_id = from_list_ul_id;
+        },
+        // Dragging stops
+        stop: function(event, ui) {
+            switch_lists(ui, lists);
+        },
+        // Item is dragged to other connected sortable
+        over: function(event, ui) {
+            over_list_ul_id = event.target.id;
+        },
+        // During drag
+        sort: function(event, ui) {
+            if (!show_scrollbars) return;
+            var itop = ui.position.top;
+            var ibot = itop + ui.item.height();
+
+            // Scroll window if the item is on edge
+            var wheight = $(window).height();
+            var wscroll = $(window).scrollTop();
+            var max_scroll = $(document).height() - wheight;
+            if (itop < wscroll && wscroll > 0) {
+                $(window).scrollTop(wscroll - 5);
+            } else if (ibot > (wscroll + wheight) &&
+                    wscroll < max_scroll) {
+                $(window).scrollTop(wscroll + 5);
+            }
+
+            // Scroll the other list if item is over it
+            if (over_list_ul_id && from_list_ul_id != over_list_ul_id) {
+                var list = $("#" + over_list_ul_id);
+                var container = list.parents(".container").first();
+                var ctop = container.position().top;
+                var cbot = ctop + container.height();
+                var cscroll = container.scrollTop();
+
+                if (itop < ctop && cscroll > 0) {
+                    container.scrollTop(cscroll - (ctop - itop));
+                } else if (ibot > cbot &&
+                        (cscroll < list.height() - container.height())) {
+                    container.scrollTop(cscroll + (ibot - cbot));
+                }
+            }
         },
     }).disableSelection();
 }

@@ -670,12 +670,9 @@ var SprintView = {
      */
     _checkReady: function()
     {
-        if(/* scrums.js */ initialised) {
-            /* scrums.js */ render_all();
-        } else if(this._backlogReady && this._sprintReady &&
+        if(this._backlogReady && this._sprintReady &&
                 this._sprintInfoReady) {
             /* scrums.js */ render_all();
-            /* scrums.js */ initialised = true;
             /* scrums.js */ toggle_scroll();
         }
     },
