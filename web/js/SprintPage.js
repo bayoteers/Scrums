@@ -486,7 +486,7 @@ var SprintView = {
         function update(_, row)
         {
             cum += row[9];
-            row[10] = +(cum <= that.sprint.capacity);
+            row[10] = +(cum <= that.sprint.estimatedcapacity);
         }
 
         $.each(this.sprint.list, update);
@@ -511,8 +511,8 @@ var SprintView = {
             sprint_total_work += row[9];
         });
 
-        $('#capa').html(this.sprint.capacity);
-        $('#free').html(this.sprint.capacity - sprint_total_work);
+        $('#capa').html(this.sprint.estimatedcapacity);
+        $('#free').html(this.sprint.estimatedcapacity - sprint_total_work);
         $('#done').html(sprint_done_work);
         $('#remaining').html(sprint_remaining_work);
     },
