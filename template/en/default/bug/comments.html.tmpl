@@ -90,6 +90,42 @@
                    '" onclick="toggle_comment_display(this, ' +  count +
                    '); return false;" title="Collapse the comment.">[-]<\/a> ');
   }
+
+    /* Functions for toggling the description edit mode */
+
+    function toggle_comment_edit(link, comment_id) {
+        var element = document.getElementById('comment_text_' + comment_id);
+        if (element.nodeName == "PRE") {
+            link.innerHTML = "[cancel]";
+            // Hide the comment text
+            element.style.display = "none";
+            element.setAttribute("id", "comment_origtext_" + comment_id);
+            // Create textarea and insert text from comment text
+            var edit = document.createElement("textarea");
+            edit.setAttribute("name", "comment_text_" + comment_id);
+            edit.setAttribute("id", "comment_text_" + comment_id);
+            edit.setAttribute("cols", "80");
+            edit.setAttribute("rows", "25");
+            edit.innerHTML = element.innerHTML;
+            element.parentNode.insertBefore(edit, element);
+        } else if (element.nodeName == "TEXTAREA") {
+            link.innerHTML = "[edit]";
+            // Remove textarea
+            element.parentNode.removeChild(element);
+            // Display the original comment text
+            var orig = document.getElementById("comment_origtext_" + comment_id);
+            orig.setAttribute("id", "comment_text_" + comment_id);
+            orig.style.display = "";
+        }
+    }
+
+    function addEditLink(count) {
+        document.write(
+                ' <a href="#" class="bz_collapse_comment"' +
+                ' id="edit_comment_' + count +
+                '" onclick="toggle_comment_edit(this, ' +  count +
+                '); return false;" title="Edit the comment.">[edit]<\/a> ');
+    }
   //-->
   </script>
 
@@ -121,29 +157,37 @@
     [% END %]
 [% END %]
 
-<!-- This auto-sizes the comments and positions the collapse/expand links 
+<!-- This auto-sizes the comments and positions the collapse/expand links
      to the right. -->
 <table class="bz_comment_table" cellpadding="0" cellspacing="0"><tr>
 <td>
+
+[%
+    # Test whether this bug is in fact a feature, and whether this
+    # user is a feature admin. If so, make description editable.
+    editable = Param('scrums_bug_comment_editable_item_types');
+    can_edit_description = (user.in_group('setfeature') &&
+                            editable.defined(bug.bug_severity));
+%]
 
 [% FOREACH comment = comments %]
   [% IF count >= start_at %]
     [% PROCESS a_comment %]
   [% END %]
-  
+
   [% count = count + increment %]
 [% END %]
 
 [%# Note: this template is used in multiple places; if you use this hook,
   # make sure you are aware of this fact.
-  #%]  
+  #%]
 [% Hook.process("aftercomments") %]
 
 </td>
 <td>
   [% IF mode == "edit" %]
     <ul class="bz_collapse_expand_comments">
-      <li><a href="#" onclick="toggle_all_comments('collapse'); 
+      <li><a href="#" onclick="toggle_all_comments('collapse');
                                return false;">Collapse All Comments</a></li>
       <li><a href="#" onclick="toggle_all_comments('expand');
                                return false;">Expand All Comments</a></li>
@@ -175,6 +219,9 @@
         [% IF mode == "edit" %]
           <span class="bz_comment_actions">
             <script type="text/javascript"><!--
+            [% IF count == description AND can_edit_description %]
+              addEditLink([% count %]);
+            [% END %]
               addReplyLink([% count %], [% comment.id %]);
               addCollapseLink([% count %]); // -->
             </script>
@@ -195,7 +242,7 @@
         [% END %]
 
         <span class="bz_comment_number">
-          <a name="c[% count %]" 
+          <a name="c[% count %]"
              href="show_bug.cgi?id=[% bug.bug_id %]#c[% count %]">
             [%- comment_label FILTER html %]</a>
         </span>
@@ -221,53 +268,14 @@
       [% IF user.is_timetracker &&
             (comment.work_time > 0 || comment.work_time < 0) %]
          <br>
-         Additional hours worked: 
+         Additional hours worked:
          [% PROCESS formattimeunit time_unit=comment.work_time %]
       [% END %]
 
-      [% 
-        # If this is the description, and we're in edit mode, and the user
-        # has the rights to change the description, show a textarea instead
-        # of simply displaying the description.
- 
-        # Generate the id/name for the comment textarea
-      %]
-
-      [% commentid = 'comment_text_' _ count IF mode == "edit" %]
-
-      [%
-        # Test whether this product is in fact a feature, and whether this
-        # user is a feature admin.
-      %]
-
-      [% editable = Param('scrums_bug_comment_editable_item_types') %]
-      [% editable_severity = 0 %]
-      [% FOREACH type IN editable %]
-      [% IF (bug.bug_severity == type) %]
-      [% editable_severity = 1 %]
-      [% END %]
-      [% END %]
-
-      [% IF (user.in_group('setfeature') && editable_severity) %]
-        [% can_edit_description = 1 %]
-      [% ELSE %]
-        [% can_edit_description = 0 %]
-      [% END %]
-      [% IF count == description && mode == "edit" && can_edit_description %]
-        [%- INCLUDE global/textarea.html.tmpl
-                       name      = commentid
-                       id        = commentid
-                       minrows   = 10       
-                       maxrows   = 25
-                       cols      = constants.COMMENT_COLS
-                       defaultcontent = comment.body
-        -%]
-      [% ELSE %]
         [%# Don't indent the <pre> block, since then the spaces are displayed in the
           # generated HTML
           #%]
 
          <pre class="bz_comment_text" [% ' id="comment_text_' _ count _ '"' IF mode == "edit" %]>[%- comment.body_full({ wrap => 1 }) FILTER quoteUrls(bug, comment) -%]</pre>
-       [% END %]
      </div>
    [% END %]
