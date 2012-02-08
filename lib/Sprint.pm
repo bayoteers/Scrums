@@ -716,7 +716,7 @@ sub add_bug_into_sprint {
     my $dbh = Bugzilla->dbh;
     $dbh->bz_start_transaction();
 
-    insert_into_sprint($dbh, $added_bug_id, $insert_after_bug_id, 0, $vars);
+    $self->insert_into_sprint($dbh, $added_bug_id, $insert_after_bug_id, 0, $vars);
 
     $dbh->bz_commit_transaction();
 }
