@@ -762,6 +762,28 @@ sub config_add_panels {
     return;
 }
 
+sub bb_common_links {
+    my ($self, $args) = @_;
+
+    my @links;
+
+    my $teams = Bugzilla::Extension::Scrums::Team->user_teams(Bugzilla->user->id());
+    foreach my $team (@$teams) {
+        push @links, {
+            text => 'Sprint: ' . $team->name,
+            href => 'page.cgi?id=scrums/teambugs.html&teamid=' . $team->id
+        };
+    }
+
+    push @links, {
+        text => 'Scrums',
+        href => 'page.cgi?id=scrums/scrums.html',
+        priority => 90
+    };
+
+    $args->{links}->{Scrums} = \@links;
+}
+
 sub template_before_process {
     my ($self, $args) = @_;
 
