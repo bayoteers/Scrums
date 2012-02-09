@@ -336,9 +336,8 @@ function switch_lists(ui, lists) {
 
             if(lists[to_i].id != -1)
             {
-                var cancel = check_blocking_items(bug_id, to_i, position);
-                if(cancel) 
-                {
+                var cancel = check_blocking_items(bug_id, lists[to_i], position);
+                if(cancel) {
                     render_all();
                     return;
                 }
@@ -780,91 +779,70 @@ function get_original_lists(lists) {
     return original_lists;
 }
 
-function check_blocking_items(moved_bug_id, to_i, position) {
+
+/**
+ *
+ */
+function check_blocking_items(moved_bug_id, list, position) {
     bugs = "";
     $.ajax({
-      async: false,
-      url: 'page.cgi?id=scrums/ajaxblockinglist.html',
-      data: {
-        action: 'blocking_items',
-        bug_id: moved_bug_id
-      },
-      success: blockingResponse
+        async: false,
+        url: 'page.cgi?id=scrums/ajaxblockinglist.html',
+        data: {
+            action: 'blocking_items',
+            bug_id: moved_bug_id
+        },
+        success: blockingResponse
     });
 
-    if(bugs.length > 0)
-    {
-        bugs = check_preceding_items(bugs, to_i, position);
-        if(bugs.length > 0)
-        {
-            var bugs_str = "";
-            for(var i = 0; i < bugs.length; i++)
-            {
-                if(bugs_str != "")
-                {
-                    bugs_str += ", ";
-                }
-                bugs_str += bugs[i];
-            }
-            var qstr = 'Item ' + moved_bug_id + ' depends on items ' + bugs_str + ', that are pending relative to ' + moved_bug_id + '. Do you want to move pending blocking items to ' + 
-                moved_bug_id + ' together with ' + moved_bug_id + '?';
-
-            if(confirm(qstr))
-            {
-                var changed = check_if_changed();
-                if(changed)
-                {
-                    alert('Error! There are unsaved changes. Can not execute move of several items. Save unsaved changes and try again.');
-                    return true;
-                }
-                movePendingItems(moved_bug_id, bugs /* pending items */, all_lists[to_i], position);
-            }
-            else
-            {
-                var qstr = 'Do you still want to move ' + moved_bug_id + ' anyway?';
-                return !confirm(qstr); // returing true = cancel move
-            }
-        }
+    bugs = checkPrecedingItems(list, bugs, position);
+    if(! bugs.length) {
+        // false = do not cancel
+        return false;
     }
-    return false; // false = do not cancel
+
+    var bugs_str = bugs.join(', ');
+    var qstr = 'Item ' + moved_bug_id + ' depends on items ' + bugs_str + ', that are pending relative to ' + moved_bug_id + '. Do you want to move pending blocking items to ' + 
+        moved_bug_id + ' together with ' + moved_bug_id + '?';
+
+    if(confirm(qstr)) {
+        if(check_if_changed()) {
+            alert('Error! There are unsaved changes. Can not execute move of several items. Save unsaved changes and try again.');
+            return true;
+        }
+        movePendingItems(moved_bug_id, bugs /* pending items */, list, position);
+    } else {
+        var qstr = 'Do you still want to move ' + moved_bug_id + ' anyway?';
+        return !confirm(qstr); // returing true = cancel move
+    }
 }
 
-function check_preceding_items(blocking_bugs, to_i, position)
+
+/**
+ * Given some listObject, return any bug IDs from the given array that do not
+ * appear before the given list position.
+ *
+ * @param listObj
+ *      The listObject.
+ * @param bugIds
+ *      Bug IDs to check for in the listObject.
+ * @param maxPos
+ *      Last index in the list that any bug ID may occur at.
+ * @returns
+ *      Bug IDs that where not in the list, or did not appear before maxPos.
+ */
+function checkPrecedingItems(listObj, bugIds, maxPos)
 {
-    var list_processed = false;
-    while(!list_processed)
-    {
-        var list_i = 0;
-        for (list_i = 0; list_i < all_lists.length; list_i++) 
-        {
-            var list = all_lists[list_i];
-            if(list.id != -1)
-            {
-                for (var i = 0; i < list.list.length; i++) 
-                {
-                    if(list_i == to_i && i == position)
-                    {
-                        list_processed = true;
-                        break;
-                    }
-                    list_bug_id = list.list[i][0][0];
-                    for(var b = 0; b < blocking_bugs.length; b++)
-                    {
-                        if(blocking_bugs[b] == list_bug_id)
-                        {
-                            for(var x = b; x < (blocking_bugs.length - 1); x++)
-                            {
-                                blocking_bugs[x] = blocking_bugs[x+1];
-                            }
-                            blocking_bugs.length = blocking_bugs.length - 1;
-                        }
-                    }
-                }
-            }
+    maxPos = Math.min(maxPos, listObj.list.length);
+    for(var i = 0; i < maxPos && bugIds.length; i++) {
+        var idx = bugIds.indexOf(listObj.list[i][0][0]);
+        if(idx !== -1) {
+            bugIds.splice(idx, 1);
         }
     }
-    return blocking_bugs;
+    return bugIds;
 }
+
 
 function blockingResponse(response, status, xhr) {
   var retObj = eval("(" + response + ")");
