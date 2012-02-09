@@ -829,87 +829,87 @@ function check_blocking_items(moved_bug_id, to_i, position) {
     return false; // false = do not cancel
 }
 
-  function check_preceding_items(blocking_bugs, to_i, position)
-  {
-      var list_processed = false;
-      while(!list_processed)
-      {
-          var list_i = 0;
-          for (list_i = 0; list_i < all_lists.length; list_i++) 
-          {
-              var list = all_lists[list_i];
-              if(list.id != -1)
-              {
-                  for (var i = 0; i < list.list.length; i++) 
-                  {
-                      if(list_i == to_i && i == position)
-                      {
-                          list_processed = true;
-                          break;
-                      }
-                      list_bug_id = list.list[i][0][0];
-                      for(var b = 0; b < blocking_bugs.length; b++)
-                      {
-                          if(blocking_bugs[b] == list_bug_id)
-                          {
-                              for(var x = b; x < (blocking_bugs.length - 1); x++)
-                              {
-                                  blocking_bugs[x] = blocking_bugs[x+1];
-                              }
-                              blocking_bugs.length = blocking_bugs.length - 1;
-                          }
-                      }
-                  }
-              }
-          }
-      }
-      return blocking_bugs;
-  }
-
-  function blockingResponse(response, status, xhr) {
-    var retObj = eval("(" + response + ")");
-
-    if (retObj.errors) {
-      alert("There are errors: " + retObj.errormsg);
-    } else {
-       bugs = retObj.data.bugs;
+function check_preceding_items(blocking_bugs, to_i, position)
+{
+    var list_processed = false;
+    while(!list_processed)
+    {
+        var list_i = 0;
+        for (list_i = 0; list_i < all_lists.length; list_i++) 
+        {
+            var list = all_lists[list_i];
+            if(list.id != -1)
+            {
+                for (var i = 0; i < list.list.length; i++) 
+                {
+                    if(list_i == to_i && i == position)
+                    {
+                        list_processed = true;
+                        break;
+                    }
+                    list_bug_id = list.list[i][0][0];
+                    for(var b = 0; b < blocking_bugs.length; b++)
+                    {
+                        if(blocking_bugs[b] == list_bug_id)
+                        {
+                            for(var x = b; x < (blocking_bugs.length - 1); x++)
+                            {
+                                blocking_bugs[x] = blocking_bugs[x+1];
+                            }
+                            blocking_bugs.length = blocking_bugs.length - 1;
+                        }
+                    }
+                }
+            }
+        }
     }
+    return blocking_bugs;
+}
+
+function blockingResponse(response, status, xhr) {
+  var retObj = eval("(" + response + ")");
+
+  if (retObj.errors) {
+    alert("There are errors: " + retObj.errormsg);
+  } else {
+     bugs = retObj.data.bugs;
   }
+}
 
-  function moveResponse(response, status, xhr) {
-    var retObj = eval("(" + response + ")");
+function moveResponse(response, status, xhr) {
+  var retObj = eval("(" + response + ")");
 
-    if (retObj.errors) {
-      alert("There are errors: " + retObj.errormsg);
-    } else {
-      ignore_changes = true;
-      window.location.reload();
+  if (retObj.errors) {
+    alert("There are errors: " + retObj.errormsg);
+  } else {
+    ignore_changes = true;
+    window.location.reload();
+  }
+}
+
+function movePendingItems(moved_bug_id, pending_items, to_list, position)
+{
+    // TODO database locking for this feature. To_list would be possible to check alone, but not very practical
+    var list_id = to_list.id;
+    var lists = [to_list];
+    var original_lists = get_original_lists(lists); // Contains original of 'to_list' only
+
+    var insert_after_id = 0;
+    if(position > 0)
+    {
+        insert_after_id = to_list.list[position-1][0][0];
     }
-  }
 
-  function movePendingItems(moved_bug_id, pending_items, to_list, position)
-  {
-      // TODO database locking for this feature. To_list would be possible to check alone, but not very practical
-      var list_id = to_list.id;
-      var lists = [to_list];
-      var original_lists = get_original_lists(lists); // Contains original of 'to_list' only
+    var obj = new Object();
+    obj.pending_items = pending_items;
+    obj.bug_id = moved_bug_id;
+    obj.list_id = list_id;
+    obj.insert_after_id = insert_after_id;
 
-      var insert_after_id = 0;
-      if(position > 0)
-      {
-          insert_after_id = to_list.list[position-1][0][0];
-      }
-
-      var obj = new Object();
-      obj.pending_items = pending_items;
-      obj.bug_id = moved_bug_id;
-      obj.list_id = list_id;
-      obj.insert_after_id = insert_after_id;
-
-    $.post('page.cgi?id=scrums/ajax.html', {
-        action: 'move_pending_items',
-        obj_id: object_id, /* object_id (team id) is global variable in page */
-        schema: schema,    
-        data: JSON.stringify(obj)
-    }, moveResponse        , 'text');
-  }
+  $.post('page.cgi?id=scrums/ajax.html', {
+      action: 'move_pending_items',
+      obj_id: object_id, /* object_id (team id) is global variable in page */
+      schema: schema,    
+      data: JSON.stringify(obj)
+  }, moveResponse        , 'text');
+}
