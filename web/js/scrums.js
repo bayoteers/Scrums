@@ -29,63 +29,6 @@ var show_scrollbars = false;
 var MIN_LIST_HEIGHT = 435;
 
 
-/**
- * Display a small progress indicator at the top of the document while any
- * jQuery XMLHttpRequest is in progress.
- */
-var RpcProgressView = {
-    _CSS_PROPS: {
-        background: '#7f0000',
-        color: 'white',
-        padding: '0.5ex',
-        position: 'fixed',
-        top: 0,
-        right: 0,
-        'z-index': 9999999,
-        'text-decoration': 'blink'
-    },
-
-    init: function()
-    {
-        if(this._progress) {
-            return;
-        }
-
-        this._active = 0;
-        this._progress = $('<div>Working..</div>');
-        this._progress.css(this._CSS_PROPS);
-        this._progress.hide();
-        this._progress.appendTo('body');
-        $(document).ajaxSend(this._onAjaxSend.bind(this));
-        $(document).ajaxComplete(this._onAjaxComplete.bind(this));
-    },
-
-    /**
-     * Handle request start by incrementing the active count.
-     */
-    _onAjaxSend: function()
-    {
-        this._active++;
-        this._progress.show();
-    },
-
-    /**
-     * Handle request completion by decrementing the active count, and hiding
-     * the progress indicator if there are no more active requests.
-     */
-    _onAjaxComplete: function()
-    {
-        this._active--;
-        if(! this._active) {
-            this._progress.hide();
-        }
-    }
-};
-
-// TODO: this should be moved to somewhere sensible.
-$(document).ready(RpcProgressView.init.bind(RpcProgressView));
-
-
 function toggle_scroll()
 {
     show_scrollbars = !show_scrollbars;
@@ -789,8 +732,8 @@ function check_blocking_items(moved_bug_id, list, position) {
 
 
 /**
- * Given some listObject, return any bug IDs from the given array that do not
- * appear before the given list position.
+ * Return bug IDs that do not appear before some position in the given
+ * listObject.
  *
  * @param listObj
  *      The listObject.

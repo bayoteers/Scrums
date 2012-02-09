@@ -697,7 +697,6 @@ var SprintView = {
  */
 function onDocumentReady()
 {
-    RpcProgressView.init();
     SprintView.init();
 
     SprintView.refreshSprint();
