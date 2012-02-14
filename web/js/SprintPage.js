@@ -22,6 +22,19 @@
 
 
 /**
+ * Round some float to some precision.
+ * @param number
+ *      The float.
+ * @param digits
+ *      Precision.
+ */
+function roundNumber(number, digits) {
+    var multiple = Math.pow(10, digits);
+    return Math.round(number * multiple) / multiple;
+}
+
+
+/**
  * Callback (pointlessly) invoked by detect_unsaved_change(); expected to
  * somehow save unsaved changes during window destruction.
  */
@@ -511,8 +524,9 @@ var SprintView = {
             sprint_total_work += row[9];
         });
 
-        $('#capa').html(this.sprint.estimatedcapacity);
-        $('#free').html(this.sprint.estimatedcapacity - sprint_total_work);
+        $('#capa').html(roundNumber(this.sprint.estimatedcapacity, 2));
+        $('#free').html(
+            roundNumber(this.sprint.estimatedcapacity - sprint_total_work, 2));
         $('#done').html(sprint_done_work);
         $('#remaining').html(sprint_remaining_work);
     },
