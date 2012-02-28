@@ -23,54 +23,51 @@
 
   function select_component() {
       var elem = $("#createbug");
-      var new_content = create_select_html();
-      static_content = elem[0].innerHTML;
-      elem[0].innerHTML = new_content;
+      static_content = elem.html();
+      elem.html(create_select_html());
+  }
+
+  function create_bug() {
+      var elem = $("#createbug");
+      var selected = product_list[elem.find("select").val()];
+      elem.find("[name='product']").val(selected[0]);
+      elem.find("[name='component']").val(selected[1]);
+      elem.find("form").submit();
+      cancel();
   }
 
   function cancel() {
-      var elem = $("#createbug");
-      elem[0].innerHTML = static_content;
+      $("#createbug").html(static_content);
   }
 
   function create_select_html() {
-      var html = '<form action="enter_bug.cgi" method="post" target="_BLANC">';
-      html +=    '<table>';
+
+      var html = '<table>';
+      html +=      '<tr><td><h3>Enter bug</h3></td></tr>';
       html +=      '<tr>';
-      html +=        '<td>&nbsp;';
-      html +=        '</td>';
-      html +=        '<td><h3>Enter bug</h3>';
-      html +=        '</td>';
-      html +=      '</tr>';
-      html +=      '<tr>';
+      html +=        '<td><b>Product:</b></td>';
       html +=        '<td>';
-      html +=          '<b>Product:</b>';
-      html +=        '</td>';
-      html +=        '<td>';
-      html +=            '<select name="product">';
+      html +=            '<select id="createbug-product">';
       for(i = 0; i < product_list.length; i++) {
-          html +=          '<option value="';
-          html += product_list[i][0] + '">';
-          html += product_list[i][1];
+          html +=          '<option value="' + i + '">';
+          html += product_list[i][2];
           html +=          '</option>';
       }
       html +=            '</select>';
       html +=        '</td>';
       html +=      '</tr>';
-      html +=      '<tr>';
-      html +=        '<td colspan="2">&nbsp;';
-      html +=        '</td>';
-      html +=      '</tr>';
-      html +=      '<tr>';
-      html +=        '<td>&nbsp;';
-      html +=        '</td>';
+      html +=      '<tr><td colspan="2">&nbsp;</td></tr>';
+      html +=      '<tr><td>&nbsp;</td>';
       html +=        '<td>';
-      html +=          '<input type="button" value="cancel" onclick="cancel();"/>&nbsp;';
-      html +=          '<input type="submit" value="start"/>';
+      html +=          '<form action="enter_bug.cgi" method="post" target="_BLANC">';
+      html +=            '<input name="product" type="hidden" value=""/>';
+      html +=            '<input name="component" type="hidden" value=""/>';
+      html +=            '<input type="button" value="cancel" onclick="cancel();"/>&nbsp;';
+      html +=            '<input type="button" value="start" onclick="create_bug();"/>';
+      html +=          '</form>';
       html +=        '</td>';
       html +=      '</tr>';
       html +=    '</table>';
-      html += '</form>';
       return html;
   }
 

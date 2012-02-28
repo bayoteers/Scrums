@@ -41,7 +41,7 @@
 <script type="text/javascript">
 var product_list = [
   [% FOREACH product IN user_products %]
-   ['[% product.0 %]', '[% product.1 %]'][%- "," IF NOT loop.last %]
+   ['[% product.0 %]', '[% product.1 %]', '[% product.2 %]'][%- "," IF NOT loop.last %]
   [% END %] ];
 </script>
 

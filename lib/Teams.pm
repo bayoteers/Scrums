@@ -512,7 +512,8 @@ sub show_products {
             my $class         = Bugzilla::Classification->new($class_id);
             my $complete_name = "\"" . $team->name() . "\" - " . $class->name() . " - " . $product->name() . "/" . $component->name();
             my $product_name  = $product->name();
-            my @item          = ($product_name, $complete_name);
+            my $component_name  = $component->name();
+            my @item          = ($product_name, $component_name, $complete_name);
             push(@user_products, \@item);
         }
     }
