@@ -462,9 +462,6 @@ sub install_update_db {
     use constant WV_START_DEFINITION => { TYPE => 'DATE' };
     use constant WV_END_DEFINITION   => { TYPE => 'DATE' };
 
-    Bugzilla->dbh->bz_add_column('versions', 'is_active', { TYPE => 'BOOLEAN' }, undef);
-    Bugzilla->dbh->bz_add_column('milestones', 'is_active', { TYPE => 'BOOLEAN' }, undef);
-
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_value", WV_VALUE_DEFINITION, undef);
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_start", WV_START_DEFINITION, undef);
     Bugzilla->dbh->bz_add_column("scrums_team", "weekly_velocity_end",   WV_END_DEFINITION,   undef);
