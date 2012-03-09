@@ -84,114 +84,71 @@
     Team created!
   [% END %]
 
-  <h1>
-    Team [% team.name %]
-  </h1>
+    <h1>Team: [% team.name %]</h1>
+    [% owner = team.owner_user() %]
+    [% scrum_master = team.scrum_master_user() %]
+    <dl>
+        <dt>Product Owner:</dt>
+        <dd>[% owner.name() %]</dd>
+        <dt>Scrum Master:</dt>
+        <dd>[% scrum_master.name() %]</dd>
+        <dt>Weekly Velocity:</dt>
+        <dd>[% team.weekly_velocity_value %] | [% team.weekly_velocity_start %] | [% team.weekly_velocity_end %]</dd>
+    </dl>
 
-  [% owner = team.owner_user() %]
-  [% scrum_master = team.scrum_master_user() %]
-
-  <h2>Summary</h2>
-  <table>
-    <tr>
-      <th>Team Name:</th>
-      <td colspan="3">[% team.name %]</td>
-    </tr>
-    <tr>
-      <th>Product Owner:</th>
-      <td colspan="3">[% owner.name() %]</td>
-    </tr>
-    <tr>
-      <th>Scrum Master:</th>
-      <td colspan="3">[% scrum_master.name() %]</td>
-    </tr>
-    <tr>
-      <th>Weekly Velocity:</th>
-      <td>[% team.weekly_velocity_value %]</td>
-      <td>[% team.weekly_velocity_start %]</td>
-      <td>[% team.weekly_velocity_end %]</td>
-    </tr>
-  </table>
-
-  <h2>Current Sprint</h2>
-
-  <table class="linklist-big-icons">
     [% IF active_sprint %]
-      [% IF treeviewurl %]
-        <tr>
-          [% remaining_items = active_sprint.get_remaining_item_array() %]
-          <td>
-            <a href="[% treeviewurl %]&bug_id=[% FOREACH bug_id IN remaining_items %][% bug_id %],[% END %]">
-              <img src="extensions/Scrums/web/img/icon4.png" id="t">
+    <h2>Current Sprint: [% active_sprint.name %]</h2>
+    <ul>
+        <li class="scrums-remaining-items">
+            <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id=[% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
+                Remaining Items
             </a>
-          </td>
-          <td>
-            <a href="[% treeviewurl %]&bug_id=[% FOREACH bug_id IN remaining_items %][% bug_id %],[% END %]">
-              Remaining Items in Tree View
+        </li>
+        <li class="scrums-finished-items">
+            <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&query_format=advanced&scrums_sprint_bug_map.sprint_id=[% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
+                Finished Items
             </a>
-          </td>
-        </tr>
-      [% END %]
-      <tr>
-        <td>
-          <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&search_deps=on&query_format=advanced&field0-0-0=scrums_sprint_bug_map.sprint_id&value0-0-0=[% active_sprint.id %]&type0-0-0=substring&order=scrums_team_order%2Cbug_severity&daily">
-            <img src="extensions/Scrums/web/img/icon5.png" id="d">
-          </a>
-        </td>
-        <td>
-          <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&search_deps=on&query_format=advanced&field0-0-0=scrums_sprint_bug_map.sprint_id&value0-0-0=[% active_sprint.id %]&type0-0-0=substring&order=scrums_team_order%2Cbug_severity&daily">
-            Remaining Items and Dependencies
-          </a>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
-            <img src="extensions/Scrums/web/img/icon3.png" id="r">
-          </a>
-        </td>
-        <td>
-          <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_status=WAITING&bug_status=NEED_INFO&query_format=advanced&scrums_sprint_bug_map.sprint_id= [% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
-            Remaining Items
-          </a>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">
-            <img src="extensions/Scrums/web/img/icon1_b.png" id="b">
-          </a>
-        </td>
-        <td>
-          <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">Burndown Chart</a>
-        </td>
-      </tr>
+        </li>
+        <li class="scrums-all-items">
+            <a href="buglist.cgi?columnlist=sprint_name%2Cscrums_team_order%2Cbug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cresolution%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time&query_format=advanced&scrums_sprint_bug_map.sprint_id=[% active_sprint_id %]&order=scrums_team_order%2Cbug_severity&daily">
+                All Items
+            </a>
+        </li>
+    </ul>
+    <ul>
+        <li class="scrums-team-burndown">
+            <a href="page.cgi?id=scrums/sprintburndown.html&sprintid=[% active_sprint_id %]">
+                Team Burndown Chart
+            </a>
+        </li>
+    </ul>
     [% END %]
 
+    <h2>Planning</h2>
+    <ul>
+        <li class="scrums-sprint-planing">
+            <a href="page.cgi?id=scrums/teambugs.html&teamid=[% team.id %]">
+                Sprint Planning
+            </a>
+        </li>
     [% IF team.is_using_backlog() %]
-      <tr>
-        <td>
-          <a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">
-            <img src="extensions/Scrums/web/img/bug-item3.png" id="u">
-          </a>
-        </td>
-        <td style="margin-top: 10px;">
-          <a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">
-            Unprioritized Items
-          </a>
-        </td>
-      </tr>
+        <li class="scrums-product-backlog">
+            <a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">
+                Product Backlog
+            </a>
+        </li>
+        <li class="scrums-unprioritized-items">
+            <a href="page.cgi?id=scrums/dailysprint.html&teamid=[% team.id %]">
+                Unprioritized Items
+            </a>
+        </li>
     [% END %]
-  </table>
-
-  <h2>Planning</h2>
-  <ul>
-    <li><a href="page.cgi?id=scrums/teambugs.html&teamid=[% team.id %]">Sprint Planning</a>
-    [% IF team.is_using_backlog() %]
-      <li><a href="page.cgi?id=scrums/backlogplanning.html&teamid=[% team.id %]">Product Backlog</a>
-    [% END %]
-    <li><a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">Archived Sprints</a>
-  </ul>
+        <li class="scrums-archived-sprints">
+            <a href="page.cgi?id=scrums/archivedsprints.html&teamid=[% team.id %]">
+                Archived Sprints
+            </a>
+        </li>
+    </ul>
 
   <h2>Responsibilities</h2>
 
