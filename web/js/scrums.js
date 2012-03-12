@@ -575,22 +575,15 @@ function check_if_changed()
 
 function detect_unsaved_change()
 {
+    // When handler for beforeunload handler returns something,
+    // a dialog is presented to the user
     if(ignore_changes == true)
     {
         ignore_changes = false;
-        return false; // Did not save
     }
-    if(check_if_changed())
+    else if(check_if_changed())
     {
-        if(confirm('There are unsaved changes. Changes would be lost. Save before continuing to exit?'))
-        {
-            save_all();
-            return true; // Content changed permanently
-        }
-        else
-        {
-            return false;
-        }
+        return 'There are unsaved changes, which would be lost.';
     }
 }
 

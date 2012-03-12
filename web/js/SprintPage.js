@@ -705,8 +705,7 @@ function onDocumentReady()
         SprintView.refreshBacklog();
     }
 
-    // TODO: this doesn't even work.
-    $(window).unload(detect_unsaved_change);
+    window.onbeforeunload = detect_unsaved_change;
 }
 
 $(document).ready(onDocumentReady);

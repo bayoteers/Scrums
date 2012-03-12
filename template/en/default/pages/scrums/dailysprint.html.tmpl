@@ -90,12 +90,7 @@
         team_id: [% team.id() %]
     }, renderItems, 'json');
 
-    $(window).unload(
-        function() 
-        {
-            detect_unsaved_change(); 
-        } 
-    );
+    window.onbeforeunload = detect_unsaved_change;
   });
 
 function renderSprint(result)
