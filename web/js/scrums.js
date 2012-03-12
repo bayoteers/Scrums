@@ -233,7 +233,7 @@ function switch_lists(ui, lists) {
 
     $("#" + lists[to_i].ul_id).children('tr').each(function(position, elem)
     {
-        if ($(elem).attr('id') == '')
+        if (!$(elem).attr('id'))
         {
             skip_rows++;
             $(elem).remove();
