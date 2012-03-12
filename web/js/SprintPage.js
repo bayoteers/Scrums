@@ -517,7 +517,7 @@ var SprintView = {
             sprint_done_work = this._round(sprint_done_work, 2);
             sprint_remaining_work = this._round(sprint_remaining_work, 2);
             sprint_estimated = this._round(sprint_estimated, 2);
-            sprint_free = .this._round(sprint_estimated - sprint_total_work, 2);
+            sprint_free = this._round(sprint_estimated - sprint_total_work, 2);
         } catch(error) {
             // TODO more discrete error notification
             alert("Failed to round work values: " + error.message);
