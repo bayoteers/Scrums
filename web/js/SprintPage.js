@@ -510,11 +510,31 @@ var SprintView = {
             sprint_done_work += row[8];
             sprint_total_work += row[9];
         });
-
+        try {
+            sprint_total_work = this._round(sprint_total_work, 2);
+            sprint_done_work = this._round(sprint_done_work, 2);
+            sprint_remaining_work = this._round(sprint_remaining_work, 2);
+        } catch(error) {
+            // TODO more discrete error notification
+            alert("Failed to round work values: " + error.message);
+        }
         $('#capa').html(this.sprint.estimatedcapacity);
         $('#free').html(this.sprint.estimatedcapacity - sprint_total_work);
         $('#done').html(sprint_done_work);
         $('#remaining').html(sprint_remaining_work);
+    },
+
+    /**
+     * Helper to round a number to given amount of decimals
+     */
+    _round: function(value, decimals)
+    {
+        var value = Number(value);
+        if (isNaN(value)) throw("Value '" + value + "' is not a number");
+        var decimals = Number(decimals);
+        if (isNaN(decimals)) throw("decimals '" + decimals + "' is not a number");
+        decimals = Math.pow(10, decimals);
+        return Math.round(value * decimals) / decimals;
     },
 
     /**
