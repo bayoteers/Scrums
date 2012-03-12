@@ -503,6 +503,8 @@ var SprintView = {
         var sprint_total_work = 0;
         var sprint_done_work = 0;
         var sprint_remaining_work = 0;
+        var sprint_free = 0;
+        var sprint_estimated = this.sprint.estimatedcapacity;
 
         $.each(this.sprint.list, function(_, row)
         {
@@ -514,12 +516,14 @@ var SprintView = {
             sprint_total_work = this._round(sprint_total_work, 2);
             sprint_done_work = this._round(sprint_done_work, 2);
             sprint_remaining_work = this._round(sprint_remaining_work, 2);
+            sprint_estimated = this._round(sprint_estimated, 2);
+            sprint_free = .this._round(sprint_estimated - sprint_total_work, 2);
         } catch(error) {
             // TODO more discrete error notification
             alert("Failed to round work values: " + error.message);
         }
-        $('#capa').html(this.sprint.estimatedcapacity);
-        $('#free').html(this.sprint.estimatedcapacity - sprint_total_work);
+        $('#capa').html(sprint_estimated);
+        $('#free').html(sprint_free);
         $('#done').html(sprint_done_work);
         $('#remaining').html(sprint_remaining_work);
     },
