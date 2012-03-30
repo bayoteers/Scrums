@@ -49,40 +49,50 @@ use constant CONST_TASK    => "task";
 
 sub bug_end_of_update {
     my ($self, $args) = @_;
+    my $cgi = Bugzilla->cgi;
+    my $dbh = Bugzilla->dbh;
 
     my ($bug, $old_bug, $timestamp, $changes) = @$args{qw(bug old_bug timestamp changes)};
 
-    if (my $status_change = $changes->{'bug_status'} and ($bug->bug_severity() eq CONST_FEATURE or $bug->bug_severity() eq CONST_TASK)) {
+    if (my $status_change = $changes->{'bug_status'}) {
         my $old_status = new Bugzilla::Status({ name => $status_change->[0] });
         my $new_status = new Bugzilla::Status({ name => $status_change->[1] });
-
         if (!$new_status->is_open && $old_status->is_open) {
-            # close ! It seems, that remaining time can not be tested because it is set zero while closing.
-            my $estimated_time = $bug->estimated_time();
-            my $actual_time    = $bug->actual_time();
+            # Bug is being closed
+            if ($bug->bug_severity() eq CONST_FEATURE or
+                    $bug->bug_severity() eq CONST_TASK) {
 
-            my $filling_forced                = 0;
-            my $precondition_enabled_severity = Bugzilla->params->{"scrums_precondition_enabled_severity"};
+                # It seems, that remaining time can not be tested because it is
+                # set zero while closing.
+                my $estimated_time = $bug->estimated_time();
+                my $actual_time    = $bug->actual_time();
 
-            foreach my $enabled_severity (@$precondition_enabled_severity) {
-                if ($enabled_severity eq $bug->bug_severity()) {
-                    $filling_forced = 1;
+                my $filling_forced = 0;
+                my $precondition_enabled_severity = Bugzilla->params->{
+                    "scrums_precondition_enabled_severity"};
+
+                foreach my $enabled_severity (@$precondition_enabled_severity) {
+                    if ($enabled_severity eq $bug->bug_severity()) {
+                        $filling_forced = 1;
+                    }
+                }
+
+                if ($filling_forced) {
+                    if ($estimated_time == 0) {
+                        ThrowUserError("scrums_estimated_time_required");
+                    }
+                    elsif ($actual_time == 0) {
+                        ThrowUserError("scrums_actual_time_required");
+                    }
                 }
             }
-
-            if ($filling_forced) {
-                if ($estimated_time == 0) {
-                    ThrowUserError("scrums_estimated_time_required");
-                }
-                elsif ($actual_time == 0) {
-                    ThrowUserError("scrums_actual_time_required");
-                }
-            }
+            # Remove closed bug from backlog
+            $dbh->do(
+                'DELETE sbm FROM scrums_sprint_bug_map AS sbm
+                    INNER JOIN scrums_sprints s ON sbm.sprint_id = s.id
+                    WHERE  sbm.bug_id = ? AND s.item_type = 2', undef, $bug->id);
         }
     }
-
-    my $cgi = Bugzilla->cgi;
-    my $dbh = Bugzilla->dbh;
 
     # If the initial description has been updated we need
     # to take care of updated the database to reflect this.
