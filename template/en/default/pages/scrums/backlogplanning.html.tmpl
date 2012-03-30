@@ -26,14 +26,23 @@
 [% PROCESS pages/scrums/listcolumns.html.tmpl %]
 
 <script type="text/javascript">
-  var unordered_items_search_url = "buglist.cgi?query_format=advanced&";
-  unordered_items_search_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
-  unordered_items_search_url += "[% FOREACH status IN bug_status_open %]bug_status=[% status %]&[% END %]";
-  unordered_items_search_url += "[% FOREACH class IN classifications %]classification=[% class %]&[% END %]";
-  unordered_items_search_url += "[% FOREACH product IN products %]product=[% product %]&[% END %]";
-  unordered_items_search_url += "[% FOREACH component IN components %]component=[% component %]&[% END %]";
+  var SCRUMS_CONFIG = ([% scrums_config %]);
+  var unordered_bugs_search_url = "buglist.cgi?query_format=advanced&";
+  unordered_bugs_search_url += "columnlist=bug_severity%2Cpriority%2Cassigned_to%2Cbug_status%2Cshort_desc%2Cestimated_time%2Cactual_time%2Cremaining_time%2Cscrums_team_order%2Cscrums_blocked%2Csprint_name&";
 
-  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', create_item_line_html, unordered_items_search_url);
+  for (var i=0; i < SCRUMS_CONFIG.bug_status_open.length; i++){
+    unordered_bugs_search_url += "bug_status=" + SCRUMS_CONFIG.bug_status_open[i] + "&";
+  }
+  for (var i=0; i < SCRUMS_CONFIG.classifications.length; i++){
+    unordered_bugs_search_url += "classification=" + SCRUMS_CONFIG.classifications[i] + "&";
+  }
+  for (var i=0; i < SCRUMS_CONFIG.products.length; i++){
+    unordered_bugs_search_url += "product=" + SCRUMS_CONFIG.products[i] + "&";
+  }
+  for (var i=0; i < SCRUMS_CONFIG.components.length; i++){
+    unordered_bugs_search_url += "component=" + SCRUMS_CONFIG.components[i] + "&";
+  }
+  var unordered_bugs = new listObject("sortable2", "headers2", '-1', 'Unprioritized', create_item_line_html, unordered_bugs_search_url);
   unordered_bugs.show_columns.push('creation_date')
   unordered_bugs.show_columns.splice( $.inArray('order', unordered_bugs.show_columns), 1 );
 

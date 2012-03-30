@@ -624,7 +624,7 @@ var SprintView = {
      */
     _makeBacklogList: function()
     {
-        var id = SCRUMS_CONFIG.backlog_id;
+        var id = SCRUMS_CONFIG.team ? SCRUMS_CONFIG.team.backlog_id : '-1';
         var title;
         var url;
 
