@@ -70,6 +70,10 @@ use constant VALIDATORS => { name => \&_check_name, };
 ####     Constructors     #####
 ###############################
 # This is necessary method only because transaction handling is needed for multiple tables
+#
+# XXX This shouldn't be needed, scrums_teammember and scrums_componentteam have
+#   delete cascade on scums_team.id reference
+#
 sub remove_from_db {
     my $self = shift;
 
