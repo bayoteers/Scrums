@@ -116,7 +116,7 @@
     }
 
     min_ts = hours_rem[hours_rem.length-1][0];
-    if(items_rem[items_rem.length-1][0] < hours_rem[hours_rem.length-1][0])
+    if(!min_ts || items_rem[items_rem.length-1][0] < hours_rem[hours_rem.length-1][0])
     {
         min_ts = items_rem[items_rem.length-1][0];
     }
