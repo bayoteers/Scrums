@@ -17,13 +17,14 @@
   #
   # Contributor(s):
   #   Visa Korhonen <visa.korhonen@symbio.com>
+  #   Pami Ketolainen <pami.ketolainen@gmail.com>
   #%]
 [%
     title = "Scrums"
     desc = "Scrums extension"
 %]
 
-[% param_descs = {
-  bug_comment_editable_item_types => "List of severities of those bugs, that are possible to edit. Item comment is editable description."
-}
-%]
+[% param_descs = {} %]
+[% FOREACH param IN panel.param_list %]
+    [% param_descs.${param.name} = param.desc %]
+[% END %]

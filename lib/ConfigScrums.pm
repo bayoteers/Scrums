@@ -18,38 +18,51 @@
 #
 # Contributor(s):
 #   Visa Korhonen <visa.korhonen@symbio.com>
+#   Pami Ketolainen <pami.ketolainen@gmail.com>
 
 package Bugzilla::Extension::Scrums::ConfigScrums;
 use strict;
 use warnings;
 
 use Bugzilla::Config::Common;
+use Bugzilla::Field;
 
 sub get_param_list {
     my ($class) = @_;
 
+    my @legal_severities = @{get_legal_field_values('bug_severity')};
+
     my @param_list = (
-                      {
-                         name    => 'scrums_bug_comment_editable_item_types',
-                         desc    => 'List of severities of those bugs, that are possible to edit. Item comment is editable description.',
-                         type    => 'm',
-                         choices => [ 'blocker', 'change_request', 'critical', 'feature', 'major', 'minor', 'normal', 'task' ],
-                         default => [ 'task', 'feature' ]
-                      },
-                      {
-                         name    => 'scrums_precondition_enabled_severity',
-                         desc    => 'List of severities of those bugs, that are required to have estimated time and worked time when closing bug.',
-                         type    => 'm',
-                         choices => [ 'task', 'feature' ],
-                         default => [ 'task', 'feature' ]
-                      },
-                     {
-                         name   => 'scrums_default_sprint_days',
-                         desc   => 'Default length of a sprint for JS datepicker.',
-                         type   => 't',
-                         default => '7'
-                     },
-                     );
+        {
+            name    => 'scrums_use_points',
+            desc    => 'Display estimated, remaining and actual time as points '.
+                        'instead of hours',
+            type    => 'b',
+            default => 0
+        },
+        {
+            name    => 'scrums_bug_comment_editable_item_types',
+            desc    => 'List of severities of those bugs, that are possible '.
+                        'to edit. Item comment is editable description.',
+            type    => 'm',
+            choices => \@legal_severities,
+            default => [ $legal_severities[-1] ]
+        },
+        {
+            name    => 'scrums_precondition_enabled_severity',
+            desc    => 'List of severities of those bugs, that are required '.
+                        'to have estimated time and worked time when closing bug.',
+            type    => 'm',
+            choices => \@legal_severities,
+            default => [ $legal_severities[-1] ]
+        },
+        {
+            name    => 'scrums_default_sprint_days',
+            desc    => 'Default length of a sprint for JS datepicker.',
+            type    => 't',
+            default => '7'
+        },
+    );
     return @param_list;
 }
 

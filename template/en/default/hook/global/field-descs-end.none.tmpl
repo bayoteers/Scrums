@@ -17,18 +17,23 @@
   #
   # Contributor(s):
   #   Visa Korhonen <visa.korhonen@symbio.com>
+  #   Pami Ketolainen <pami.ketolainen@gmail.com>
   #%]
 
 [% IF in_template_var %]
 
-  [% additional_values = {
-     "scrums_team_order"       => "Team Order",
-     "scrums_release_order"    => "Release Order",
-     "scrums_program_order"    => "Program Order",
-     "scrums_blocked"          => "Parent",
-     "sprint_name"             => "Sprint",
-     "remaining_time"          => "Points",
-  } %]
+    [% vars.field_descs.import({
+        "scrums_team_order"     => "Team Order",
+        "scrums_release_order"  => "Release Order",
+        "scrums_program_order"  => "Program Order",
+        "scrums_blocked"        => "Parent",
+        "sprint_name"           => "Sprint",
+    }) %]
 
-  [% vars.field_descs.import(additional_values) %]
+    [% vars.field_descs.import({
+        "actual_time"       => "Act. Points",
+        "work_time"         => "Act. Points",
+        "remaining_time"    => "Rem. Points",
+    }) IF Param('scrums_use_points') %]
+
 [% END %]
