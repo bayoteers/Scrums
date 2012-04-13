@@ -269,28 +269,33 @@ sub db_schema_abstract_schema {
 
     # "componentteam" indicates, that sub-component (component in database) has been assigned responsible team.
     $schema->{'scrums_componentteam'} = {
-                                          FIELDS => [
-                                                      component_id => {
-                                                                        TYPE       => 'INT2',
-                                                                        NOTNULL    => 1,
-                                                                        PRIMARYKEY => 1,
-                                                                        REFERENCES => {
-                                                                                        TABLE  => 'components',
-                                                                                        COLUMN => 'id',
-                                                                                        DELETE => 'CASCADE'
-                                                                                      }
-                                                                      },
-                                                      teamid => {
-                                                                  TYPE       => 'INT2',
-                                                                  NOTNULL    => 1,
-                                                                  REFERENCES => {
-                                                                                  TABLE  => 'scrums_team',
-                                                                                  COLUMN => 'id',
-                                                                                  DELETE => 'CASCADE'
-                                                                                }
-                                                                },
-                                                    ],
-                                        };
+        FIELDS => [
+            component_id => {
+                TYPE       => 'INT2',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'components',
+                    COLUMN => 'id',
+                    DELETE => 'CASCADE'
+                }
+            },
+            teamid => {
+                TYPE       => 'INT2',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'scrums_team',
+                    COLUMN => 'id',
+                    DELETE => 'CASCADE'
+                }
+            },
+        ],
+        INDEXES => [
+            scrums_componentteam_value_unique_idx => {
+                FIELDS => [qw(component_id teamid)],
+                TYPE   => 'UNIQUE'
+            },
+        ],
+    };
 
     # "scrums_flagtype_release_map" maps allowed flag types into releases
     $schema->{'scrums_flagtype_release_map'} = {
@@ -505,6 +510,26 @@ sub install_update_db {
     use constant USAGE_FLAG_DEFINITION => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' };
     Bugzilla->dbh->bz_add_column("scrums_team", "is_using_backlog", USAGE_FLAG_DEFINITION, undef);
 
+    Bugzilla->dbh->bz_add_index("scrums_componentteam", "scrums_componentteam_value_unique_idx",
+        {
+            FIELDS => [qw(component_id teamid)],
+            TYPE   => 'UNIQUE'
+        }
+    );
+    my $componentteams_component_id = Bugzilla->dbh->bz_column_info(
+        "scrums_componentteam", "component_id");
+    if ($componentteams_component_id->{PRIMARYKEY}) {
+            Bugzilla->dbh->bz_alter_column("scrums_componentteam", "component_id",
+                {
+                    TYPE       => 'INT2',
+                    NOTNULL    => 1,
+                    REFERENCES => {
+                        TABLE  => 'components',
+                        COLUMN => 'id',
+                        DELETE => 'CASCADE'
+                    }
+                });
+    }
     return;
 }
 
