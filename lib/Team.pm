@@ -169,18 +169,20 @@ sub remove_member {
     Bugzilla->dbh->do('DELETE FROM scrums_teammember WHERE userid = ? AND teamid = ?', undef, $member_id, $team_id);
 }
 
-sub team_of_component {
+sub teams_of_component {
     my ($self, $component_id) = @_;
 
-    my ($team_id) = Bugzilla->dbh->selectrow_array('SELECT teamid FROM scrums_componentteam WHERE component_id = ?', undef, $component_id);
+    my @team_ids = Bugzilla->dbh->selectrow_array('SELECT teamid FROM scrums_componentteam WHERE component_id = ?', undef, $component_id);
 
-    if (!$team_id || $team_id == 0) {
+    if (!@team_ids) {
         return;
     }
+    my @teams;
+    foreach my $team_id (@team_ids) {
+        push(@teams, Bugzilla::Extension::Scrums::Team->new($team_id));
+    }
 
-    my $team = Bugzilla::Extension::Scrums::Team->new($team_id);
-
-    return $team;
+    return \@teams;
 }
 
 sub is_team_super_user {
@@ -603,7 +605,7 @@ Bugzilla::Extension::Scrums::Team - Scrums team class.
     my $backlog            = $team->get_team_backlog();
     my $is_responsible     = $team->is_team_responsible_for_component_id($component_id);
 
-    my $team_of_component  = Bugzilla::Extension::Scrums::Team->team_of_component($component_id);
+    my $teams_of_component = Bugzilla::Extension::Scrums::Team->teams_of_component($component_id);
     my $user_team_array    = Bugzilla::Extension::Scrums::Team->user_teams($user_id);
     my $all_teams_array    = Bugzilla::Extension::Scrums::Team->all_teams($sort);
 
@@ -863,13 +865,13 @@ Team.pm represents a work team, that uses Scrums extension for planning it's wor
  Returns:     A Bugzilla::Extension::Scrums::Team object.
 
 
-=item C<team_of_component($component_id)>
+=item C<teams_of_component($component_id)>
 
- Description: Return responsible team for component, if there is one.
+ Description: Return responsible teams for component, if there is any.
 
  Params:      Id (integer) of A Bugzilla::Component object.
 
- Returns:     A Bugzilla::Extension::Scrums::Team object.
+ Returns:     Array ref of Bugzilla::Extension::Scrums::Team objects or undef
 
 =item C<user_teams($user_id)>
 

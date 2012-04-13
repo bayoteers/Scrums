@@ -154,10 +154,10 @@ sub bug_end_of_update {
             my $sprnt = Bugzilla::Extension::Scrums::Sprint->new($scrums_action);
             my $team  = $sprnt->get_team();
             if (!$team->is_team_responsible_for_component_id($bug->{component_id})) {
-                my $responsible = $team->team_of_component($bug->{component_id});
+                my $responsibles = $team->teams_of_component($bug->{component_id});
                 my $resp_name   = "[none]";
-                if ($responsible) {
-                    $resp_name = $responsible->name();
+                if ($responsibles) {
+                    $resp_name = join(", ", map {$_->name()} (@{$responsibles}));
                 }
                 my $comp_name = $bug->component();
                 ThrowUserError("scrums_not_responsible_team", { bug_id => $bug->bug_id, responsible_team_name => $resp_name, comp_name => $comp_name });
