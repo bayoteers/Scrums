@@ -250,24 +250,25 @@ sub db_schema_abstract_schema {
 
     # extension table for 'bugs': includes order nr for programme, release, team
     $schema->{'scrums_bug_order'} = {
-                                      FIELDS => [
-                                                  bug_id => {
-                                                              TYPE       => 'INT3',
-                                                              NOTNULL    => 1,
-                                                              PRIMARYKEY => 1,
-                                                              REFERENCES => {
-                                                                              TABLE  => 'bugs',
-                                                                              COLUMN => 'bug_id',
-                                                                              DELETE => 'CASCADE'
-                                                                            }
-                                                            },
-                                                  team    => { TYPE => 'INT3' },
-                                                  rlease  => { TYPE => 'INT3' },
-                                                  program => { TYPE => 'INT3' },
-                                                ]
-                                    };
+        FIELDS => [
+            bug_id => {
+                TYPE       => 'INT3',
+                NOTNULL    => 1,
+                PRIMARYKEY => 1,
+                REFERENCES => {
+                    TABLE  => 'bugs',
+                    COLUMN => 'bug_id',
+                    DELETE => 'CASCADE',
+                },
+            },
+            team    => { TYPE => 'INT3' },
+            rlease  => { TYPE => 'INT3' },
+            program => { TYPE => 'INT3' },
+        ],
+    };
 
-    # "componentteam" indicates, that sub-component (component in database) has been assigned responsible team.
+    # "componentteam" indicates, that sub-component (component in database) has
+    # been assigned responsible team.
     $schema->{'scrums_componentteam'} = {
         FIELDS => [
             component_id => {
@@ -276,8 +277,8 @@ sub db_schema_abstract_schema {
                 REFERENCES => {
                     TABLE  => 'components',
                     COLUMN => 'id',
-                    DELETE => 'CASCADE'
-                }
+                    DELETE => 'CASCADE',
+                },
             },
             teamid => {
                 TYPE       => 'INT2',
@@ -285,192 +286,225 @@ sub db_schema_abstract_schema {
                 REFERENCES => {
                     TABLE  => 'scrums_team',
                     COLUMN => 'id',
-                    DELETE => 'CASCADE'
-                }
+                    DELETE => 'CASCADE',
+                },
             },
         ],
         INDEXES => [
             scrums_componentteam_value_unique_idx => {
                 FIELDS => [qw(component_id teamid)],
-                TYPE   => 'UNIQUE'
+                TYPE   => 'UNIQUE',
             },
         ],
     };
 
     # "scrums_flagtype_release_map" maps allowed flag types into releases
     $schema->{'scrums_flagtype_release_map'} = {
-                                                 FIELDS => [
-                                                             release_id => {
-                                                                             TYPE       => 'INT2',
-                                                                             NOTNULL    => 1,
-                                                                             REFERENCES => {
-                                                                                             TABLE  => 'scrums_releases',
-                                                                                             COLUMN => 'id',
-                                                                                             DELETE => 'CASCADE'
-                                                                                           }
-                                                                           },
-                                                             flagtype_id => {
-                                                                              TYPE       => 'INT2',
-                                                                              NOTNULL    => 1,
-                                                                              REFERENCES => {
-                                                                                              TABLE  => 'flagtypes',
-                                                                                              COLUMN => 'id',
-                                                                                              DELETE => 'CASCADE'
-                                                                                            }
-                                                                            },
-                                                           ],
-                                               };
+        FIELDS => [
+            release_id => {
+                TYPE       => 'INT2',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'scrums_releases',
+                    COLUMN => 'id',
+                    DELETE => 'CASCADE',
+                },
+            },
+            flagtype_id => {
+                TYPE       => 'INT2',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'flagtypes',
+                    COLUMN => 'id',
+                    DELETE => 'CASCADE',
+                },
+            },
+        ],
+    };
 
     # "release" is managed unit, that contains tasks
     $schema->{'scrums_releases'} = {
-                                     FIELDS => [
-                                                 id                     => { TYPE => 'SMALLSERIAL',  NOTNULL => 1, PRIMARYKEY => 1 },
-                                                 name                   => { TYPE => 'varchar(255)', NOTNULL => 1 },
-                                                 target_milestone_begin => { TYPE => 'varchar(20)' },
-                                                 target_milestone_end   => { TYPE => 'varchar(20)' },
-                                                 capacity_algorithm     => { TYPE => 'varchar(255)' },
-                                                 original_capacity      => { TYPE => 'INT3' },
-                                                 remaining_capacity     => { TYPE => 'INT3' },
-                                               ],
-                                   };
+        FIELDS => [
+            id => {
+                TYPE       => 'SMALLSERIAL',
+                NOTNULL    => 1,
+                PRIMARYKEY => 1,
+            },
+            name => {
+                TYPE    => 'varchar(255)',
+                NOTNULL => 1,
+            },
+            target_milestone_begin => { TYPE => 'varchar(20)' },
+            target_milestone_end   => { TYPE => 'varchar(20)' },
+            capacity_algorithm     => { TYPE => 'varchar(255)' },
+            original_capacity      => { TYPE => 'INT3' },
+            remaining_capacity     => { TYPE => 'INT3' },
+        ],
+    };
 
     $schema->{'scrums_sprints'} = {
-                                    FIELDS => [
-                                                id      => { TYPE => 'SMALLSERIAL', NOTNULL => 1, PRIMARYKEY => 1 },
-                                                team_id => {
-                                                             TYPE       => 'INT2',
-                                                             NOTNULL    => 1,
-                                                             REFERENCES => {
-                                                                             TABLE  => 'scrums_team',
-                                                                             COLUMN => 'id',
-                                                                             DELETE => 'CASCADE'
-                                                                           }
-                                                           },
-                                                name        => { TYPE => 'varchar(255)', NOTNULL => 1 },
-                                                status      => { TYPE => 'varchar(20)',  NOTNULL => 1 },
-                                                description => { TYPE => 'varchar(255)' },
-                                                item_type          => { TYPE => 'INT2', NOTNULL => 1, DEFAULT => '1' },
-                                                start_date         => { TYPE => 'DATE' },
-                                                end_date           => { TYPE => 'DATE' },
-                                                estimated_capacity => { TYPE => 'decimal(7,2)' },
-                                              ]
-                                  };
+        FIELDS => [
+            id => {
+                TYPE       => 'SMALLSERIAL',
+                NOTNULL    => 1,
+                PRIMARYKEY => 1,
+            },
+            team_id => {
+                TYPE       => 'INT2',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'scrums_team',
+                    COLUMN => 'id',
+                    DELETE => 'CASCADE',
+                },
+            },
+            name => {
+                TYPE    => 'varchar(255)',
+                NOTNULL => 1,
+            },
+            status => {
+                TYPE    => 'varchar(20)',
+                NOTNULL => 1,
+            },
+            item_type => {
+                TYPE    => 'INT2',
+                NOTNULL => 1,
+                DEFAULT => '1',
+            },
+            description        => { TYPE => 'varchar(255)' },
+            start_date         => { TYPE => 'DATE' },
+            end_date           => { TYPE => 'DATE' },
+            estimated_capacity => { TYPE => 'decimal(7,2)' },
+        ],
+    };
 
     # "team" is unit, which is reponsible for sub-component (component in database).
     $schema->{'scrums_team'} = {
-                                 FIELDS => [
-                                             id => {
-                                                     TYPE       => 'SMALLSERIAL',
-                                                     NOTNULL    => 1,
-                                                     PRIMARYKEY => 1
-                                                   },
-                                             name  => { TYPE => 'varchar(50)', NOTNULL => 1 },
-                                             owner => {
-                                                        TYPE       => 'INT3',
-                                                        NOTNULL    => 1,
-                                                        REFERENCES => {
-                                                                        TABLE  => 'profiles',
-                                                                        COLUMN => 'userid',
-                                                                        DELETE => 'CASCADE'
-                                                                      }
-                                                      },
-                                             scrum_master => {
-                                                               TYPE       => 'INT3',
-                                                               REFERENCES => {
-                                                                               TABLE  => 'profiles',
-                                                                               COLUMN => 'userid',
-                                                                               DELETE => 'CASCADE'
-                                                                             }
-                                                             },
-                                             weekly_velocity_value => { TYPE => 'decimal(7,2)' },
-                                             weekly_velocity_start => { TYPE => 'DATE' },
-                                             weekly_velocity_end   => { TYPE => 'DATE' },
-                                           ],
-                               };
+        FIELDS => [
+            id => {
+                TYPE       => 'SMALLSERIAL',
+                NOTNULL    => 1,
+                PRIMARYKEY => 1,
+            },
+            name => {
+                TYPE => 'varchar(50)',
+                NOTNULL => 1,
+            },
+            owner => {
+                TYPE       => 'INT3',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'profiles',
+                    COLUMN => 'userid',
+                    DELETE => 'CASCADE',
+                },
+            },
+            scrum_master => {
+                TYPE       => 'INT3',
+                REFERENCES => {
+                    TABLE  => 'profiles',
+                    COLUMN => 'userid',
+                    DELETE => 'CASCADE',
+                },
+            },
+            is_using_backlog => {
+                TYPE => 'INT2',
+                NOTNULL => 1,
+                DEFAULT => '1'
+            },
+            weekly_velocity_value => { TYPE => 'decimal(7,2)' },
+            weekly_velocity_start => { TYPE => 'DATE' },
+            weekly_velocity_end   => { TYPE => 'DATE' },
+        ],
+    };
 
     # "teammember" is user, who belongs to team.
     $schema->{'scrums_teammember'} = {
-                                       FIELDS => [
-                                                   teamid => {
-                                                               TYPE       => 'INT2',
-                                                               NOTNULL    => 1,
-                                                               REFERENCES => {
-                                                                               TABLE  => 'scrums_team',
-                                                                               COLUMN => 'id',
-                                                                               DELETE => 'CASCADE'
-                                                                             }
-                                                             },
-                                                   userid => {
-                                                               TYPE       => 'INT3',
-                                                               NOTNULL    => 1,
-                                                               REFERENCES => {
-                                                                               TABLE  => 'profiles',
-                                                                               COLUMN => 'userid',
-                                                                               DELETE => 'CASCADE'
-                                                                             }
-                                                             },
-                                                 ],
-                                       INDEXES => [
-                                                    scrums_teammember_value_unique_idx => {
-                                                                                            FIELDS => [qw(teamid userid)],
-                                                                                            TYPE   => 'UNIQUE'
-                                                                                          },
-                                                  ],
-                                     };
+        FIELDS => [
+            teamid => {
+                TYPE       => 'INT2',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'scrums_team',
+                    COLUMN => 'id',
+                    DELETE => 'CASCADE',
+                },
+            },
+            userid => {
+                TYPE       => 'INT3',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'profiles',
+                    COLUMN => 'userid',
+                    DELETE => 'CASCADE',
+                },
+            },
+        ],
+        INDEXES => [
+            scrums_teammember_value_unique_idx => {
+                FIELDS => [qw(teamid userid)],
+                TYPE   => 'UNIQUE',
+            },
+        ],
+    };
 
     $schema->{'scrums_sprint_bug_map'} = {
-                                           FIELDS => [
-                                                       bug_id => {
-                                                                   TYPE       => 'INT3',
-                                                                   NOTNULL    => 1,
-                                                                   REFERENCES => {
-                                                                                   TABLE  => 'bugs',
-                                                                                   COLUMN => 'bug_id',
-                                                                                   DELETE => 'CASCADE'
-                                                                                 }
-                                                                 },
-                                                       sprint_id => {
-                                                                      TYPE       => 'INT2',
-                                                                      NOTNULL    => 1,
-                                                                      REFERENCES => {
-                                                                                      TABLE  => 'scrums_sprints',
-                                                                                      COLUMN => 'id',
-                                                                                      DELETE => 'CASCADE'
-                                                                                    }
-                                                                    },
-                                                     ]
-                                         };
+        FIELDS => [
+            bug_id => {
+                TYPE       => 'INT3',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'bugs',
+                    COLUMN => 'bug_id',
+                    DELETE => 'CASCADE',
+                },
+            },
+            sprint_id => {
+                TYPE       => 'INT2',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'scrums_sprints',
+                    COLUMN => 'id',
+                    DELETE => 'CASCADE',
+                },
+            },
+        ],
+    };
 
     # "scrums_sprint_estimate" is sprint capacity of a user, who belongs to team.
     $schema->{'scrums_sprint_estimate'} = {
-                                            FIELDS => [
-                                                        sprintid => {
-                                                                      TYPE       => 'INT2',
-                                                                      NOTNULL    => 1,
-                                                                      REFERENCES => {
-                                                                                      TABLE  => 'scrums_sprints',
-                                                                                      COLUMN => 'id',
-                                                                                      DELETE => 'CASCADE'
-                                                                                    }
-                                                                    },
-                                                        userid => {
-                                                                    TYPE       => 'INT3',
-                                                                    NOTNULL    => 1,
-                                                                    REFERENCES => {
-                                                                                    TABLE  => 'profiles',
-                                                                                    COLUMN => 'userid',
-                                                                                    DELETE => 'CASCADE'
-                                                                                  }
-                                                                  },
-                                                        estimated_capacity => { TYPE => 'decimal(4,2)', NOTNULL => 1, DEFAULT => '0.00' },
-                                                      ],
-                                            INDEXES => [
-                                                         scrums_sprint_estimate_unique_idx => {
-                                                                                                FIELDS => [qw(sprintid userid)],
-                                                                                                TYPE   => 'UNIQUE'
-                                                                                              },
-                                                       ],
-                                          };
+        FIELDS => [
+            sprintid => {
+                TYPE       => 'INT2',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'scrums_sprints',
+                    COLUMN => 'id',
+                    DELETE => 'CASCADE',
+                },
+            },
+            userid => {
+                TYPE       => 'INT3',
+                NOTNULL    => 1,
+                REFERENCES => {
+                    TABLE  => 'profiles',
+                    COLUMN => 'userid',
+                    DELETE => 'CASCADE',
+                },
+            },
+            estimated_capacity => {
+                TYPE    => 'decimal(4,2)',
+                NOTNULL => 1,
+                DEFAULT => '0.00',
+            },
+        ],
+        INDEXES => [
+            scrums_sprint_estimate_unique_idx => {
+                FIELDS => [qw(sprintid userid)],
+                TYPE   => 'UNIQUE',
+            },
+        ],
+    };
 }
 
 sub install_update_db {
