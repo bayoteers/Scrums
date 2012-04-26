@@ -78,10 +78,6 @@
   };
 
   $(function () {
-    var ch = $("#show_total_ch");
-    ch[0].checked = false;
-//    var ra = $("#unit");
-//    ra[0].value = 'hours';
     init();
   });
 
@@ -263,7 +259,8 @@
       <td rowspan="2">
         <div id="placeholder" style="width:800px;height:400px;"></div>
 
-        <input type="checkbox" id="show_total_ch" onclick="refresh();">
+        <input type="checkbox" id="show_total_ch" checked="[% show_total_ch ? 'checked' : '' %]"
+            onclick="refresh();">
           <label for="show_total_ch">Show total work amount</label>
         </input>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

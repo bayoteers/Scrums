@@ -807,6 +807,7 @@ sub page_before_template {
     elsif ($page eq 'scrums/sprintburndown.html') {
         my $cgi       = Bugzilla->cgi;
         my $sprint_id = $cgi->param('sprintid');
+        $vars->{show_total_ch} = $cgi->param('show_total_ch');
 
         Bugzilla::Extension::Scrums::Sprintslib::sprint_summary($vars, $sprint_id);
     }
