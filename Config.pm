@@ -27,8 +27,8 @@ use constant NAME => 'Scrums';
 
 use constant REQUIRED_MODULES => [
     {
-       package => 'Date-Calc',
-       module  => 'Date::Calc',
+       package => 'Date-Calc-XS',
+       module  => 'Date::Calc::XS',
        version => 6.0,
     },
 
